@@ -140,7 +140,6 @@ export const FloatingButton: React.FC = () => {
 
   // Handler for stop button in hands-free mode
   const handleStopClick = async (e: React.MouseEvent) => {
-    if (justDraggedRef.current) return;
     e.preventDefault();
     e.stopPropagation();
     console.log("FAB: Stopping hands-free recording");
@@ -212,8 +211,12 @@ export const FloatingButton: React.FC = () => {
           clearTimeout(leaveTimeoutRef.current);
           leaveTimeoutRef.current = null;
         }
-        setIsHovered(false);
-        setIgnoreMouseEvents.mutate({ ignore: true });
+        if (isRecording || isStopping) {
+          // Keep widget interactive so stop button remains usable
+        } else {
+          setIsHovered(false);
+          setIgnoreMouseEvents.mutate({ ignore: true });
+        }
         setTimeout(() => { justDraggedRef.current = false; }, 150);
       }
       dragStartRef.current = null;
