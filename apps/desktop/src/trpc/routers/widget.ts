@@ -23,6 +23,22 @@ export const widgetRouter = createRouter({
       return true;
     }),
 
+  startDrag: procedure
+    .input(z.object({ screenX: z.number(), screenY: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const windowManager = ctx.serviceManager.getService("windowManager");
+      if (!windowManager) return false;
+      windowManager.startWidgetDrag(input.screenX, input.screenY);
+      return true;
+    }),
+
+  endDrag: procedure.mutation(async ({ ctx }) => {
+    const windowManager = ctx.serviceManager.getService("windowManager");
+    if (!windowManager) return false;
+    windowManager.endWidgetDrag();
+    return true;
+  }),
+
   openNotesWindow: procedure
     .input(
       z

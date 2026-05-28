@@ -27,6 +27,13 @@ export class WindowManager {
   private onboardingWindow: BrowserWindow | null = null;
   private widgetDisplayId: number | null = null;
   private cursorPollingInterval: NodeJS.Timeout | null = null;
+  private widgetDragState: {
+    startMouseX: number;
+    startMouseY: number;
+    startWinX: number;
+    startWinY: number;
+    interval: ReturnType<typeof setInterval>;
+  } | null = null;
   private themeListenerSetup: boolean = false;
   private displayListenersSetup: boolean = false;
 
@@ -627,6 +634,39 @@ export class WindowManager {
     }
 
     this.widgetWindow.setIgnoreMouseEvents(ignore, { forward: true });
+  }
+
+  startWidgetDrag(screenX: number, screenY: number): void {
+    if (!this.widgetWindow || this.widgetWindow.isDestroyed() || this.widgetDragState) {
+      return;
+    }
+    const bounds = this.widgetWindow.getBounds();
+    const interval = setInterval(() => {
+      if (!this.widgetWindow || this.widgetWindow.isDestroyed() || !this.widgetDragState) {
+        this.endWidgetDrag();
+        return;
+      }
+      const cursor = screen.getCursorScreenPoint();
+      const dx = cursor.x - this.widgetDragState.startMouseX;
+      const dy = cursor.y - this.widgetDragState.startMouseY;
+      this.widgetWindow.setPosition(
+        this.widgetDragState.startWinX + dx,
+        this.widgetDragState.startWinY + dy,
+      );
+    }, 16);
+    this.widgetDragState = {
+      startMouseX: screenX,
+      startMouseY: screenY,
+      startWinX: bounds.x,
+      startWinY: bounds.y,
+      interval,
+    };
+  }
+
+  endWidgetDrag(): void {
+    if (!this.widgetDragState) return;
+    clearInterval(this.widgetDragState.interval);
+    this.widgetDragState = null;
   }
 
   isNotesWindowVisible(): boolean {

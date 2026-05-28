@@ -7,8 +7,9 @@ import { api } from "@/trpc/react";
 import { NOTE_WINDOW_FEATURE_FLAG } from "@/utils/feature-flags";
 import { useTranslation } from "react-i18next";
 
-const NUM_WAVEFORM_BARS = 6; // Fewer bars to make room for stop button
-const DEBOUNCE_DELAY = 100; // milliseconds
+const NUM_WAVEFORM_BARS = 6;
+const DEBOUNCE_DELAY = 100;
+const DRAG_THRESHOLD = 5;
 const TOAST_INTERACTION_STATE_EVENT = "widget:toast-interaction-state";
 
 // Separate component for the stop button
@@ -59,9 +60,13 @@ export const FloatingButton: React.FC = () => {
   const clickTimeRef = useRef<number | null>(null); // Track when user clicked
   const hasActiveToastRef = useRef(false);
 
-  // tRPC mutation to control widget mouse events
   const setIgnoreMouseEvents = api.widget.setIgnoreMouseEvents.useMutation();
   const openNotesWindow = api.widget.openNotesWindow.useMutation();
+  const startDragMutation = api.widget.startDrag.useMutation();
+  const endDragMutation = api.widget.endDrag.useMutation();
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef<{ screenX: number; screenY: number } | null>(null);
+  const justDraggedRef = useRef(false);
   const noteWindowFeatureFlag = useFeatureFlag(NOTE_WINDOW_FEATURE_FLAG);
 
   // Log component initialization
@@ -111,6 +116,7 @@ export const FloatingButton: React.FC = () => {
 
   // Handler for widget click to start recording in hands-free mode
   const handleButtonClick = async (e: React.MouseEvent) => {
+    if (justDraggedRef.current) return;
     e.preventDefault();
     e.stopPropagation();
     const clickTime = performance.now();
@@ -134,13 +140,15 @@ export const FloatingButton: React.FC = () => {
 
   // Handler for stop button in hands-free mode
   const handleStopClick = async (e: React.MouseEvent) => {
+    if (justDraggedRef.current) return;
     e.preventDefault();
-    e.stopPropagation(); // Prevent triggering the main button click
+    e.stopPropagation();
     console.log("FAB: Stopping hands-free recording");
     await stopRecording();
   };
 
   const handleOpenNotesClick = async (e: React.MouseEvent) => {
+    if (justDraggedRef.current) return;
     e.preventDefault();
     e.stopPropagation();
     if (!isNoteWindowEnabled) {
@@ -153,8 +161,8 @@ export const FloatingButton: React.FC = () => {
     }
   };
 
-  // Debounced mouse leave handler
   const handleMouseLeave = async () => {
+    if (isDraggingRef.current) return;
     if (leaveTimeoutRef.current) {
       clearTimeout(leaveTimeoutRef.current);
     }
@@ -176,7 +184,45 @@ export const FloatingButton: React.FC = () => {
     }, DEBOUNCE_DELAY);
   };
 
-  // Mouse enter handler - clears any pending leave timeout
+  const handleDragMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    dragStartRef.current = { screenX: e.screenX, screenY: e.screenY };
+
+    const onMove = (ev: MouseEvent) => {
+      if (!dragStartRef.current) return;
+      const dx = ev.screenX - dragStartRef.current.screenX;
+      const dy = ev.screenY - dragStartRef.current.screenY;
+      if (!isDraggingRef.current && Math.sqrt(dx * dx + dy * dy) >= DRAG_THRESHOLD) {
+        isDraggingRef.current = true;
+        startDragMutation.mutate({
+          screenX: dragStartRef.current.screenX,
+          screenY: dragStartRef.current.screenY,
+        });
+      }
+    };
+
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      if (isDraggingRef.current) {
+        endDragMutation.mutate();
+        isDraggingRef.current = false;
+        justDraggedRef.current = true;
+        if (leaveTimeoutRef.current) {
+          clearTimeout(leaveTimeoutRef.current);
+          leaveTimeoutRef.current = null;
+        }
+        setIsHovered(false);
+        setIgnoreMouseEvents.mutate({ ignore: true });
+        setTimeout(() => { justDraggedRef.current = false; }, 150);
+      }
+      dragStartRef.current = null;
+    };
+
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  };
+
   const handleMouseEnter = async () => {
     if (leaveTimeoutRef.current) {
       clearTimeout(leaveTimeoutRef.current);
@@ -253,6 +299,7 @@ export const FloatingButton: React.FC = () => {
 
   return (
     <div
+      onMouseDown={handleDragMouseDown}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={`
