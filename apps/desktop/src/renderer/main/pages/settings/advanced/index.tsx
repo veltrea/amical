@@ -28,7 +28,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { DEFAULT_HISTORY_RETENTION_PERIOD } from "@/constants/history-retention";
+import {
+  DEFAULT_HISTORY_RETENTION_PERIOD,
+  DEFAULT_DELETE_AUDIO_AFTER_TRANSCRIPTION,
+  type DeleteAudioAfterTranscriptionMode,
+} from "@/constants/history-retention";
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -291,6 +295,9 @@ export default function AdvancedSettingsPage() {
                     | "14d"
                     | "28d"
                     | "never",
+                  deleteAudioAfterTranscription:
+                    historySettingsQuery.data?.deleteAudioAfterTranscription ??
+                    DEFAULT_DELETE_AUDIO_AFTER_TRANSCRIPTION,
                 })
               }
             >
@@ -312,6 +319,58 @@ export default function AdvancedSettingsPage() {
                 </SelectItem>
                 <SelectItem value="never">
                   {t("settings.advanced.historyRetention.options.never")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="delete-audio-after-transcription">
+                {t("settings.advanced.deleteAudioAfterTranscription.label")}
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {t(
+                  "settings.advanced.deleteAudioAfterTranscription.description",
+                )}
+              </p>
+            </div>
+            <Select
+              value={
+                historySettingsQuery.data?.deleteAudioAfterTranscription ??
+                DEFAULT_DELETE_AUDIO_AFTER_TRANSCRIPTION
+              }
+              onValueChange={(value) =>
+                updateHistorySettingsMutation.mutate({
+                  retentionPeriod:
+                    historySettingsQuery.data?.retentionPeriod ??
+                    DEFAULT_HISTORY_RETENTION_PERIOD,
+                  deleteAudioAfterTranscription:
+                    value as DeleteAudioAfterTranscriptionMode,
+                })
+              }
+            >
+              <SelectTrigger
+                className="w-[160px]"
+                id="delete-audio-after-transcription"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="off">
+                  {t(
+                    "settings.advanced.deleteAudioAfterTranscription.options.off",
+                  )}
+                </SelectItem>
+                <SelectItem value="success-only">
+                  {t(
+                    "settings.advanced.deleteAudioAfterTranscription.options.successOnly",
+                  )}
+                </SelectItem>
+                <SelectItem value="always">
+                  {t(
+                    "settings.advanced.deleteAudioAfterTranscription.options.always",
+                  )}
                 </SelectItem>
               </SelectContent>
             </Select>

@@ -20,6 +20,7 @@ import {
   getTranscriptionById,
   updateTranscription,
 } from "../db/transcriptions";
+import { deleteAudioFile } from "../utils/audio-file-cleanup";
 import { incrementDailyStats } from "../db/daily-stats";
 import { getAllVocabulary } from "../db/vocabulary";
 import { getAllSnippets } from "../db/snippets";
@@ -549,7 +550,7 @@ export class TranscriptionService {
         ? "amical-cloud"
         : selectedModelId || "whisper-local";
 
-      await createTranscription({
+      const savedTranscription = await createTranscription({
         text: completeTranscription,
         language: requestedLanguage,
         detectedLanguage,
@@ -565,6 +566,12 @@ export class TranscriptionService {
             session.context.sharedData.userPreferences?.formattingStyle,
         },
       });
+
+      await this.maybeDeleteAudioAfterTranscription(
+        savedTranscription?.id,
+        audioFilePath,
+        true,
+      );
 
       try {
         await incrementDailyStats(transcriptionWordCount);
@@ -641,7 +648,7 @@ export class TranscriptionService {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
 
-      await createTranscription({
+      const failedTranscription = await createTranscription({
         text: "",
         audioFile: audioFilePath || undefined,
         language: this.singleRequestedLanguage(
@@ -662,6 +669,12 @@ export class TranscriptionService {
         errorCode,
         audioFilePath,
       });
+
+      await this.maybeDeleteAudioAfterTranscription(
+        failedTranscription?.id,
+        audioFilePath,
+        false,
+      );
 
       try {
         // Failed rows still appear in History, so they intentionally contribute
@@ -1213,6 +1226,51 @@ export class TranscriptionService {
       this.sanitizeDetectedLanguage(nextLanguage) ??
       this.sanitizeDetectedLanguage(currentLanguage)
     );
+  }
+
+  /**
+   * Delete the audio file for a saved transcription based on the user's
+   * "delete audio after transcription" setting.
+   *
+   * - mode "off": always keep the audio
+   * - mode "success-only": delete only when the transcription succeeded
+   * - mode "always": delete regardless of success
+   *
+   * Updates the DB row's audioFile to null when the file is removed so the
+   * history UI hides Play/Download/Retry buttons.
+   */
+  private async maybeDeleteAudioAfterTranscription(
+    transcriptionId: number | undefined,
+    audioFilePath: string | undefined,
+    wasSuccessful: boolean,
+  ): Promise<void> {
+    if (!transcriptionId || !audioFilePath) return;
+
+    const { deleteAudioAfterTranscription: mode } =
+      await this.settingsService.getHistorySettings();
+
+    const shouldDelete =
+      mode === "always" || (mode === "success-only" && wasSuccessful);
+    if (!shouldDelete) return;
+
+    try {
+      await deleteAudioFile(audioFilePath);
+      await updateTranscription(transcriptionId, { audioFile: null });
+      logger.transcription.info("Deleted audio after transcription", {
+        transcriptionId,
+        mode,
+        wasSuccessful,
+      });
+    } catch (error) {
+      logger.transcription.warn(
+        "Failed to delete audio after transcription",
+        {
+          transcriptionId,
+          audioFilePath,
+          error,
+        },
+      );
+    }
   }
 
   /**

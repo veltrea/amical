@@ -10,6 +10,8 @@ import * as fs from "fs/promises";
 import {
   HISTORY_RETENTION_PERIODS,
   DEFAULT_HISTORY_RETENTION_PERIOD,
+  DELETE_AUDIO_AFTER_TRANSCRIPTION_MODES,
+  DEFAULT_DELETE_AUDIO_AFTER_TRANSCRIPTION,
 } from "../../constants/history-retention";
 
 // FormatterConfig schema
@@ -75,6 +77,9 @@ const AppPreferencesSchema = z.object({
 
 const HistorySettingsSchema = z.object({
   retentionPeriod: z.enum(HISTORY_RETENTION_PERIODS),
+  deleteAudioAfterTranscription: z
+    .enum(DELETE_AUDIO_AFTER_TRANSCRIPTION_MODES)
+    .optional(),
 });
 
 const UIThemeSchema = z.object({
@@ -677,6 +682,9 @@ export const settingsRouter = createRouter({
       await settingsService.setHistorySettings({
         retentionPeriod:
           input.retentionPeriod ?? DEFAULT_HISTORY_RETENTION_PERIOD,
+        deleteAudioAfterTranscription:
+          input.deleteAudioAfterTranscription ??
+          DEFAULT_DELETE_AUDIO_AFTER_TRANSCRIPTION,
       });
 
       const logger = ctx.serviceManager.getLogger();

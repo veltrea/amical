@@ -12,7 +12,10 @@ import {
   normalizeOllamaUrl,
   normalizeOpenAICompatibleBaseURL,
 } from "../utils/provider-utils";
-import { DEFAULT_HISTORY_RETENTION_PERIOD } from "../constants/history-retention";
+import {
+  DEFAULT_HISTORY_RETENTION_PERIOD,
+  DEFAULT_DELETE_AUDIO_AFTER_TRANSCRIPTION,
+} from "../constants/history-retention";
 
 /**
  * Database-backed settings service with typed configuration
@@ -37,6 +40,9 @@ export interface AppPreferences {
 
 export interface HistorySettings {
   retentionPeriod: NonNullable<AppSettingsData["history"]>["retentionPeriod"];
+  deleteAudioAfterTranscription: NonNullable<
+    NonNullable<AppSettingsData["history"]>["deleteAudioAfterTranscription"]
+  >;
 }
 
 export class SettingsService extends EventEmitter {
@@ -388,6 +394,9 @@ export class SettingsService extends EventEmitter {
     return {
       retentionPeriod:
         history?.retentionPeriod ?? DEFAULT_HISTORY_RETENTION_PERIOD,
+      deleteAudioAfterTranscription:
+        history?.deleteAudioAfterTranscription ??
+        DEFAULT_DELETE_AUDIO_AFTER_TRANSCRIPTION,
     };
   }
 

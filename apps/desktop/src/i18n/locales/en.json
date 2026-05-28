@@ -495,6 +495,15 @@
           "never": "Never"
         }
       },
+      "deleteAudioAfterTranscription": {
+        "label": "Delete audio after transcription",
+        "description": "Discard the recorded audio file once transcription finishes to save disk space (history text is kept; Play/Retry will be unavailable)",
+        "options": {
+          "off": "Off",
+          "successOnly": "When successful",
+          "always": "Always"
+        }
+      },
       "telemetry": {
         "label": "Anonymous Telemetry",
         "description": "Help improve Amical by sharing anonymous usage data.",

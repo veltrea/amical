@@ -484,6 +484,15 @@
           "updateFailed": "アップデートチャンネルの変更に失敗しました。もう一度お試しください。"
         }
       },
+      "deleteAudioAfterTranscription": {
+        "label": "文字起こし後にオーディオを削除",
+        "description": "文字起こしが完了したら録音ファイルを破棄してディスク容量を節約します（履歴のテキストは保持されますが、再生・再試行はできなくなります）",
+        "options": {
+          "off": "オフ",
+          "successOnly": "成功時のみ",
+          "always": "常に削除"
+        }
+      },
       "telemetry": {
         "label": "匿名テレメトリー",
         "description": "匿名の使用データを共有してAmicalの改善にご協力ください。",

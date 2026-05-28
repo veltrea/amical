@@ -9,7 +9,10 @@ import {
   primaryKey,
   blob,
 } from "drizzle-orm/sqlite-core";
-import type { HistoryRetentionPeriod } from "../constants/history-retention";
+import type {
+  HistoryRetentionPeriod,
+  DeleteAudioAfterTranscriptionMode,
+} from "../constants/history-retention";
 
 // Transcriptions table
 export const transcriptions = sqliteTable("transcriptions", {
@@ -198,6 +201,7 @@ export interface AppSettingsData {
   };
   history?: {
     retentionPeriod: HistoryRetentionPeriod;
+    deleteAudioAfterTranscription?: DeleteAudioAfterTranscriptionMode;
   };
   telemetry?: {
     enabled?: boolean;

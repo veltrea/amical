@@ -10,6 +10,18 @@ export type HistoryRetentionPeriod = (typeof HISTORY_RETENTION_PERIODS)[number];
 
 export const DEFAULT_HISTORY_RETENTION_PERIOD: HistoryRetentionPeriod = "never";
 
+export const DELETE_AUDIO_AFTER_TRANSCRIPTION_MODES = [
+  "off",
+  "success-only",
+  "always",
+] as const;
+
+export type DeleteAudioAfterTranscriptionMode =
+  (typeof DELETE_AUDIO_AFTER_TRANSCRIPTION_MODES)[number];
+
+export const DEFAULT_DELETE_AUDIO_AFTER_TRANSCRIPTION: DeleteAudioAfterTranscriptionMode =
+  "off";
+
 const HISTORY_RETENTION_DAYS: Record<
   Exclude<HistoryRetentionPeriod, "never">,
   number
