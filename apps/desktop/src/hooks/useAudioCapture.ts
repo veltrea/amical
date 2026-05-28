@@ -94,19 +94,21 @@ export const useAudioCapture = ({
           `AudioCapture: getUserMedia took ${getUserMediaDuration.toFixed(2)}ms`,
         );
 
-        // Create or resume audio context
+        // Reuse the context across recordings; recreating it each time leaks
+        // native audio resources and eventually hits the browser's
+        // concurrent-AudioContext limit, which breaks recording (and thus
+        // transcription) in long sessions.
         const audioContextStartTime = performance.now();
+
+        // A closed context cannot be reused; drop it so we recreate below.
         if (
           audioContextRef.current &&
-          audioContextRef.current.state === "suspended"
+          audioContextRef.current.state === "closed"
         ) {
-          // Resume existing context (faster)
-          await audioContextRef.current.resume();
-          const resumeDuration = performance.now() - audioContextStartTime;
-          console.log(
-            `AudioCapture: AudioContext resumed took ${resumeDuration.toFixed(2)}ms`,
-          );
-        } else if (!audioContextRef.current) {
+          audioContextRef.current = null;
+        }
+
+        if (!audioContextRef.current) {
           // Create new context (first time only)
           audioContextRef.current = new AudioContext({
             sampleRate: SAMPLE_RATE,
@@ -124,8 +126,15 @@ export const useAudioCapture = ({
           console.log(
             `AudioCapture: audioWorklet.addModule took ${workletDuration.toFixed(2)}ms`,
           );
+        } else if (audioContextRef.current.state === "suspended") {
+          // Resume the existing context (faster, no worklet reload)
+          await audioContextRef.current.resume();
+          const resumeDuration = performance.now() - audioContextStartTime;
+          console.log(
+            `AudioCapture: AudioContext resumed took ${resumeDuration.toFixed(2)}ms`,
+          );
         } else {
-          // Context exists but not suspended (already running)
+          // Context exists and is already running
           console.log("AudioCapture: AudioContext already running");
         }
 
@@ -209,7 +218,9 @@ export const useAudioCapture = ({
           sourceRef.current.disconnect(workletNodeRef.current);
         }
 
-        // Suspend audio context (keep it alive for next recording)
+        // Keep the context alive for reuse (it is closed for real on unmount).
+        // Nulling it here would force a new AudioContext per recording and leak
+        // the old one.
         if (
           audioContextRef.current &&
           audioContextRef.current.state === "running"
@@ -223,8 +234,8 @@ export const useAudioCapture = ({
           streamRef.current.getTracks().forEach((track) => track.stop());
         }
 
-        // Clear refs
-        audioContextRef.current = null;
+        // Clear per-recording refs. The AudioContext is intentionally retained
+        // for reuse and is only closed on unmount.
         sourceRef.current = null;
         workletNodeRef.current = null;
         streamRef.current = null;
@@ -253,6 +264,19 @@ export const useAudioCapture = ({
       });
     };
   }, [enabled, startCapture, stopCapture]);
+
+  // Close the reused AudioContext on unmount to release native audio resources.
+  useEffect(() => {
+    return () => {
+      const ctx = audioContextRef.current;
+      audioContextRef.current = null;
+      if (ctx && ctx.state !== "closed") {
+        ctx.close().catch((error) => {
+          console.error("AudioCapture: Failed to close AudioContext:", error);
+        });
+      }
+    };
+  }, []);
 
   return {
     voiceDetected,

@@ -201,6 +201,20 @@ export class ShortcutManager extends EventEmitter {
           break;
       }
     });
+
+    // The helper re-emits "ready" whenever its process (re)starts, including
+    // after a crash auto-restart. A fresh helper has no shortcut config, so we
+    // must re-push it — otherwise key consumption silently stops working and
+    // recording becomes unresponsive in a long session. We also drop locally
+    // tracked pressed keys since the new process starts clean (avoids stuck keys).
+    this.nativeBridge.on("ready", () => {
+      log.info("Native helper ready, re-syncing shortcuts to native");
+      if (this.activeKeys.size > 0) {
+        this.activeKeys.clear();
+        this.emitActiveKeysChanged();
+      }
+      void this.syncShortcutsToNative();
+    });
   }
 
   private startPeriodicRecheck() {

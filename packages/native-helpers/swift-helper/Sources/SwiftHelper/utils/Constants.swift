@@ -67,8 +67,12 @@ let WEB_AREA_ANCESTOR_SEARCH_DEPTH = 15
 /// Best-effort timeout for extraction (milliseconds)
 let EXTRACTION_TIMEOUT_MS: Double = 600.0
 
-/// Delay before restoring pasteboard after paste (seconds)
-let PASTE_RESTORE_DELAY_SECONDS: Double = 0.7
+/// Delay before restoring the user's original pasteboard after a paste (seconds).
+/// Must comfortably exceed how long the target app takes to consume the
+/// synthesized Cmd+V. Restoring too early makes the paste land *after* the
+/// original clipboard is back, so the user gets stale clipboard content instead
+/// of the transcript. Kept as a safety margin for momentarily busy target apps.
+let PASTE_RESTORE_DELAY_SECONDS: Double = 1.5
 
 // MARK: - Self-Generated Event Tag
 

@@ -28,6 +28,7 @@ export class WindowManager {
   private widgetDisplayId: number | null = null;
   private cursorPollingInterval: NodeJS.Timeout | null = null;
   private themeListenerSetup: boolean = false;
+  private displayListenersSetup: boolean = false;
 
   // On Windows, inset from all edges to allow taskbar auto-hide detection
   private readonly widgetEdgeInset = process.platform === "win32" ? 4 : 0;
@@ -495,6 +496,12 @@ export class WindowManager {
   }
 
   private setupDisplayChangeNotifications(): void {
+    // These are process-global listeners (screen/app/workspace), independent of
+    // the widget window's lifecycle. createWidgetWindow() can run repeatedly
+    // (e.g. macOS re-activate after all windows close), so guard against stacking
+    // duplicate listeners that accumulate and slow the app over a long session.
+    if (this.displayListenersSetup) return;
+
     // Set up comprehensive display event listeners
     screen.on("display-added", () => this.handleDisplayChange("display-added"));
     screen.on("display-removed", () =>
@@ -528,6 +535,7 @@ export class WindowManager {
       }
     }
 
+    this.displayListenersSetup = true;
     logger.main.info("Set up display change event listeners");
   }
 
