@@ -91,6 +91,9 @@ typings/
 # Electron-Forge
 out/
 
+# Combined native-helper bin assembled by build:mac-helpers for packaging
+dist-helpers/
+
 # Swift Build
 .build/
 bin/

@@ -45,8 +45,9 @@
     "build:types": "pnpm --filter @amical/types build",
     "build:swift-helper": "pnpm --filter @amical/swift-helper build",
     "build:stt-helper": "pnpm --filter @amical/stt-helper build",
+    "build:mac-helpers": "pnpm build:swift-helper && pnpm build:stt-helper && rm -rf dist-helpers/bin && mkdir -p dist-helpers/bin && cp -R ../../packages/native-helpers/swift-helper/bin/. dist-helpers/bin/ && cp -R ../../packages/native-helpers/stt-helper/bin/. dist-helpers/bin/",
     "build:windows-helper": "pnpm --filter @amical/windows-helper build",
-    "build:native-helper": "node -p \"process.platform === 'darwin' ? 'build:swift-helper' : process.platform === 'win32' ? 'build:windows-helper' : 'echo No native helpers'\" | xargs pnpm run",
+    "build:native-helper": "node -p \"process.platform === 'darwin' ? 'build:mac-helpers' : process.platform === 'win32' ? 'build:windows-helper' : 'echo No native helpers'\" | xargs pnpm run",
     "dev": "pnpm start",
     "download-node": "tsx scripts/download-node-binaries.ts",
     "download-node:all": "tsx scripts/download-node-binaries.ts --all"

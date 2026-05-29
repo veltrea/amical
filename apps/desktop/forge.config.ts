@@ -409,7 +409,12 @@ const config: ForgeConfig = {
     icon: "./assets/logo", // Path to your icon file
     appBundleId: "ai.amical.desktop", // Proper bundle ID
     extraResource: [
-      `${process.platform === "win32" ? "../../packages/native-helpers/windows-helper/bin" : "../../packages/native-helpers/swift-helper/bin"}`,
+      // -> Resources/bin. On macOS this is the combined dir assembled by
+      // `build:mac-helpers` (SwiftHelper + the Qwen3-ASR stt-helper + its
+      // mlx-swift_Cmlx.bundle); two separate "bin" extraResource entries would
+      // collide (EEXIST). Combining keeps everything in one dir so it is all
+      // signed together before notarization. Windows ships only windows-helper.
+      `${process.platform === "win32" ? "../../packages/native-helpers/windows-helper/bin" : "./dist-helpers/bin"}`,
       "./src/db/migrations",
       // Only include the platform-specific node binary
       `./node-binaries/${process.platform}-${process.arch}/node${
