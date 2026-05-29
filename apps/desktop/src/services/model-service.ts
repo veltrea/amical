@@ -1,8 +1,10 @@
 import { EventEmitter } from "events";
 import * as fs from "fs";
 import * as path from "path";
+import * as os from "os";
 import * as crypto from "crypto";
 import { app } from "electron";
+import { Qwen3HelperClient } from "../pipeline/providers/transcription/qwen3-helper-client";
 import {
   AvailableWhisperModel,
   DownloadProgress,
@@ -159,6 +161,8 @@ class ModelService extends EventEmitter {
   private state: ModelManagerState;
   private modelsDirectory: string;
   private settingsService: SettingsService;
+  // Lazily created helper client used only for explicit Qwen3-ASR downloads.
+  private qwen3DownloadClient: Qwen3HelperClient | null = null;
 
   constructor(settingsService: SettingsService) {
     super();
@@ -449,6 +453,10 @@ class ModelService extends EventEmitter {
   // Check if a model is downloaded
   // Since we only store downloaded models, just check if it exists in DB
   async isModelDownloaded(modelId: string): Promise<boolean> {
+    const available = AVAILABLE_MODELS.find((m) => m.id === modelId);
+    if (available?.engine === "qwen3") {
+      return this.isQwen3ModelDownloaded(available.helperModelId);
+    }
     const models = await getModelsByProvider("local-whisper");
     return models.some((m) => m.id === modelId);
   }
@@ -468,6 +476,11 @@ class ModelService extends EventEmitter {
     const model = AVAILABLE_MODELS.find((m) => m.id === modelId);
     if (!model) {
       throw new Error(`Model not found: ${modelId}`);
+    }
+
+    // Qwen3-ASR self-manages its weights via the stt-helper (separate cache).
+    if (model.engine === "qwen3") {
+      return this.downloadQwen3Model(model);
     }
 
     if (await this.isModelDownloaded(modelId)) {
@@ -676,6 +689,11 @@ class ModelService extends EventEmitter {
 
   // Delete a downloaded model
   async deleteModel(modelId: string): Promise<void> {
+    const available = AVAILABLE_MODELS.find((m) => m.id === modelId);
+    if (available?.engine === "qwen3") {
+      return this.deleteQwen3Model(available);
+    }
+
     const models = await getModelsByProvider("local-whisper");
     const downloadedModel = models.find((m) => m.id === modelId);
 
@@ -763,6 +781,128 @@ class ModelService extends EventEmitter {
   // Get models directory path
   getModelsDirectory(): string {
     return this.modelsDirectory;
+  }
+
+  // ----- Qwen3-ASR (MLX) self-managed model cache -----
+  // The stt-helper downloads weights to ~/Library/Caches/qwen3-speech/models/<repoId>
+  // on first prepare(). These helpers let the UI download/delete them like whisper.
+
+  private qwen3CacheDir(helperModelId: string): string {
+    return path.join(
+      os.homedir(),
+      "Library",
+      "Caches",
+      "qwen3-speech",
+      "models",
+      helperModelId,
+    );
+  }
+
+  private isQwen3ModelDownloaded(helperModelId: string | undefined): boolean {
+    if (!helperModelId) return false;
+    try {
+      return fs
+        .readdirSync(this.qwen3CacheDir(helperModelId))
+        .some((f) => f.endsWith(".safetensors"));
+    } catch {
+      return false;
+    }
+  }
+
+  /** Ids of Qwen3-ASR models whose weights are present in the cache. */
+  getDownloadedQwen3ModelIds(): string[] {
+    return AVAILABLE_MODELS.filter(
+      (m) =>
+        m.engine === "qwen3" && this.isQwen3ModelDownloaded(m.helperModelId),
+    ).map((m) => m.id);
+  }
+
+  private async downloadQwen3Model(
+    model: AvailableWhisperModel,
+  ): Promise<void> {
+    const modelId = model.id;
+    if (!model.helperModelId) {
+      throw new Error(`Qwen3 model has no helperModelId: ${modelId}`);
+    }
+    if (this.isQwen3ModelDownloaded(model.helperModelId)) {
+      throw new Error(`Model already downloaded: ${modelId}`);
+    }
+    if (this.state.activeDownloads.has(modelId)) {
+      throw new Error(`Download already in progress: ${modelId}`);
+    }
+
+    const abortController = new AbortController();
+    const progress: DownloadProgress = {
+      modelId,
+      progress: 0,
+      status: "downloading",
+      bytesDownloaded: 0,
+      totalBytes: 0,
+      abortController,
+    };
+    this.state.activeDownloads.set(modelId, progress);
+    this.emit("download-progress", modelId, progress);
+
+    // Cancelling disposes the helper process, which makes prepare() reject.
+    abortController.signal.addEventListener("abort", () => {
+      this.qwen3DownloadClient?.dispose();
+    });
+
+    this.qwen3DownloadClient = new Qwen3HelperClient();
+    try {
+      logger.main.info("Starting Qwen3-ASR download", {
+        modelId,
+        helperModelId: model.helperModelId,
+      });
+      await this.qwen3DownloadClient.prepare(model.helperModelId, (fraction) => {
+        progress.progress = Math.max(
+          0,
+          Math.min(100, Math.round(fraction * 100)),
+        );
+        this.emit("download-progress", modelId, { ...progress });
+      });
+
+      this.state.activeDownloads.delete(modelId);
+      logger.main.info("Qwen3-ASR download completed", { modelId });
+      // The renderer only reads modelId from this event; Qwen3-ASR has no DB row.
+      this.emit("download-complete", modelId, { id: modelId } as unknown as DBModel);
+    } catch (error) {
+      this.state.activeDownloads.delete(modelId);
+      const err = error instanceof Error ? error : new Error(String(error));
+      if (abortController.signal.aborted) {
+        logger.main.info("Qwen3-ASR download cancelled", { modelId });
+        this.emit("download-cancelled", modelId);
+        return;
+      }
+      logger.main.error("Qwen3-ASR download failed", {
+        modelId,
+        error: err.message,
+      });
+      this.emit("download-error", modelId, err);
+      throw err;
+    } finally {
+      // Free the transient download process; the cache stays on disk and the
+      // transcription provider reloads from it when needed.
+      this.qwen3DownloadClient?.dispose();
+      this.qwen3DownloadClient = null;
+    }
+  }
+
+  private async deleteQwen3Model(
+    model: AvailableWhisperModel,
+  ): Promise<void> {
+    if (!model.helperModelId) {
+      throw new Error(`Qwen3 model has no helperModelId: ${model.id}`);
+    }
+    const dir = this.qwen3CacheDir(model.helperModelId);
+    if (fs.existsSync(dir)) {
+      fs.rmSync(dir, { recursive: true, force: true });
+      logger.main.info("Deleted Qwen3-ASR model cache", {
+        modelId: model.id,
+        dir,
+      });
+    }
+    this.emit("model-deleted", model.id);
   }
 
   // Check if any models are available for transcription

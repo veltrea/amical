@@ -198,6 +198,12 @@ export const modelsRouter = createRouter({
     },
   ),
 
+  // Ids of Qwen3-ASR models whose weights are present in the local cache.
+  getQwen3DownloadedIds: procedure.query(async ({ ctx }): Promise<string[]> => {
+    const modelService = ctx.serviceManager.getService("modelService");
+    return modelService?.getDownloadedQwen3ModelIds() || [];
+  }),
+
   // Check if model is downloaded
   isModelDownloaded: procedure
     .input(z.object({ modelId: z.string() }))

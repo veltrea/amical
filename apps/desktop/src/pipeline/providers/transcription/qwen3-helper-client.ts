@@ -50,6 +50,8 @@ export class Qwen3HelperClient {
   private pending = new Map<string, PendingRpc>();
   private logger = createScopedLogger("qwen3-helper");
   private helperPath: string;
+  // Set during a prepare() call to surface the helper's "[DL] NN% status" lines.
+  private onDownloadProgress?: (fraction: number, status: string) => void;
 
   constructor() {
     this.helperPath = this.determineHelperPath();
@@ -167,7 +169,16 @@ export class Qwen3HelperClient {
     });
 
     this.proc.stderr.on("data", (data: Buffer) => {
-      this.logger.debug("stt-helper stderr", { message: data.toString().trim() });
+      const text = data.toString();
+      this.logger.debug("stt-helper stderr", { message: text.trim() });
+      const handler = this.onDownloadProgress;
+      if (handler) {
+        // Lines look like: "stt-helper: [DL]  80% Loading weights..."
+        for (const line of text.split("\n")) {
+          const m = line.match(/\[DL\]\s*(\d+)%\s*(.*)/);
+          if (m) handler(parseInt(m[1], 10) / 100, m[2].trim());
+        }
+      }
     });
 
     this.proc.on("error", (err) => {
@@ -223,9 +234,21 @@ export class Qwen3HelperClient {
     });
   }
 
-  /** Load (and on first run download) the model. Idempotent in the helper. */
-  async prepare(modelId?: string): Promise<void> {
-    await this.call("prepare", { modelId }, PREPARE_TIMEOUT_MS);
+  /**
+   * Load (and on first run download) the model. Idempotent in the helper.
+   * onProgress, if given, receives the helper's download/load progress
+   * (fraction 0..1 + a human-readable status) parsed from its stderr.
+   */
+  async prepare(
+    modelId?: string,
+    onProgress?: (fraction: number, status: string) => void,
+  ): Promise<void> {
+    this.onDownloadProgress = onProgress;
+    try {
+      await this.call("prepare", { modelId }, PREPARE_TIMEOUT_MS);
+    } finally {
+      this.onDownloadProgress = undefined;
+    }
   }
 
   /** Transcribe 16kHz mono Float32 PCM. language: undefined/"auto" => auto-detect. */

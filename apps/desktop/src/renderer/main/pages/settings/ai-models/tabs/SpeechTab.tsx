@@ -131,6 +131,7 @@ export default function SpeechTab() {
   // tRPC queries
   const availableModelsQuery = api.models.getAvailableModels.useQuery();
   const downloadedModelsQuery = api.models.getDownloadedModels.useQuery();
+  const qwen3DownloadedQuery = api.models.getQwen3DownloadedIds.useQuery();
   const activeDownloadsQuery = api.models.getActiveDownloads.useQuery();
   const isTranscriptionAvailableQuery =
     api.models.isTranscriptionAvailable.useQuery();
@@ -227,6 +228,7 @@ export default function SpeechTab() {
         return newProgress;
       });
       utils.models.getDownloadedModels.invalidate();
+      utils.models.getQwen3DownloadedIds.invalidate();
       utils.models.getActiveDownloads.invalidate();
       // Also invalidate selected model in case of auto-selection
       utils.models.getSelectedModel.invalidate();
@@ -270,6 +272,7 @@ export default function SpeechTab() {
   api.models.onModelDeleted.useSubscription(undefined, {
     onData: () => {
       utils.models.getDownloadedModels.invalidate();
+      utils.models.getQwen3DownloadedIds.invalidate();
     },
     onError: (error) => {
       console.error("Model deleted subscription error:", error);
@@ -392,6 +395,7 @@ export default function SpeechTab() {
   // Data from queries
   const availableModels = availableModelsQuery.data || [];
   const downloadedModels = downloadedModelsQuery.data || {};
+  const qwen3DownloadedIds = new Set(qwen3DownloadedQuery.data ?? []);
   const isTranscriptionAvailable = isTranscriptionAvailableQuery.data || false;
   const selectedModel = selectedModelQuery.data;
 
@@ -442,12 +446,14 @@ export default function SpeechTab() {
                     </TableHeader>
                     <TableBody>
                       {availableModels.map((model) => {
-                        const isDownloaded = !!downloadedModels[model.id];
+                        const isQwen3 = model.engine === "qwen3";
+                        const isDownloaded = isQwen3
+                          ? qwen3DownloadedIds.has(model.id)
+                          : !!downloadedModels[model.id];
                         const progress = downloadProgress[model.id];
                         const isDownloading =
                           progress?.status === "downloading";
                         const isCloudModel = model.provider === "Amical Cloud";
-                        const isQwen3 = model.engine === "qwen3";
 
                         // Cloud: needs auth. Qwen3-ASR: self-managed, always
                         // selectable. Other local (whisper): must be downloaded.
@@ -572,10 +578,8 @@ export default function SpeechTab() {
                                   </>
                                 )}
 
-                                {/* Local models show download/delete buttons.
-                                    Qwen3-ASR has no download (self-managed). */}
+                                {/* Local models show download/delete buttons. */}
                                 {!isCloudModel &&
-                                  !isQwen3 &&
                                   !isDownloaded &&
                                   !isDownloading && (
                                     <button
