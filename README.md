@@ -1,123 +1,61 @@
-<!-- Markdown with HTML -->
-<div align="center">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://amical.ai/github-readme-header-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="https://amical.ai/github-readme-header-light.png">
-  <img alt="Amical" src="https://amical.ai/github-readme-header-light.png">
-</picture>
-</div>
+**Read this in other languages:** [日本語](README.ja.md)
 
-<p align="center">
-  <a href='http://makeapullrequest.com'>
-    <img alt='PRs Welcome' src='https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=shields'/>
-  </a>
-  <a href="https://opensource.org/license/MIT/">
-    <img src="https://img.shields.io/github/license/amicalhq/amical?logo=opensourceinitiative&logoColor=white&label=License&color=8A2BE2" alt="license">
-  </a>
-  <br>
-  <a href="https://amical.ai/community">
-    <img src="https://img.shields.io/badge/discord-7289da.svg?style=flat-square&logo=discord" alt="discord" style="height: 20px;">
-  </a>
-</p>
+# Amical — on-device Qwen3-ASR fork
 
-<p align="center">
-  <a href="https://amical.ai">Website</a> - <a href="https://amical.ai/docs">Docs</a> - <a href="https://amical.ai/community">Community</a> - <a href="https://github.com/amicalhq/amical/issues/new?assignees=&labels=bug&template=bug_report.md">Bug reports</a>
-</p>
+**A focused fork of [Amical](https://github.com/amicalhq/amical).** This fork bets on one bleeding-edge goal: fully on-device, cloud-free speech-to-text with **Qwen3-ASR (MLX)** on Apple Silicon — the kind of sharp, experimental direction that's harder to carry in the main project.
 
-## Table of Contents
+If you want broad compatibility (Intel Macs included) and the general-purpose experience, use **upstream [Amical](https://github.com/amicalhq/amical)** — it's excellent and has you covered. This fork is for people who want to run the newest local AI right on their Apple Silicon Mac.
 
-- [⬇️ Download](#️-download)
-- [🔮 Overview](#-overview)
-- [✨ Features](#-features)
-- [🔰 Tech Stack](#-tech-stack)
-- [🤗 Contributing](#-contributing)
-- [🎗 License](#-license)
+## What this fork adds
 
-## ⬇️ Download
+- **On-device Qwen3-ASR (MLX)** — multilingual speech-to-text (52 languages incl. Japanese) running entirely on your Mac. No cloud, no API keys.
+- **Two model sizes, switchable** — `Qwen3-ASR 0.6B` (~680 MB) and `Qwen3-ASR 1.7B` (~2.1 GB). Trade speed for accuracy.
+- **Download / progress / delete UI** — manage the on-device models like the bundled Whisper models, with live download progress.
+- **Warm by launch** — the model loads and pre-compiles its Metal kernels at startup, so the first transcription is as fast as the rest.
+- **Isolated inference process** — MLX runs in a dedicated Swift helper (`stt-helper`), separate from the real-time keyboard/accessibility helper, so heavy inference never blocks input handling.
 
-<p>
-  <a href="https://github.com/amicalhq/amical/releases/latest">
-    <img src="https://amical.ai/download_button_macos.png" alt="Download for macOS" height="60">
-  </a>
-  <a href="https://github.com/amicalhq/amical/releases/latest">
-    <img src="https://amical.ai/download_button_windows.png" alt="Download for Windows" height="60">
-  </a>
-  <a href="https://amical.ai/android">
-    <img src="https://amical.ai/Store=Google%20Play,%20Type=Dark,%20Language=English.svg" alt="Get it on Google Play" height="60">
-  </a>
-  <a href="https://amical.ai/beta">
-    <img src="https://amical.ai/ios_beta_button.svg" alt="Apply for iOS Beta" height="60">
-  </a>
-</p>
+Whisper (local) and Amical Cloud remain available, exactly as upstream.
 
-### Homebrew (macOS)
+## Requirements
+
+- **Apple Silicon Mac (M-series).** Qwen3-ASR runs on **MLX**, which is Apple-Silicon-only — it does not run on Intel Macs. On Intel, use upstream Amical.
+- macOS 15 or later.
+
+## Install
+
+1. Download the latest `.dmg` from [Releases](https://github.com/veltrea/amical/releases).
+2. Open the DMG and drag **Amical** to **Applications**.
+3. This build is **ad-hoc signed** (not notarized with an Apple Developer ID), so on first launch macOS Gatekeeper will warn. Allow it one of these ways:
+   - Right-click the app → **Open**, or
+   - **System Settings → Privacy & Security → Open Anyway**, or
+   - Terminal: `xattr -dr com.apple.quarantine /Applications/Amical.app`
+4. Grant **Microphone** and **Accessibility** when prompted (System Settings → Privacy & Security).
+
+> Want a notarized build? Fork it and build with your own Developer ID — see "Build from source".
+
+## Build from source
 
 ```bash
-brew install --cask amical
+pnpm install
+pnpm --filter @amical/desktop make:dmg:arm64
 ```
 
-## 🔮 Overview
+The build **ad-hoc signs** the app automatically when no Developer ID is set. For a signed + notarized release, set `CODESIGNING_IDENTITY`, `APPLE_ID`, `APPLE_APP_PASSWORD`, and `APPLE_TEAM_ID`, then run the same command.
 
-Local-first AI Dictation app.
+Qwen3-ASR uses [soniqo/speech-swift](https://github.com/soniqo/speech-swift) (MLX). Models download from Hugging Face on first use and cache to `~/Library/Caches/qwen3-speech/`.
 
-Amical is an open source AI-powered dictation and note-taking app that runs entirely on your machine.
-Powered by [Whisper](https://github.com/openai/whisper) for speech-to-text and open source LLMs for intelligent processing, Amical gives you the power of AI dictation with complete privacy.
+## Roadmap (planned, not yet implemented)
 
-Context-aware dictation that adapts to what you're doing: drafting an email, chatting on Discord, writing prompts in your IDE, or messaging friends. Amical detects the active app and formats your speech accordingly.
+The directions this fork is exploring — all on-device / agent-integrated AI:
 
-<p align="center">
-  <img src="https://amical.ai/demo/dictation-demo-component.gif" alt="Amical dictation demo" width="600">
-</p>
+- **Embedded AI formatting (MLX)** — run the AI formatting/cleanup LLM through MLX built into the app, so it works with no separate runtime (e.g. Ollama) to install.
+- **AI-driven dictionary editing (MCP/ACP)** — expose the custom dictionary over MCP/ACP so an AI agent can add domain-specific terminology automatically, instead of manual entry.
+- **Auto-learn from history** — have the AI analyze transcription history, detect mis-transcribed words, and register them to the dictionary automatically.
 
-## ✨ Features
+## Credit
 
-> ✔︎ - Done, ◑ - In Progress, ◯ - Planned
+Built on **[Amical](https://github.com/amicalhq/amical)** by the Amical team ([amical.ai](https://amical.ai)). All credit for the base application goes to them. For the general-purpose, broadly-compatible app, use upstream.
 
-🚀 Super-fast dictation with AI-enhanced accuracy ✔︎
+## License
 
-🧠 Context-aware speech-to-text based on the active app ✔︎
-
-📒 Smart voice notes → summaries, tasks, structured notes ◑
-
-🔌 MCP integration → voice commands that control your apps ◯
-
-🎙️ Real-time meeting transcription (mic + system audio) ◯
-
-🔧 Extensible via hotkeys, voice macros, custom workflows ✔︎
-
-🔐 Privacy-first: works offline, one click setup of local models in-app ✔︎
-
-🪟 Floating widget for frictionless start/stop with custom hotkeys ✔︎
-
-## 🔰 Tech Stack
-
-- 🎤 [Whisper](https://github.com/openai/whisper)
-- 🦙 [Ollama](https://ollama.ai)
-- 🧑‍💻 [Typescript](https://www.typescriptlang.org/)
-- 🖥️ [Electron](https://electronjs.org/)
-- ☘️ [Next.js](https://nextjs.org/)
-- 🎨 [TailwindCSS](https://tailwindcss.com/)
-- 🧑🏼‍🎨 [Shadcn](https://ui.shadcn.com/)
-- 🔒 [Better-Auth](https://better-auth.com/)
-- 🧘‍♂️ [Zod](https://zod.dev/)
-- 🐞 [Jest](https://jestjs.io/)
-- 📚 [Fumadocs](https://github.com/fuma-nama/fumadocs)
-- 🌀 [Turborepo](https://turbo.build/)
-
-## 🤗 Contributing
-
-Contributions are welcome! Reach out to the team in our [Discord server](https://amical.ai/community) to learn more.
-
-- **🐛 [Report an Issue][issues]**: Found a bug? Let us know!
-- **💬 [Start a Discussion][discussions]**: Have ideas or suggestions? We'd love to hear from you.
-
-## 🎗 License
-
-Released under [MIT][license].
-
-<!-- REFERENCE LINKS -->
-
-[license]: https://github.com/amicalhq/amical/blob/main/LICENSE
-[discussions]: https://amical.ai/community
-[issues]: https://github.com/amicalhq/amical/issues
-[pulls]: https://github.com/amicalhq/amical/pulls "submit a pull request"
+MIT, same as upstream Amical.
