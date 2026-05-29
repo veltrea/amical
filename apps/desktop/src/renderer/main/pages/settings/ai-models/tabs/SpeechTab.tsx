@@ -447,11 +447,15 @@ export default function SpeechTab() {
                         const isDownloading =
                           progress?.status === "downloading";
                         const isCloudModel = model.provider === "Amical Cloud";
+                        const isQwen3 = model.engine === "qwen3";
 
-                        // Cloud models can be selected if authenticated, local models need to be downloaded
+                        // Cloud: needs auth. Qwen3-ASR: self-managed, always
+                        // selectable. Other local (whisper): must be downloaded.
                         const canSelect = isCloudModel
                           ? (isAuthenticated ?? false)
-                          : isDownloaded && isTranscriptionAvailable;
+                          : isQwen3
+                            ? true
+                            : isDownloaded && isTranscriptionAvailable;
 
                         return (
                           <TableRow
@@ -568,8 +572,10 @@ export default function SpeechTab() {
                                   </>
                                 )}
 
-                                {/* Local models show download/delete buttons */}
+                                {/* Local models show download/delete buttons.
+                                    Qwen3-ASR has no download (self-managed). */}
                                 {!isCloudModel &&
+                                  !isQwen3 &&
                                   !isDownloaded &&
                                   !isDownloading && (
                                     <button

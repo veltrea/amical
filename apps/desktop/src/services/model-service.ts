@@ -420,7 +420,12 @@ class ModelService extends EventEmitter {
 
   // Get all available models from manifest
   getAvailableModels(): AvailableWhisperModel[] {
-    return AVAILABLE_MODELS;
+    // Qwen3-ASR (MLX) is macOS-only. The helper is a separate arm64 process, so
+    // don't gate on Electron's own arch (it may run x64 under Rosetta).
+    const supportsQwen3 = process.platform === "darwin";
+    return supportsQwen3
+      ? AVAILABLE_MODELS
+      : AVAILABLE_MODELS.filter((m) => m.engine !== "qwen3");
   }
 
   // Get downloaded models from database
@@ -889,6 +894,9 @@ class ModelService extends EventEmitter {
         }
 
         logger.main.info("Selecting cloud model", { modelId });
+      } else if (availableModel?.engine === "qwen3") {
+        // Qwen3-ASR self-manages its model (helper auto-downloads); nothing to check.
+        logger.main.info("Selecting Qwen3-ASR model", { modelId });
       } else {
         // Offline model - must be downloaded
         const downloadedModels = await this.getValidDownloadedModels();
@@ -1544,6 +1552,7 @@ class ModelService extends EventEmitter {
           (m) => m.id === speechModelId,
         );
         const isAmicalModel = availableModel?.provider === "Amical Cloud";
+        const isQwen3Model = availableModel?.engine === "qwen3";
         const existsInDb = await modelExists(
           getSystemProviderInstanceId(PROVIDER_TYPES.localWhisper),
           "speech",
@@ -1554,8 +1563,8 @@ class ModelService extends EventEmitter {
           await this.settingsService.setDefaultSpeechModel(normalizedSelection);
         }
 
-        // Amical cloud models are always valid; local models must exist in DB
-        if (!isAmicalModel && !existsInDb) {
+        // Amical cloud + Qwen3-ASR are always valid; whisper models must exist in DB
+        if (!isAmicalModel && !isQwen3Model && !existsInDb) {
           logger.main.info("Clearing invalid default speech model", {
             modelId: speechModelId,
           });

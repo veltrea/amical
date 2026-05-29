@@ -1,0 +1,27 @@
+{
+  "name": "@amical/stt-helper",
+  "version": "1.0.0",
+  "description": "Qwen3-ASR (MLX) speech-to-text helper for macOS (Apple Silicon)",
+  "private": true,
+  "scripts": {
+    "build": "pnpm run build:native",
+    "build:native": "mkdir -p .build && swift build --configuration release && mkdir -p bin && cp .build/release/stt-helper bin/stt-helper && cp -R vendor/mlx-swift_Cmlx.bundle bin/mlx-swift_Cmlx.bundle",
+    "clean": "rm -rf .build bin .turbo"
+  },
+  "files": [
+    "bin/*"
+  ],
+  "keywords": [
+    "swift",
+    "mlx",
+    "qwen3-asr",
+    "speech-to-text",
+    "macos"
+  ],
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ]
+}

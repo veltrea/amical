@@ -44,6 +44,7 @@
     "build:deps": "pnpm build:types && pnpm build:native-helper",
     "build:types": "pnpm --filter @amical/types build",
     "build:swift-helper": "pnpm --filter @amical/swift-helper build",
+    "build:stt-helper": "pnpm --filter @amical/stt-helper build",
     "build:windows-helper": "pnpm --filter @amical/windows-helper build",
     "build:native-helper": "node -p \"process.platform === 'darwin' ? 'build:swift-helper' : process.platform === 'win32' ? 'build:windows-helper' : 'echo No native helpers'\" | xargs pnpm run",
     "dev": "pnpm start",

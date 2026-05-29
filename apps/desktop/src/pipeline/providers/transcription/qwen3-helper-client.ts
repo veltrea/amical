@@ -1,0 +1,258 @@
+import { spawn, ChildProcessWithoutNullStreams } from "child_process";
+import path from "node:path";
+import fs from "node:fs";
+import { app } from "electron";
+import split2 from "split2";
+import { v4 as uuid } from "uuid";
+import { createScopedLogger } from "../../../main/logger";
+
+/**
+ * Client for the dedicated `stt-helper` process (Qwen3-ASR via MLX, macOS only).
+ *
+ * Kept separate from NativeBridge on purpose: stt-helper is its own binary whose
+ * heavy/experimental inference must never share a process with the real-time
+ * accessibility/keyboard helper. Transport mirrors NativeBridge — line-delimited
+ * JSON-RPC over stdio, correlated by id — but the surface is just prepare/transcribe.
+ *
+ * Spawned lazily on first use so non-Qwen3 sessions never start it.
+ */
+
+interface PrepareResult {
+  ready: boolean;
+  modelId: string;
+}
+
+interface TranscribeResult {
+  text: string;
+}
+
+type RpcResultPayload = Partial<PrepareResult & TranscribeResult>;
+
+interface RpcResponse {
+  id: string;
+  result?: RpcResultPayload;
+  error?: string;
+}
+
+type PendingRpc = {
+  method: string;
+  resolve: (result: RpcResultPayload) => void;
+  reject: (error: Error) => void;
+  timeoutHandle: NodeJS.Timeout;
+};
+
+// Model download on first prepare can pull hundreds of MB.
+const PREPARE_TIMEOUT_MS = 10 * 60 * 1000;
+const TRANSCRIBE_TIMEOUT_MS = 60 * 1000;
+
+export class Qwen3HelperClient {
+  private proc: ChildProcessWithoutNullStreams | null = null;
+  private pending = new Map<string, PendingRpc>();
+  private logger = createScopedLogger("qwen3-helper");
+  private helperPath: string;
+
+  constructor() {
+    this.helperPath = this.determineHelperPath();
+  }
+
+  private determineHelperPath(): string {
+    const binaryName = "stt-helper";
+    return app.isPackaged
+      ? path.join(process.resourcesPath, "bin", binaryName)
+      : path.join(
+          app.getAppPath(),
+          "..",
+          "..",
+          "packages",
+          "native-helpers",
+          "stt-helper",
+          "bin",
+          binaryName,
+        );
+  }
+
+  /** True if the helper binary exists and is executable (built for this platform). */
+  isAvailable(): boolean {
+    try {
+      fs.accessSync(this.helperPath, fs.constants.X_OK);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * MLX/Metal init hangs (uninterruptible) when the binary is launched from an
+   * external/mounted volume — e.g. a repo checked out on a USB drive under
+   * /Volumes. Copy the helper (binary + its mlx-swift_Cmlx.bundle) to an internal
+   * app dir and run from there. No-op when already on the boot volume. Re-copies
+   * when the source binary is newer or a different size.
+   */
+  private stageHelperIfExternal(): void {
+    if (!this.helperPath.startsWith("/Volumes/")) return;
+
+    const srcDir = path.dirname(this.helperPath);
+    const destDir = path.join(app.getPath("userData"), "stt-helper-bin");
+    const destBinary = path.join(destDir, path.basename(this.helperPath));
+
+    try {
+      const srcStat = fs.statSync(this.helperPath);
+      let needCopy = true;
+      try {
+        const destStat = fs.statSync(destBinary);
+        needCopy =
+          destStat.mtimeMs < srcStat.mtimeMs || destStat.size !== srcStat.size;
+      } catch {
+        needCopy = true;
+      }
+      if (needCopy) {
+        this.logger.info(
+          "Staging stt-helper from external volume to internal disk",
+          { srcDir, destDir },
+        );
+        fs.rmSync(destDir, { recursive: true, force: true });
+        fs.cpSync(srcDir, destDir, { recursive: true });
+      }
+      this.helperPath = destBinary;
+    } catch (error) {
+      this.logger.error(
+        "Failed to stage stt-helper to internal disk; using original path",
+        { error },
+      );
+    }
+  }
+
+  private ensureSpawned(): void {
+    if (this.proc) return;
+
+    this.stageHelperIfExternal();
+
+    if (!this.isAvailable()) {
+      throw new Error(
+        `stt-helper not found at ${this.helperPath}. Build it with: pnpm build:stt-helper`,
+      );
+    }
+
+    this.logger.info("Spawning stt-helper", { helperPath: this.helperPath });
+    this.proc = spawn(this.helperPath, [], { stdio: ["pipe", "pipe", "pipe"] });
+
+    this.proc.stdout.pipe(split2()).on("data", (line: string) => {
+      if (!line.trim()) return;
+      let message: RpcResponse;
+      try {
+        message = JSON.parse(line);
+      } catch (e) {
+        this.logger.error("Failed to parse stt-helper stdout line", {
+          line: line.slice(0, 500),
+          error: e,
+        });
+        return;
+      }
+      const pending = message.id ? this.pending.get(message.id) : undefined;
+      if (!pending) {
+        this.logger.warn("stt-helper response with no pending request", {
+          id: message.id,
+        });
+        return;
+      }
+      clearTimeout(pending.timeoutHandle);
+      this.pending.delete(message.id);
+      if (message.error) {
+        pending.reject(
+          new Error(`stt-helper "${pending.method}" failed: ${message.error}`),
+        );
+      } else {
+        pending.resolve(message.result ?? {});
+      }
+    });
+
+    this.proc.stderr.on("data", (data: Buffer) => {
+      this.logger.debug("stt-helper stderr", { message: data.toString().trim() });
+    });
+
+    this.proc.on("error", (err) => {
+      this.logger.error("stt-helper process error", { error: err });
+      this.rejectAll(err);
+      this.proc = null;
+    });
+
+    this.proc.on("close", (code, signal) => {
+      this.logger.info("stt-helper process closed", { code, signal });
+      this.rejectAll(
+        new Error(`stt-helper exited (code: ${code}, signal: ${signal})`),
+      );
+      this.proc = null;
+    });
+  }
+
+  private rejectAll(error: Error): void {
+    for (const [, pending] of this.pending) {
+      clearTimeout(pending.timeoutHandle);
+      pending.reject(error);
+    }
+    this.pending.clear();
+  }
+
+  private call(
+    method: string,
+    params: Record<string, unknown>,
+    timeoutMs: number,
+  ): Promise<RpcResultPayload> {
+    this.ensureSpawned();
+    const proc = this.proc;
+    if (!proc || !proc.stdin.writable) {
+      return Promise.reject(new Error("stt-helper not available"));
+    }
+
+    const id = uuid();
+    return new Promise<RpcResultPayload>((resolve, reject) => {
+      const timeoutHandle = setTimeout(() => {
+        this.pending.delete(id);
+        reject(new Error(`stt-helper "${method}" timed out after ${timeoutMs}ms`));
+      }, timeoutMs);
+
+      this.pending.set(id, { method, resolve, reject, timeoutHandle });
+
+      proc.stdin.write(JSON.stringify({ id, method, params }) + "\n", (err) => {
+        if (err) {
+          clearTimeout(timeoutHandle);
+          this.pending.delete(id);
+          reject(err);
+        }
+      });
+    });
+  }
+
+  /** Load (and on first run download) the model. Idempotent in the helper. */
+  async prepare(modelId?: string): Promise<void> {
+    await this.call("prepare", { modelId }, PREPARE_TIMEOUT_MS);
+  }
+
+  /** Transcribe 16kHz mono Float32 PCM. language: undefined/"auto" => auto-detect. */
+  async transcribe(
+    pcm: Float32Array,
+    sampleRate: number,
+    language?: string,
+    modelId?: string,
+  ): Promise<string> {
+    const pcmBase64 = Buffer.from(
+      pcm.buffer,
+      pcm.byteOffset,
+      pcm.byteLength,
+    ).toString("base64");
+    const result = await this.call(
+      "transcribe",
+      { pcmBase64, sampleRate, language, modelId },
+      TRANSCRIBE_TIMEOUT_MS,
+    );
+    return result.text ?? "";
+  }
+
+  dispose(): void {
+    if (this.proc) {
+      this.proc.kill();
+      this.proc = null;
+    }
+    this.rejectAll(new Error("stt-helper disposed"));
+  }
+}

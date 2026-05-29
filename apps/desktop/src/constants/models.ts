@@ -18,6 +18,8 @@ export interface AvailableWhisperModel {
   provider: string;
   providerIcon: string;
   modelSize: string;
+  engine?: "whisper" | "qwen3"; // local STT engine; absent means whisper
+  helperModelId?: string; // HF repo id passed to the qwen3 stt-helper (engine "qwen3" only)
 }
 
 // DownloadedModel type is now imported from the database schema
@@ -341,4 +343,64 @@ export const AVAILABLE_MODELS: AvailableWhisperModel[] = [
     provider: "Local",
     providerIcon: "/icons/models/local.svg",
   },
+  {
+    id: "qwen3-asr-0.6b",
+    name: "Qwen3-ASR 0.6B",
+    type: "whisper",
+    engine: "qwen3",
+    helperModelId: "aufklarer/Qwen3-ASR-0.6B-MLX-4bit",
+    description:
+      "Multilingual on-device STT (52 languages incl. Japanese). Apple Silicon only. Transcribes in the spoken language without translating.",
+    checksum: "",
+    filename: "",
+    downloadUrl: "",
+    size: 0,
+    sizeFormatted: "~680 MB",
+    modelSize: "~680 MB",
+    features: [
+      { icon: "languages", tooltip: "52 languages incl. Japanese" },
+      { icon: "gauge", tooltip: "On-device (Apple Silicon, MLX)" },
+    ],
+    speed: 4.0,
+    accuracy: 4.3,
+    setup: "offline",
+    provider: "Local (Qwen3-ASR)",
+    providerIcon: "/icons/models/local.svg",
+  },
+  {
+    id: "qwen3-asr-1.7b",
+    name: "Qwen3-ASR 1.7B",
+    type: "whisper",
+    engine: "qwen3",
+    helperModelId: "aufklarer/Qwen3-ASR-1.7B-MLX-4bit",
+    description:
+      "Larger multilingual on-device STT (52 languages incl. Japanese). Apple Silicon only. Higher accuracy than 0.6B at the cost of size/speed.",
+    checksum: "",
+    filename: "",
+    downloadUrl: "",
+    size: 0,
+    sizeFormatted: "~2.1 GB",
+    modelSize: "~2.1 GB",
+    features: [
+      { icon: "languages", tooltip: "52 languages incl. Japanese" },
+      { icon: "gauge", tooltip: "On-device (Apple Silicon, MLX)" },
+    ],
+    speed: 3.0,
+    accuracy: 4.6,
+    setup: "offline",
+    provider: "Local (Qwen3-ASR)",
+    providerIcon: "/icons/models/local.svg",
+  },
 ];
+
+export const QWEN3_ASR_MODEL_ID = "qwen3-asr-0.6b";
+
+/** Which local STT engine backs a given speech model id. */
+export function getSpeechEngine(
+  modelId: string | null | undefined,
+): "whisper" | "qwen3" | "cloud" {
+  if (!modelId) return "whisper";
+  const model = AVAILABLE_MODELS.find((m) => m.id === modelId);
+  if (model?.provider === "Amical Cloud") return "cloud";
+  return model?.engine === "qwen3" ? "qwen3" : "whisper";
+}

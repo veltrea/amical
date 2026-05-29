@@ -6,6 +6,7 @@ import type {
   AvailableWhisperModel,
   DownloadProgress,
 } from "../../constants/models";
+import { getSpeechEngine } from "../../constants/models";
 import type { AppSettingsData, Model } from "../../db/schema";
 import type { ValidationResult } from "../../types/providers";
 import { removeModel } from "../../db/models";
@@ -150,6 +151,10 @@ export const modelsRouter = createRouter({
             // Filter cloud models if not authenticated
             if (model.setup === "cloud") {
               return isAuthenticated;
+            }
+            // Qwen3-ASR self-manages its model; selectable without a download.
+            if (getSpeechEngine(model.id) === "qwen3") {
+              return true;
             }
             // Filter local models that aren't downloaded
             return model.downloadedAt !== null;

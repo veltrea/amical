@@ -7,6 +7,7 @@ import {
 } from "../pipeline/core/pipeline-types";
 import { createDefaultContext } from "../pipeline/core/context";
 import { WhisperProvider } from "../pipeline/providers/transcription/whisper-provider";
+import { Qwen3Provider } from "../pipeline/providers/transcription/qwen3-provider";
 import { AmicalCloudProvider } from "../pipeline/providers/transcription/amical-cloud-provider";
 import { createRemoteFormattingProvider } from "../pipeline/providers/formatting/remote-formatting-provider-registry";
 import type { RemoteFormattingProviderType } from "../pipeline/providers/formatting/remote-formatting-provider-registry";
@@ -29,7 +30,7 @@ import { v4 as uuid } from "uuid";
 import { VADService } from "./vad-service";
 import { Mutex } from "async-mutex";
 import { dialog } from "electron";
-import { AVAILABLE_MODELS } from "../constants/models";
+import { AVAILABLE_MODELS, getSpeechEngine } from "../constants/models";
 import { AppError, ErrorCodes } from "../types/error";
 import { applyTextReplacements } from "../utils/text-replacement";
 import { selectVocabularyHints } from "../utils/vocabulary-hints";
@@ -48,6 +49,7 @@ import { countWords } from "../utils/dictation-stats";
  */
 export class TranscriptionService {
   private whisperProvider: WhisperProvider;
+  private qwen3Provider: Qwen3Provider;
   private cloudProvider: AmicalCloudProvider;
   private currentProvider: TranscriptionProvider | null = null;
   private streamingSessions = new Map<string, StreamingSession>();
@@ -70,6 +72,7 @@ export class TranscriptionService {
     private onboardingService: OnboardingService | null,
   ) {
     this.whisperProvider = new WhisperProvider(modelService);
+    this.qwen3Provider = new Qwen3Provider();
     this.cloudProvider = new AmicalCloudProvider(telemetryService);
     this.vadService = vadService;
     this.settingsService = settingsService;
@@ -111,6 +114,13 @@ export class TranscriptionService {
       return this.cloudProvider;
     }
 
+    // Use Qwen3-ASR (MLX) provider for the Qwen3 engine
+    if (model?.engine === "qwen3") {
+      this.qwen3Provider.setModelId(model.helperModelId);
+      this.currentProvider = this.qwen3Provider;
+      return this.qwen3Provider;
+    }
+
     // Default to whisper for all other models
     this.currentProvider = this.whisperProvider;
     return this.whisperProvider;
@@ -123,6 +133,22 @@ export class TranscriptionService {
       ? AVAILABLE_MODELS.find((m) => m.id === selectedModelId)
       : null;
     const isCloudModel = model?.provider === "Amical Cloud";
+
+    // Qwen3-ASR manages its own model (helper auto-downloads); warm it and stop.
+    if (model?.engine === "qwen3") {
+      try {
+        this.qwen3Provider.setModelId(model.helperModelId);
+        await this.qwen3Provider.warmup();
+        this.modelWasPreloaded = true;
+        logger.transcription.info("Qwen3-ASR model warmed up");
+      } catch (error) {
+        logger.transcription.warn("Qwen3-ASR warmup failed (non-fatal)", {
+          error,
+        });
+      }
+      logger.transcription.info("Transcription service initialized");
+      return;
+    }
 
     // Only preload for local models
     if (!isCloudModel) {
@@ -204,6 +230,10 @@ export class TranscriptionService {
         if (model?.provider === "Amical Cloud") {
           return true;
         }
+        // Qwen3-ASR has no downloadable file; the helper self-manages the model.
+        if (model?.engine === "qwen3") {
+          return true;
+        }
       }
 
       // For local models, check if any are downloaded
@@ -224,6 +254,21 @@ export class TranscriptionService {
     this.modelLoadMutex.runExclusive(async () => {
       try {
         this.modelWasPreloaded = false;
+
+        // Qwen3-ASR: warm the helper instead of the whisper preload path.
+        const selectedModelId = await this.modelService.getSelectedModel();
+        if (getSpeechEngine(selectedModelId) === "qwen3") {
+          const model = AVAILABLE_MODELS.find((m) => m.id === selectedModelId);
+          try {
+            this.qwen3Provider.setModelId(model?.helperModelId);
+            await this.qwen3Provider.warmup();
+            this.modelWasPreloaded = true;
+            logger.transcription.info("Qwen3-ASR model loaded after change");
+          } catch (error) {
+            logger.transcription.error("Qwen3-ASR load failed", { error });
+          }
+          return;
+        }
 
         // Check if preloading is enabled and models are available
         if (this.settingsService) {
@@ -1287,6 +1332,7 @@ export class TranscriptionService {
    */
   async dispose(): Promise<void> {
     await this.whisperProvider.dispose();
+    await this.qwen3Provider.dispose();
     await this.cloudProvider.dispose();
     // VAD service is managed by ServiceManager
     logger.transcription.info("Transcription service disposed");
