@@ -22,6 +22,7 @@ import {
   copyFileSync,
 } from "node:fs";
 import { join, normalize } from "node:path";
+import { execFileSync } from "node:child_process";
 // Use flora-colossus for finding all dependencies of EXTERNAL_DEPENDENCIES
 // flora-colossus is maintained by MarshallOfSound (a top electron-forge contributor)
 // already included as a dependency of electron-packager/galactus (so we do NOT have to add it to package.json)
@@ -397,6 +398,31 @@ const config: ForgeConfig = {
         }
         console.log("✓ VC++ runtime DLLs bundled successfully");
       }
+
+      // =====================================================================
+      // Ad-hoc deep-sign on macOS when no Developer ID is configured
+      // =====================================================================
+      // electron-forge + extraResource leaves the bundle's signature seal
+      // broken; macOS TCC then refuses to register mic/accessibility requests
+      // (the app never even appears in System Settings). Re-seal the whole
+      // bundle ad-hoc so permissions can be granted. Mirrors FloatingMacro's
+      // scripts/build-app.sh. Skipped when a real Developer ID signed it.
+      if (
+        platform === "darwin" &&
+        (process.env.SKIP_CODESIGNING === "true" ||
+          !process.env.CODESIGNING_IDENTITY)
+      ) {
+        for (const outputPath of outputPaths) {
+          const app = join(outputPath, "Amical.app");
+          console.log(`[postPackage] ad-hoc deep-signing ${app}`);
+          execFileSync(
+            "codesign",
+            ["--sign", "-", "--deep", "--force", "--timestamp=none", app],
+            { stdio: "inherit" },
+          );
+        }
+        console.log("✓ ad-hoc signed (no Developer ID configured)");
+      }
     },
   },
   packagerConfig: {
@@ -439,8 +465,13 @@ const config: ForgeConfig = {
         schemes: ["amical"],
       },
     ],
-    // Code signing configuration for macOS
-    ...(process.env.SKIP_CODESIGNING === "true"
+    // Code signing configuration for macOS.
+    // No Developer ID (CODESIGNING_IDENTITY unset) => skip real signing here;
+    // the postPackage hook ad-hoc deep-signs instead so the bundle seal is valid
+    // (required for TCC mic/accessibility). Set CODESIGNING_IDENTITY + APPLE_*
+    // to produce a properly signed + notarized build.
+    ...(process.env.SKIP_CODESIGNING === "true" ||
+    !process.env.CODESIGNING_IDENTITY
       ? {}
       : {
           osxSign: {
