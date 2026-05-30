@@ -40,6 +40,13 @@ export interface FormatParams {
     previousChunk?: string;
     aggregatedTranscription?: string;
     language?: string; // Dictation language (e.g. "ja"); selects formatter examples
+    /**
+     * User-supplied formatting instructions from app settings, layered into
+     * the system prompt as a SEPARATE block. Free-form text. Kept distinct
+     * from the curated few-shot examples so user rules never collide with
+     * the built-in demonstrations. Empty/whitespace = ignored.
+     */
+    userInstructions?: string;
   };
 }
 
