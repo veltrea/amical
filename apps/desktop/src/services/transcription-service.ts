@@ -581,6 +581,9 @@ export class TranscriptionService {
         replacements: session.context.sharedData.replacements,
         formattingStyle:
           session.context.sharedData.userPreferences?.formattingStyle,
+        language: this.formatterLanguage(
+          session.context.sharedData.userPreferences?.languages,
+        ),
       });
       const completeTranscription = formatResult.text;
       const transcriptionWordCount = countWords(
@@ -814,6 +817,15 @@ export class TranscriptionService {
     return shouldStripLeadingSpace ? transcription.slice(1) : transcription;
   }
 
+  /** Pick the formatter's example language from the selected dictation languages. */
+  private formatterLanguage(languages?: string[]): string | undefined {
+    if (!languages?.length) return undefined;
+    // Japanese examples are the tuned set; prefer "ja" when it's selected.
+    return (
+      languages.find((l) => l.toLowerCase().startsWith("ja")) ?? languages[0]
+    );
+  }
+
   private async formatWithProvider(
     provider: FormattingProvider,
     text: string,
@@ -821,6 +833,7 @@ export class TranscriptionService {
       style?: string;
       vocabulary?: string[];
       accessibilityContext?: StreamingSession["context"]["sharedData"]["accessibilityContext"];
+      language?: string;
     },
   ): Promise<{ text: string; duration: number } | null> {
     const startTime = performance.now();
@@ -833,6 +846,7 @@ export class TranscriptionService {
           vocabulary: context.vocabulary,
           accessibilityContext: context.accessibilityContext,
           aggregatedTranscription: text,
+          language: context.language,
         },
       });
 
@@ -864,6 +878,7 @@ export class TranscriptionService {
     accessibilityContext?: StreamingSession["context"]["sharedData"]["accessibilityContext"];
     replacements: Map<string, string>;
     formattingStyle?: string;
+    language?: string;
   }): Promise<{
     text: string;
     textBeforeReplacements: string;
@@ -926,6 +941,7 @@ export class TranscriptionService {
               style: options.formattingStyle,
               vocabulary: options.vocabulary,
               accessibilityContext: options.accessibilityContext,
+              language: options.language,
             },
           );
           if (result) {
@@ -961,6 +977,7 @@ export class TranscriptionService {
               style: options.formattingStyle,
               vocabulary: options.vocabulary,
               accessibilityContext: options.accessibilityContext,
+              language: options.language,
             });
             if (result) {
               text = result.text;
@@ -1186,6 +1203,9 @@ export class TranscriptionService {
       vocabulary,
       replacements: context.sharedData.replacements,
       formattingStyle: context.sharedData.userPreferences?.formattingStyle,
+      language: this.formatterLanguage(
+        context.sharedData.userPreferences?.languages,
+      ),
     });
 
     const speechModelId = usedCloudProvider

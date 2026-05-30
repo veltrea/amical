@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Download, Trash2, Loader2, Check } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -114,7 +115,18 @@ export default function MlxLlmSection() {
               className="flex items-center justify-between gap-3 rounded-md border p-3"
             >
               <div className="min-w-0">
-                <div className="font-medium">{m.name}</div>
+                <div className="flex items-center gap-2">
+                  <div className="font-medium">{m.name}</div>
+                  {m.languages?.map((lang) => (
+                    <Badge
+                      key={lang}
+                      variant="secondary"
+                      className="text-[10px] px-1.5 py-0 uppercase"
+                    >
+                      {lang}
+                    </Badge>
+                  ))}
+                </div>
                 <div className="text-xs text-muted-foreground">
                   {m.description}
                 </div>

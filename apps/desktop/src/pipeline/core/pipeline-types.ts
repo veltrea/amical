@@ -39,6 +39,7 @@ export interface FormatParams {
     accessibilityContext?: GetAccessibilityContextResult | null;
     previousChunk?: string;
     aggregatedTranscription?: string;
+    language?: string; // Dictation language (e.g. "ja"); selects formatter examples
   };
 }
 
