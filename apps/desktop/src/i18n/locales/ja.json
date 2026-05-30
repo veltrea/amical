@@ -683,6 +683,9 @@
         "cloudReady": "Amical Cloudフォーマットを使用中。",
         "noLanguageModels": "フォーマットは実行されません - 言語モデルがありません。",
         "syncLanguageModels": "言語モデルを同期",
+        "userInstructionsLabel": "校正ルール",
+        "userInstructionsDescription": "組み込みフォーマッタに上乗せする自由記述のルールです。組み込み例とは別ブロックで扱われるため、収録例と衝突しません。安全ルール（書き換え禁止・翻訳禁止・内容語の保持）は常に優先されます。",
+        "userInstructionsPlaceholder": "例: 日本語は常に「です・ます」調にする。英語は Oxford comma を使う。",
         "toast": {
           "saveFailed": "フォーマット設定の保存に失敗しました。もう一度お試しください。",
           "loginInBrowser": "ブラウザでログインを完了してください",

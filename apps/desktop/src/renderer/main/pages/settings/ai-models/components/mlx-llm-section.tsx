@@ -77,10 +77,10 @@ export default function MlxLlmSection() {
     formatterConfigQuery.data?.mlxMemoryStrategy ?? "balanced";
   const onStrategyChange = (value: string) => {
     const cfg = formatterConfigQuery.data;
+    // Spread to preserve fields not owned by this control (userInstructions, …).
     setFormatterConfig.mutate({
+      ...(cfg ?? {}),
       enabled: cfg?.enabled ?? false,
-      modelId: cfg?.modelId,
-      fallbackModelId: cfg?.fallbackModelId,
       mlxMemoryStrategy: value as MlxMemoryStrategy,
     });
   };

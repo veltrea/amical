@@ -705,6 +705,9 @@
         "cloudReady": "Using Amical Cloud formatting.",
         "noLanguageModels": "Formatting won't run - no language model available.",
         "syncLanguageModels": "Sync language models",
+        "userInstructionsLabel": "Your proofreading rules",
+        "userInstructionsDescription": "Free-form rules layered on top of the built-in formatter. Kept separate from the curated examples so your rules cannot collide with them. The safety rules (no rewriting, no translation, preserve content words) always take precedence.",
+        "userInstructionsPlaceholder": "e.g. Always use polite form (です/ます) in Japanese. Prefer the Oxford comma in English.",
         "toast": {
           "saveFailed": "Failed to save formatting settings. Please try again.",
           "loginInBrowser": "Complete login in your browser",

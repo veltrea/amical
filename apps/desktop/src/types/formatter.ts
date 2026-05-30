@@ -13,4 +13,9 @@ export interface FormatterConfig {
   modelId?: string; // Selection key "<providerInstanceId>::<type>::<id>" or legacy raw model ID
   fallbackModelId?: string; // Selection key "<providerInstanceId>::<type>::<id>" or legacy raw model ID
   mlxMemoryStrategy?: MlxMemoryStrategy; // default "balanced"
+  // Free-form user-supplied formatting instructions (e.g. "always use polite
+  // form in Japanese", "prefer Oxford comma"). Threaded into the system prompt
+  // as a separate "User Preferences" block, kept distinct from the curated
+  // few-shot examples so user rules cannot collide with built-in demonstrations.
+  userInstructions?: string;
 }

@@ -20,6 +20,7 @@ const FormatterConfigSchema = z.object({
   modelId: z.string().optional(),
   fallbackModelId: z.string().optional(),
   mlxMemoryStrategy: z.enum(["balanced", "fast", "low"]).optional(),
+  userInstructions: z.string().optional(),
 });
 
 // Shortcut schema (array of keycodes)

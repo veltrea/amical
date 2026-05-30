@@ -834,6 +834,7 @@ export class TranscriptionService {
       vocabulary?: string[];
       accessibilityContext?: StreamingSession["context"]["sharedData"]["accessibilityContext"];
       language?: string;
+      userInstructions?: string;
     },
   ): Promise<{ text: string; duration: number } | null> {
     const startTime = performance.now();
@@ -847,6 +848,7 @@ export class TranscriptionService {
           accessibilityContext: context.accessibilityContext,
           aggregatedTranscription: text,
           language: context.language,
+          userInstructions: context.userInstructions,
         },
       });
 
@@ -942,6 +944,7 @@ export class TranscriptionService {
               vocabulary: options.vocabulary,
               accessibilityContext: options.accessibilityContext,
               language: options.language,
+              userInstructions: formatterConfig.userInstructions,
             },
           );
           if (result) {
@@ -978,6 +981,7 @@ export class TranscriptionService {
               vocabulary: options.vocabulary,
               accessibilityContext: options.accessibilityContext,
               language: options.language,
+              userInstructions: formatterConfig.userInstructions,
             });
             if (result) {
               text = result.text;

@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Combobox } from "@/components/ui/combobox";
+import { Textarea } from "@/components/ui/textarea";
 import { useFormattingSettings } from "../hooks/use-formatting-settings";
 import { useTranslation } from "react-i18next";
 
@@ -27,8 +28,10 @@ export function FormattingSettings() {
     showNoLanguageModels,
     handleFormattingEnabledChange,
     handleFormattingModelChange,
+    handleUserInstructionsChange,
     handleCloudLogin,
     isLoginPending,
+    userInstructions,
   } = useFormattingSettings();
 
   return (
@@ -140,6 +143,26 @@ export function FormattingSettings() {
                   </Link>
                 </div>
               )}
+            </div>
+
+            {/* User-supplied proofreading instructions — layered into the system
+                prompt as a separate "User Preferences" block. Free-form text. */}
+            <div className="space-y-2 pt-2">
+              <Label className="text-sm font-medium text-foreground block">
+                {t("settings.dictation.formatting.userInstructionsLabel")}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t("settings.dictation.formatting.userInstructionsDescription")}
+              </p>
+              <Textarea
+                value={userInstructions}
+                onChange={(e) => handleUserInstructionsChange(e.target.value)}
+                placeholder={t(
+                  "settings.dictation.formatting.userInstructionsPlaceholder",
+                )}
+                rows={5}
+                className="font-mono text-xs"
+              />
             </div>
           </div>
         </div>

@@ -16,6 +16,7 @@ interface UseFormattingSettingsReturn {
   formattingEnabled: boolean;
   selectedModelId: string;
   formattingOptions: ComboboxOption[];
+  userInstructions: string;
 
   // Derived booleans
   disableFormattingToggle: boolean;
@@ -28,6 +29,7 @@ interface UseFormattingSettingsReturn {
   // Handlers
   handleFormattingEnabledChange: (enabled: boolean) => void;
   handleFormattingModelChange: (modelId: string) => void;
+  handleUserInstructionsChange: (value: string) => void;
   handleCloudLogin: () => Promise<void>;
 
   // Loading state
@@ -222,10 +224,12 @@ export function useFormattingSettings(): UseFormattingSettingsReturn {
   // Handlers
   const handleFormattingEnabledChange = useCallback(
     (enabled: boolean) => {
+      // Spread to preserve fields not owned by this control (mlxMemoryStrategy,
+      // userInstructions, …) — explicitly listing only `modelId`/`fallbackModelId`
+      // would silently drop the others when toggling the switch.
       const nextConfig: FormatterConfig = {
+        ...(formatterConfig ?? {}),
         enabled,
-        modelId: formatterConfig?.modelId,
-        fallbackModelId: formatterConfig?.fallbackModelId,
       };
       setFormatterConfigMutation.mutate(nextConfig);
     },
@@ -246,9 +250,9 @@ export function useFormattingSettings(): UseFormattingSettingsReturn {
       }
 
       const nextConfig: FormatterConfig = {
+        ...(formatterConfig ?? {}),
         enabled: formatterConfig?.enabled ?? false,
         modelId,
-        fallbackModelId: formatterConfig?.fallbackModelId,
       };
 
       if (modelId !== cloudFormattingOptionValue) {
@@ -271,6 +275,22 @@ export function useFormattingSettings(): UseFormattingSettingsReturn {
     ],
   );
 
+  // Free-form proofreading instructions. Saved verbatim; threaded into the
+  // formatter system prompt by the main process. The optimistic-update layer
+  // on setFormatterConfigMutation already keeps typing responsive — no local
+  // debounce needed because each onChange is a single setData call.
+  const handleUserInstructionsChange = useCallback(
+    (value: string) => {
+      const nextConfig: FormatterConfig = {
+        ...(formatterConfig ?? {}),
+        enabled: formatterConfig?.enabled ?? false,
+        userInstructions: value,
+      };
+      setFormatterConfigMutation.mutate(nextConfig);
+    },
+    [formatterConfig, setFormatterConfigMutation],
+  );
+
   const handleCloudLogin = useCallback(async () => {
     try {
       await loginMutation.mutateAsync();
@@ -284,6 +304,7 @@ export function useFormattingSettings(): UseFormattingSettingsReturn {
     formattingEnabled,
     selectedModelId,
     formattingOptions,
+    userInstructions: formatterConfig?.userInstructions ?? "",
 
     // Derived booleans
     disableFormattingToggle,
@@ -296,6 +317,7 @@ export function useFormattingSettings(): UseFormattingSettingsReturn {
     // Handlers
     handleFormattingEnabledChange,
     handleFormattingModelChange,
+    handleUserInstructionsChange,
     handleCloudLogin,
 
     // Loading state
