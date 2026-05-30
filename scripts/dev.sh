@@ -125,18 +125,28 @@ fi
 
 # Pick the right pnpm script. `build:deps` runs types+helper; we override it
 # when --no-helper is set so the JS-only loop is fast.
+#
+# NOTE: we cd into apps/desktop BEFORE invoking pnpm. `pnpm --filter @amical/
+# desktop start` does set the script's cwd correctly, but Electron's child
+# process inherits the cwd of whatever shell launched pnpm — when that is the
+# repo root, `process.cwd()` inside main.ts resolves to the repo root and the
+# dev-mode migrations path (`process.cwd()/src/db/migrations`) does not exist,
+# so the database init fails and Electron exits. Running from apps/desktop is
+# the simplest reliable fix.
+cd apps/desktop
+
 if [[ $NO_HELPER -eq 1 ]]; then
   # Build only the types package, then call electron-forge directly so the
   # `build:deps` chain doesn't re-trigger the helper build.
-  run_cmd pnpm --filter @amical/types build
-  run_cmd pnpm --filter @amical/desktop exec electron-forge start "${FORGE_ARGS[@]}"
+  run_cmd pnpm --filter @amical/types --workspace-root build
+  run_cmd pnpm exec electron-forge start "${FORGE_ARGS[@]}"
 else
   if [[ ${#FORGE_ARGS[@]} -gt 0 ]]; then
     # `pnpm start` doesn't accept arbitrary extra args, so when forge args are
     # provided we run build:deps and then electron-forge ourselves.
-    run_cmd pnpm --filter @amical/desktop build:deps
-    run_cmd pnpm --filter @amical/desktop exec electron-forge start "${FORGE_ARGS[@]}"
+    run_cmd pnpm run build:deps
+    run_cmd pnpm exec electron-forge start "${FORGE_ARGS[@]}"
   else
-    run_cmd pnpm --filter @amical/desktop start
+    run_cmd pnpm start
   fi
 fi

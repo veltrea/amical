@@ -70,18 +70,20 @@ export class Qwen3HelperClient {
 
   private determineHelperPath(): string {
     const binaryName = "stt-helper";
-    return app.isPackaged
-      ? path.join(process.resourcesPath, "bin", binaryName)
-      : path.join(
-          app.getAppPath(),
-          "..",
-          "..",
-          "packages",
-          "native-helpers",
-          "stt-helper",
-          "bin",
-          binaryName,
-        );
+    if (app.isPackaged) {
+      return path.join(process.resourcesPath, "bin", binaryName);
+    }
+
+    // Dev mode: probe both candidate anchors — app.getAppPath() resolves to
+    // `apps/desktop` in some Electron launch paths and `apps/desktop/.vite/build`
+    // in others. See native-bridge-service.determineHelperPath for the full
+    // explanation. Keep the two helper resolvers in sync.
+    const appPath = app.getAppPath();
+    const candidates = [
+      path.join(appPath, "..", "..", "packages", "native-helpers", "stt-helper", "bin", binaryName),
+      path.join(appPath, "..", "..", "..", "..", "packages", "native-helpers", "stt-helper", "bin", binaryName),
+    ];
+    return candidates.find((p) => fs.existsSync(p)) ?? candidates[0];
   }
 
   /** True if the helper binary exists and is executable (built for this platform). */
