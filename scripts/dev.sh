@@ -9,8 +9,15 @@
 #   scripts/dev.sh --no-helper      # skip native helper build (JS-only fast loop)
 #   scripts/dev.sh --quiet          # don't tee log to terminal (still saved to file)
 #   scripts/dev.sh --no-log         # don't write a log file at all (terminal only)
+#   scripts/dev.sh --keep-installed # do NOT auto-quit /Applications/Amical.app
 #   scripts/dev.sh -- --inspect=9229  # pass through to electron-forge
 #   scripts/dev.sh --clean -- --inspect=9229
+#
+# Why we auto-quit /Applications/Amical.app: Electron enforces a single-instance
+# lock per bundleId, so a dev build silently exits (with code 0!) when the
+# installed app is already running. The user relies on Amical for daily
+# dictation, so the installed app is almost always running — quitting it
+# automatically is the only sane default. Pass --keep-installed to override.
 #
 # All flags can be combined. Anything after `--` is forwarded verbatim to
 # electron-forge start. Per-run logs land in logs/dev-YYYYMMDD-HHMMSS.log
@@ -26,16 +33,18 @@ CLEAN=0
 QUIET=0
 NO_LOG=0
 NO_HELPER=0
+KEEP_INSTALLED=0
 FORGE_ARGS=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --clean)     CLEAN=1; shift ;;
-    --quiet)     QUIET=1; shift ;;
-    --no-log)    NO_LOG=1; shift ;;
-    --no-helper) NO_HELPER=1; shift ;;
-    --)          shift; FORGE_ARGS=("$@"); break ;;
-    -h|--help)   sed -n '2,18p' "$0"; exit 0 ;;
+    --clean)          CLEAN=1; shift ;;
+    --quiet)          QUIET=1; shift ;;
+    --no-log)         NO_LOG=1; shift ;;
+    --no-helper)      NO_HELPER=1; shift ;;
+    --keep-installed) KEEP_INSTALLED=1; shift ;;
+    --)               shift; FORGE_ARGS=("$@"); break ;;
+    -h|--help)        sed -n '2,24p' "$0"; exit 0 ;;
     *)
       echo "[dev.sh] Unknown argument: $1" >&2
       echo "[dev.sh] (Use --help or put unknown args after --)" >&2
@@ -43,6 +52,23 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+# Auto-quit the installed app so the single-instance lock doesn't silently
+# kill our dev build. macOS-only — `osascript` is a no-op stub elsewhere.
+if [[ $KEEP_INSTALLED -eq 0 ]] && [[ "$(uname -s)" == "Darwin" ]]; then
+  if pgrep -fq "/Applications/Amical.app/Contents/MacOS/Amical"; then
+    echo "[dev.sh] Quitting /Applications/Amical.app (single-instance lock)…"
+    # `tell application "Amical" to quit` triggers a graceful shutdown; it
+    # waits for the app to finish before returning, so by the next line the
+    # lock is released.
+    osascript -e 'tell application "Amical" to quit' >/dev/null 2>&1 || true
+    # Belt-and-suspenders: short wait in case the graceful quit is slow.
+    for _ in 1 2 3 4 5; do
+      pgrep -fq "/Applications/Amical.app/Contents/MacOS/Amical" || break
+      sleep 0.5
+    done
+  fi
+fi
 
 LOG_FILE=""
 if [[ $NO_LOG -eq 0 ]]; then
