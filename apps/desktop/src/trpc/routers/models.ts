@@ -7,6 +7,10 @@ import type {
   DownloadProgress,
 } from "../../constants/models";
 import { getSpeechEngine } from "../../constants/models";
+import {
+  RECOMMENDED_MLX_LLMS,
+  normalizeHfRepoId,
+} from "../../constants/mlx-llm-models";
 import type { AppSettingsData, Model } from "../../db/schema";
 import type { ValidationResult } from "../../types/providers";
 import { removeModel } from "../../db/models";
@@ -283,6 +287,61 @@ export const modelsRouter = createRouter({
         throw new Error("Model manager service not initialized");
       }
       return modelService.deleteModel(input.modelId);
+    }),
+
+  // ----- MLX proofreading LLMs (macOS) -----
+  getRecommendedMlxLlms: procedure.query(() => RECOMMENDED_MLX_LLMS),
+
+  getDownloadedMlxLlms: procedure.query(async ({ ctx }) => {
+    const modelService = ctx.serviceManager.getService("modelService");
+    return modelService ? await modelService.getDownloadedMlxLlmModels() : [];
+  }),
+
+  downloadMlxLlm: procedure
+    .input(
+      z.object({
+        repoId: z.string(),
+        name: z.string().optional(),
+        sizeBytes: z.number().optional(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const modelService = ctx.serviceManager.getService("modelService");
+      if (!modelService) {
+        throw new Error("Model manager service not initialized");
+      }
+      return await modelService.downloadMlxLlm(
+        input.repoId,
+        input.name,
+        input.sizeBytes,
+      );
+    }),
+
+  // Download from a user-pasted HF repo id or huggingface.co URL.
+  downloadMlxLlmFromUrl: procedure
+    .input(z.object({ url: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const modelService = ctx.serviceManager.getService("modelService");
+      if (!modelService) {
+        throw new Error("Model manager service not initialized");
+      }
+      const repoId = normalizeHfRepoId(input.url);
+      if (!repoId) {
+        throw new Error(
+          "Invalid Hugging Face repo. Use 'namespace/name' or a huggingface.co URL.",
+        );
+      }
+      return await modelService.downloadMlxLlm(repoId);
+    }),
+
+  deleteMlxLlm: procedure
+    .input(z.object({ repoId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const modelService = ctx.serviceManager.getService("modelService");
+      if (!modelService) {
+        throw new Error("Model manager service not initialized");
+      }
+      return await modelService.deleteMlxLlm(input.repoId);
     }),
 
   setSelectedModel: procedure

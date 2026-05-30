@@ -923,6 +923,26 @@
         },
         "validationFailed": "検証に失敗しました"
       },
+      "mlx": {
+        "title": "オンデバイス校正 (MLX)",
+        "description": "macOS 専用。ローカル音声認識と同じプロセスで動作します。おすすめモデルをダウンロードするか、任意の Hugging Face リポジトリを追加できます。",
+        "download": "ダウンロード",
+        "add": "追加",
+        "customLabel": "カスタム Hugging Face モデル",
+        "customPlaceholder": "mlx-community/Qwen3-1.7B-4bit または huggingface.co の URL",
+        "customHint": "MLX 形式の任意の LLM（config.json + tokenizer.json + safetensors）。必要時にロードされます。",
+        "memoryLabel": "メモリ戦略",
+        "memory": {
+          "balanced": "バランス — 口述の合間もモデルを保持（既定）",
+          "fast": "最速 — 音声認識と校正モデルを常時ロード（メモリ多め）",
+          "low": "省メモリ — 口述ごとに校正モデルを解放"
+        },
+        "memoryHint": "LM Studio など他のローカル LLM を併用する場合は「省メモリ」を選んでください。",
+        "toast": {
+          "downloaded": "モデルをダウンロードしました",
+          "removed": "モデルを削除しました"
+        }
+      },
       "syncedModels": {
         "title": "同期済みモデル",
         "toast": {

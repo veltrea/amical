@@ -44,10 +44,21 @@ type PendingRpc = {
 // Model download on first prepare can pull hundreds of MB.
 const PREPARE_TIMEOUT_MS = 10 * 60 * 1000;
 const TRANSCRIBE_TIMEOUT_MS = 60 * 1000;
+// LLM (proofreading) load may download a multi-GB model on first use; generation
+// itself is a short burst. unload just frees weights, so it's quick.
+const LOAD_LLM_TIMEOUT_MS = 15 * 60 * 1000;
+const GENERATE_TIMEOUT_MS = 120 * 1000;
+const UNLOAD_LLM_TIMEOUT_MS = 30 * 1000;
 
 export class Qwen3HelperClient {
   private proc: ChildProcessWithoutNullStreams | null = null;
   private pending = new Map<string, PendingRpc>();
+  // Preventive recycle counter: MLX grows unstable over a very long-lived process
+  // (learned on CaptionCraft), so we restart the helper every N generates. Crash
+  // recovery is already automatic (the "close" handler nulls proc; the next call
+  // respawns) — this just gets ahead of the slow degradation.
+  private llmGenerateCount = 0;
+  private static readonly RECYCLE_AFTER_GENERATES = 100;
   private logger = createScopedLogger("qwen3-helper");
   private helperPath: string;
   // Set during a prepare() call to surface the helper's "[DL] NN% status" lines.
@@ -268,6 +279,67 @@ export class Qwen3HelperClient {
       { pcmBase64, sampleRate, language, modelId },
       TRANSCRIBE_TIMEOUT_MS,
     );
+    return result.text ?? "";
+  }
+
+  // ----- LLM (proofreading) -----
+  // Same process / same MLX runtime as ASR. The pipeline runs ASR then formatting
+  // serially, so the two never infer at once. The memory strategy decides whether
+  // to keep the LLM resident (call loadLLM once) or free it after each format
+  // (call unloadLLM), but generate() loads on demand regardless, so it's safe
+  // either way.
+
+  /**
+   * Load (and on first run download) an LLM for proofreading. Idempotent in the
+   * helper. onProgress, if given, receives download/load progress (fraction 0..1
+   * + status) parsed from the helper's stderr — same channel as ASR prepare().
+   */
+  async loadLLM(
+    modelId: string,
+    onProgress?: (fraction: number, status: string) => void,
+  ): Promise<void> {
+    this.onDownloadProgress = onProgress;
+    try {
+      await this.call("loadLLM", { modelId }, LOAD_LLM_TIMEOUT_MS);
+    } finally {
+      this.onDownloadProgress = undefined;
+    }
+  }
+
+  /** Free the LLM weights, keeping ASR loaded. Used by the "low memory" strategy. */
+  async unloadLLM(): Promise<void> {
+    await this.call("unloadLLM", {}, UNLOAD_LLM_TIMEOUT_MS);
+  }
+
+  /**
+   * Proofread/format text. systemPrompt/userPrompt come from the existing TS
+   * formatter-prompt builder, so app-type rules + vocabulary transfer verbatim
+   * from the cloud/Ollama path. Loads the model first if needed. Returns the
+   * model's raw text; XML-tag extraction happens on the caller side.
+   */
+  async generate(
+    modelId: string,
+    systemPrompt: string,
+    userPrompt: string,
+    maxTokens?: number,
+  ): Promise<string> {
+    // Recycle BEFORE generating, never mid-inference. Formatting runs between
+    // dictations (after a recording finalizes), so disposing here can't interrupt
+    // an active transcription; the next call() respawns and the helper reloads
+    // the model on demand.
+    if (this.llmGenerateCount >= Qwen3HelperClient.RECYCLE_AFTER_GENERATES) {
+      this.logger.info("Preventively recycling stt-helper", {
+        afterGenerates: this.llmGenerateCount,
+      });
+      this.dispose();
+      this.llmGenerateCount = 0;
+    }
+    const result = await this.call(
+      "generate",
+      { modelId, systemPrompt, userPrompt, maxTokens },
+      GENERATE_TIMEOUT_MS,
+    );
+    this.llmGenerateCount++;
     return result.text ?? "";
   }
 

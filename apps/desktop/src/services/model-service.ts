@@ -163,6 +163,9 @@ class ModelService extends EventEmitter {
   private settingsService: SettingsService;
   // Lazily created helper client used only for explicit Qwen3-ASR downloads.
   private qwen3DownloadClient: Qwen3HelperClient | null = null;
+  // Same idea for explicit MLX proofreading-LLM downloads. The resident ASR +
+  // proofreading process (owned by TranscriptionService) is a separate instance.
+  private mlxLlmDownloadClient: Qwen3HelperClient | null = null;
 
   constructor(settingsService: SettingsService) {
     super();
@@ -903,6 +906,119 @@ class ModelService extends EventEmitter {
       });
     }
     this.emit("model-deleted", model.id);
+  }
+
+  // ----- MLX proofreading LLMs (providerType "mlx") -----
+  // Tracked in the DB as `type: "language"` rows (like OpenRouter/Ollama), so the
+  // formatter selection UI and transcription-service:formatting both see them.
+  // Download = run loadLLM in a transient helper (it pulls + caches the weights),
+  // then record a DB row. Any HF repo id works (presets or a pasted URL).
+
+  async downloadMlxLlm(
+    repoId: string,
+    name?: string,
+    sizeBytes?: number,
+  ): Promise<void> {
+    if (process.platform !== "darwin") {
+      throw new Error("MLX models are macOS-only");
+    }
+    if (this.state.activeDownloads.has(repoId)) {
+      throw new Error(`Download already in progress: ${repoId}`);
+    }
+
+    const abortController = new AbortController();
+    const progress: DownloadProgress = {
+      modelId: repoId,
+      progress: 0,
+      status: "downloading",
+      bytesDownloaded: 0,
+      totalBytes: sizeBytes ?? 0,
+      abortController,
+    };
+    this.state.activeDownloads.set(repoId, progress);
+    this.emit("download-progress", repoId, progress);
+
+    // Cancelling disposes the helper process, which makes loadLLM() reject.
+    abortController.signal.addEventListener("abort", () => {
+      this.mlxLlmDownloadClient?.dispose();
+    });
+
+    this.mlxLlmDownloadClient = new Qwen3HelperClient();
+    try {
+      logger.main.info("Starting MLX LLM download", { repoId });
+      await this.mlxLlmDownloadClient.loadLLM(repoId, (fraction) => {
+        progress.progress = Math.max(
+          0,
+          Math.min(100, Math.round(fraction * 100)),
+        );
+        this.emit("download-progress", repoId, { ...progress });
+      });
+
+      await upsertModel({
+        id: repoId,
+        providerType: PROVIDER_TYPES.mlx,
+        providerInstanceId: getSystemProviderInstanceId(PROVIDER_TYPES.mlx),
+        provider: getProviderDisplayName(PROVIDER_TYPES.mlx),
+        name: name ?? repoId,
+        type: "language",
+        size: sizeBytes ? `${(sizeBytes / 1e9).toFixed(1)} GB` : null,
+        description: null,
+        checksum: null,
+        speed: null,
+        accuracy: null,
+        localPath: null,
+        sizeBytes: sizeBytes ?? null,
+        downloadedAt: new Date(),
+        context: null,
+        originalModel: null,
+      });
+
+      this.state.activeDownloads.delete(repoId);
+      logger.main.info("MLX LLM download completed", { repoId });
+      const row = (await getAllModels()).find(
+        (m) => m.id === repoId && m.providerType === PROVIDER_TYPES.mlx,
+      );
+      // Renderer only reads modelId from this event.
+      this.emit(
+        "download-complete",
+        repoId,
+        (row ?? { id: repoId }) as unknown as DBModel,
+      );
+    } catch (error) {
+      this.state.activeDownloads.delete(repoId);
+      const err = error instanceof Error ? error : new Error(String(error));
+      if (abortController.signal.aborted) {
+        logger.main.info("MLX LLM download cancelled", { repoId });
+        this.emit("download-cancelled", repoId);
+        return;
+      }
+      logger.main.error("MLX LLM download failed", {
+        repoId,
+        error: err.message,
+      });
+      this.emit("download-error", repoId, err);
+      throw err;
+    } finally {
+      this.mlxLlmDownloadClient?.dispose();
+      this.mlxLlmDownloadClient = null;
+    }
+  }
+
+  async deleteMlxLlm(repoId: string): Promise<void> {
+    await removeModel(
+      getSystemProviderInstanceId(PROVIDER_TYPES.mlx),
+      "language",
+      repoId,
+    );
+    this.emit("model-deleted", repoId);
+    await this.validateAndClearInvalidDefaults();
+    await this.validateAndNormalizeFormatterConfigSelections();
+  }
+
+  async getDownloadedMlxLlmModels(): Promise<DBModel[]> {
+    return (await getAllModels()).filter(
+      (m) => m.providerType === PROVIDER_TYPES.mlx && m.type === "language",
+    );
   }
 
   // Check if any models are available for transcription

@@ -4,6 +4,7 @@ import { Accordion } from "@/components/ui/accordion";
 import SyncedModelsList from "../components/synced-models-list";
 import DefaultModelCombobox from "../components/default-model-combobox";
 import ProviderAccordion from "../components/provider-accordion";
+import MlxLlmSection from "../components/mlx-llm-section";
 import { useTranslation } from "react-i18next";
 import { REMOTE_PROVIDERS } from "@/constants/remote-providers";
 
@@ -33,6 +34,9 @@ export default function LanguageTab() {
             modelType="language"
           />
         </Accordion>
+
+        {/* On-device MLX proofreading models (macOS) */}
+        <MlxLlmSection />
 
         {/* Synced Models List */}
         <SyncedModelsList

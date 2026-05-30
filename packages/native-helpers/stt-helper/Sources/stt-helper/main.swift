@@ -1,6 +1,12 @@
 import Foundation
 import AudioCommon
 import Qwen3ASR
+import MLX
+import MLXLLM
+import MLXLMCommon
+import MLXHuggingFace
+import HuggingFace
+import Tokenizers
 
 // stt-helper: line-delimited JSON-RPC over stdin/stdout, mirroring SwiftHelper's
 // transport. Runs Qwen3-ASR (MLX) in its own process so heavy/experimental
@@ -30,6 +36,10 @@ struct RPCParams: Decodable {
     let pcmBase64: String?
     let sampleRate: Int?
     let language: String?
+    // LLM (proofreading) params — used by loadLLM/generate.
+    let systemPrompt: String?
+    let userPrompt: String?
+    let maxTokens: Int?
 }
 
 struct RPCRequest: Decodable {
@@ -81,6 +91,73 @@ extension Data {
 
 var model: Qwen3ASRModel?
 var currentModelId: String?
+
+// MARK: - LLM engine (proofreading)
+// Shares THIS single process with ASR. The transcription pipeline runs ASR and
+// proofreading serially (record -> transcribe -> finalize/format), so the two
+// never infer at the same time — exactly what MLX needs (no concurrent inference).
+// The TS client decides, per the user's memory strategy, whether to keep the LLM
+// resident or unloadLLM() after each format.
+
+var llm: ModelContainer?
+var currentLLMId: String?
+
+func ensureLLM(_ modelId: String) throws {
+    if llm != nil && currentLLMId == modelId { return }
+    if llm != nil {
+        logErr("stt-helper: switching LLM \(currentLLMId ?? "?") -> \(modelId)")
+        llm = nil
+        currentLLMId = nil
+        MLX.Memory.clearCache()
+    }
+    logErr("stt-helper: loading LLM \(modelId)")
+    llm = try runBlocking {
+        try await #huggingFaceLoadModelContainer(
+            configuration: ModelConfiguration(id: modelId)
+        ) { progress in
+            logErr(String(format: "stt-helper: [DL] %3d%% loading LLM",
+                          Int(progress.fractionCompleted * 100)))
+        }
+    }
+    currentLLMId = modelId
+    logErr("stt-helper: LLM ready")
+}
+
+func unloadLLM() {
+    guard llm != nil else { return }
+    logErr("stt-helper: unloading LLM \(currentLLMId ?? "?")")
+    llm = nil
+    currentLLMId = nil
+    MLX.Memory.clearCache()
+}
+
+// One-shot proofreading. A fresh ChatSession per call keeps the LLM stateless
+// (no history bleed between transcriptions). systemPrompt/userPrompt come from
+// the existing TS formatter-prompt builder, so app-type rules + vocabulary
+// transfer verbatim from the cloud/Ollama path.
+func handleGenerate(_ p: RPCParams?) throws -> RPCResult {
+    guard let modelId = p?.modelId else {
+        throw HelperError(message: "generate requires 'modelId'")
+    }
+    guard let userPrompt = p?.userPrompt else {
+        throw HelperError(message: "generate requires 'userPrompt'")
+    }
+    try ensureLLM(modelId)
+    guard let container = llm else { throw HelperError(message: "LLM not loaded") }
+
+    var params = GenerateParameters()
+    params.temperature = 0.1            // proofreading: near-deterministic
+    params.maxTokens = p?.maxTokens ?? 4000
+    params.repetitionPenalty = 1.05
+
+    let session = ChatSession(
+        container,
+        instructions: p?.systemPrompt,
+        generateParameters: params
+    )
+    let text = try runBlocking { try await session.respond(to: userPrompt) }
+    return RPCResult(text: text.trimmingCharacters(in: .whitespacesAndNewlines))
+}
 
 func ensureModel(_ modelId: String?) throws {
     let mid = modelId ?? defaultModelId
@@ -160,6 +237,14 @@ let encoder = JSONEncoder()
 
 logErr("stt-helper: started (default model \(defaultModelId))")
 
+// Run the blocking stdin loop OFF the main thread. mlx-swift-lm's model loader
+// hops to the main actor while loading; if the loop's runBlocking sem.wait()
+// occupies the main thread, that hop deadlocks (observed: the main thread sat in
+// semaphore_wait for the entire time an LLM was "loading", with no download
+// progress). dispatchMain() below keeps the main thread pumping the main queue
+// so the loader's main-actor work can proceed. ASR worked before only because
+// Qwen3ASRModel.fromPretrained never hopped to the main actor.
+DispatchQueue.global(qos: .userInitiated).async {
 while let line = readLine(strippingNewline: true) {
     if line.isEmpty { continue }
     guard let data = line.data(using: .utf8) else {
@@ -185,6 +270,17 @@ while let line = readLine(strippingNewline: true) {
             resp.result = try handleTranscribe(req.params)
         case "ping":
             resp.result = RPCResult(ready: true)
+        case "loadLLM":
+            guard let mid = req.params?.modelId else {
+                throw HelperError(message: "loadLLM requires 'modelId'")
+            }
+            try ensureLLM(mid)
+            resp.result = RPCResult(ready: true, modelId: mid)
+        case "unloadLLM":
+            unloadLLM()
+            resp.result = RPCResult(ready: true)
+        case "generate":
+            resp.result = try handleGenerate(req.params)
         default:
             resp.error = "unknown method: \(req.method)"
         }
@@ -197,3 +293,9 @@ while let line = readLine(strippingNewline: true) {
 }
 
 logErr("stt-helper: stdin closed, exiting")
+exit(0)
+}
+
+// Keep the main thread alive and servicing the main queue (main actor) while the
+// stdin loop runs on the background queue above.
+dispatchMain()

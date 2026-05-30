@@ -945,6 +945,26 @@
         },
         "validationFailed": "Validation failed"
       },
+      "mlx": {
+        "title": "On-device proofreading (MLX)",
+        "description": "macOS only. Runs in the same process as local speech-to-text. Download a recommended model or add any Hugging Face repo.",
+        "download": "Download",
+        "add": "Add",
+        "customLabel": "Custom Hugging Face model",
+        "customPlaceholder": "mlx-community/Qwen3-1.7B-4bit or a huggingface.co URL",
+        "customHint": "Any MLX-format LLM (config.json + tokenizer.json + safetensors). Loads on demand.",
+        "memoryLabel": "Memory strategy",
+        "memory": {
+          "balanced": "Balanced — keep the model warm between dictations (default)",
+          "fast": "Fastest — keep speech + proofreading models always loaded (more RAM)",
+          "low": "Low memory — unload the proofreading model after each dictation"
+        },
+        "memoryHint": "Choose \"Low memory\" if you run other local LLMs (e.g. LM Studio) alongside Amical.",
+        "toast": {
+          "downloaded": "Model downloaded",
+          "removed": "Model removed"
+        }
+      },
       "syncedModels": {
         "title": "Synced Models",
         "toast": {

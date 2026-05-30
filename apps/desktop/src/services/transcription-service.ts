@@ -8,6 +8,8 @@ import {
 import { createDefaultContext } from "../pipeline/core/context";
 import { WhisperProvider } from "../pipeline/providers/transcription/whisper-provider";
 import { Qwen3Provider } from "../pipeline/providers/transcription/qwen3-provider";
+import { Qwen3HelperClient } from "../pipeline/providers/transcription/qwen3-helper-client";
+import { MlxFormatter } from "../pipeline/providers/formatting/mlx-formatter";
 import { AmicalCloudProvider } from "../pipeline/providers/transcription/amical-cloud-provider";
 import { createRemoteFormattingProvider } from "../pipeline/providers/formatting/remote-formatting-provider-registry";
 import type { RemoteFormattingProviderType } from "../pipeline/providers/formatting/remote-formatting-provider-registry";
@@ -50,6 +52,11 @@ import { countWords } from "../utils/dictation-stats";
 export class TranscriptionService {
   private whisperProvider: WhisperProvider;
   private qwen3Provider: Qwen3Provider;
+  // Single helper-client instance shared by ASR (Qwen3Provider) and proofreading
+  // (MlxFormatter) so both run in ONE stt-helper process — the user's explicit
+  // requirement (low RAM; no second Python/MLX runtime). Inference stays serial:
+  // the pipeline only formats after transcription finishes.
+  private qwen3Client: Qwen3HelperClient;
   private cloudProvider: AmicalCloudProvider;
   private currentProvider: TranscriptionProvider | null = null;
   private streamingSessions = new Map<string, StreamingSession>();
@@ -72,7 +79,8 @@ export class TranscriptionService {
     private onboardingService: OnboardingService | null,
   ) {
     this.whisperProvider = new WhisperProvider(modelService);
-    this.qwen3Provider = new Qwen3Provider();
+    this.qwen3Client = new Qwen3HelperClient();
+    this.qwen3Provider = new Qwen3Provider(this.qwen3Client);
     this.cloudProvider = new AmicalCloudProvider(telemetryService);
     this.vadService = vadService;
     this.settingsService = settingsService;
@@ -902,6 +910,34 @@ export class TranscriptionService {
           logger.transcription.warn("Formatting skipped: model not found", {
             modelId,
           });
+        } else if (model.providerType === PROVIDER_TYPES.mlx) {
+          // On-device MLX proofreading via the SAME helper process as ASR.
+          logger.transcription.info("Starting MLX formatting", {
+            model: model.id,
+          });
+          const result = await this.formatWithProvider(
+            new MlxFormatter(
+              this.qwen3Client,
+              model.id,
+              formatterConfig.mlxMemoryStrategy ?? "balanced",
+            ),
+            text,
+            {
+              style: options.formattingStyle,
+              vocabulary: options.vocabulary,
+              accessibilityContext: options.accessibilityContext,
+            },
+          );
+          if (result) {
+            text = result.text;
+            formattingDuration = result.duration;
+            formattingUsed = true;
+            formattingModel = getModelSelectionKey(
+              model.providerInstanceId,
+              model.type,
+              model.id,
+            );
+          }
         } else if (model.providerType !== PROVIDER_TYPES.localWhisper) {
           const provider = await createRemoteFormattingProvider(
             this.settingsService,
