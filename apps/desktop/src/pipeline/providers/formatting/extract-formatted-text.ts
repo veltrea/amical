@@ -39,5 +39,11 @@ export function extractFormattedText(
     };
   }
 
-  return { text: extracted, usedFallback: false };
+  // Strip leading/trailing newlines only — the Output Format template renders
+  // the placeholder on its own line, so models faithfully echo a `\n` before
+  // and after the text. Half-width spaces are KEPT: context-integration
+  // examples deliberately produce a leading " " so the formatted text reads
+  // naturally when spliced after `before_text`.
+  const cleaned = extracted.replace(/^[\r\n]+|[\r\n]+$/g, "");
+  return { text: cleaned, usedFallback: false };
 }
