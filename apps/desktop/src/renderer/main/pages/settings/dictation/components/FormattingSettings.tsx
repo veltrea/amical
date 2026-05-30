@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,69 @@ import { Combobox } from "@/components/ui/combobox";
 import { Textarea } from "@/components/ui/textarea";
 import { useFormattingSettings } from "../hooks/use-formatting-settings";
 import { useTranslation } from "react-i18next";
+
+/**
+ * IME-safe textarea. The parent's optimistic mutation rewrites the prop on
+ * every keystroke; binding that directly to a controlled <textarea> resets
+ * the value mid-IME composition (e.g. "ITや" mutates to "ITyあ" because the
+ * 半角 "y" + 全角 "あ" land separately). Strategy:
+ *   - keep local state for what the user sees while typing
+ *   - track compositionstart/end so we never propagate during IME composition
+ *   - flush to the parent on blur (and on composition end + uncomposed change)
+ *   - only re-sync from the prop when not focused, so server-side echo of our
+ *     own write doesn't snap the cursor.
+ */
+function UserInstructionsField({
+  value,
+  onSave,
+  placeholder,
+}: {
+  value: string;
+  onSave: (next: string) => void;
+  placeholder: string;
+}) {
+  const [draft, setDraft] = useState(value);
+  const isComposingRef = useRef(false);
+  const isFocusedRef = useRef(false);
+
+  // Keep draft in sync with the server value, but ONLY when the user isn't
+  // actively editing — otherwise we'd clobber their in-progress typing.
+  useEffect(() => {
+    if (!isFocusedRef.current && !isComposingRef.current) {
+      setDraft(value);
+    }
+  }, [value]);
+
+  const commit = () => {
+    if (draft !== value) onSave(draft);
+  };
+
+  return (
+    <Textarea
+      value={draft}
+      placeholder={placeholder}
+      rows={5}
+      className="font-mono text-xs"
+      onFocus={() => {
+        isFocusedRef.current = true;
+      }}
+      onBlur={() => {
+        isFocusedRef.current = false;
+        commit();
+      }}
+      onCompositionStart={() => {
+        isComposingRef.current = true;
+      }}
+      onCompositionEnd={(e) => {
+        isComposingRef.current = false;
+        // Pull the post-composition value straight from the DOM event so we
+        // don't depend on a React onChange race with the composition end.
+        setDraft((e.target as HTMLTextAreaElement).value);
+      }}
+      onChange={(e) => setDraft(e.target.value)}
+    />
+  );
+}
 
 export function FormattingSettings() {
   const { t } = useTranslation();
@@ -154,14 +218,12 @@ export function FormattingSettings() {
               <p className="text-xs text-muted-foreground">
                 {t("settings.dictation.formatting.userInstructionsDescription")}
               </p>
-              <Textarea
+              <UserInstructionsField
                 value={userInstructions}
-                onChange={(e) => handleUserInstructionsChange(e.target.value)}
+                onSave={handleUserInstructionsChange}
                 placeholder={t(
                   "settings.dictation.formatting.userInstructionsPlaceholder",
                 )}
-                rows={5}
-                className="font-mono text-xs"
               />
             </div>
           </div>
