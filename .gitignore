@@ -56,3 +56,6 @@ AGENTS.md
 
 # Temp files
 /tmp
+
+# scripts/dev.sh writes per-run logs here
+/logs
