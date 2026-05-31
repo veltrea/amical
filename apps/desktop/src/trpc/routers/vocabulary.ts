@@ -12,7 +12,17 @@ import {
   bulkImportVocabulary,
   trackWordUsage,
   getMostUsedWords,
+  getAllVocabulary,
+  importVocabularyEntries,
 } from "../../db/vocabulary";
+
+const EXPORT_FORMAT_VERSION = 1;
+
+const ImportEntrySchema = z.object({
+  word: z.string().min(1),
+  replacementWord: z.string().nullable().optional(),
+  isReplacement: z.boolean().optional(),
+});
 
 // Input schemas
 const GetVocabularySchema = z.object({
@@ -182,5 +192,35 @@ export const vocabularyRouter = createRouter({
     .input(BulkImportSchema)
     .mutation(async ({ input }) => {
       return await bulkImportVocabulary(input);
+    }),
+
+  // Export every vocabulary row as a portable JSON payload. The renderer
+  // serializes this directly to a file via Blob; no Electron dialog needed.
+  exportAll: procedure.query(async () => {
+    const all = await getAllVocabulary();
+    return {
+      version: EXPORT_FORMAT_VERSION,
+      exportedAt: new Date().toISOString(),
+      entries: all.map((v) => ({
+        word: v.word,
+        replacementWord: v.replacementWord,
+        isReplacement: v.isReplacement ?? false,
+      })),
+    };
+  }),
+
+  // Import a list of entries (typically loaded from a previously exported
+  // JSON). mode = "skip" keeps existing rows and returns the duplicates in
+  // `skipped` so the UI can offer to save them as a separate file. mode =
+  // "overwrite" updates existing rows' replacementWord / isReplacement.
+  importJson: procedure
+    .input(
+      z.object({
+        entries: z.array(ImportEntrySchema).max(50_000),
+        mode: z.enum(["skip", "overwrite"]),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      return await importVocabularyEntries(input.entries, input.mode);
     }),
 });

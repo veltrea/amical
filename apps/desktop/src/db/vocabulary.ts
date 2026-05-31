@@ -1,4 +1,4 @@
-import { eq, desc, asc, like, count, gt, sql } from "drizzle-orm";
+import { eq, desc, asc, like, count, gt, sql, inArray } from "drizzle-orm";
 import { db } from ".";
 import { vocabulary, type Vocabulary, type NewVocabulary } from "./schema";
 
@@ -190,4 +190,95 @@ export async function bulkImportVocabulary(
   }));
 
   return await db.insert(vocabulary).values(vocabularyWords).returning();
+}
+
+/**
+ * Import vocabulary entries from a user-supplied list (typically loaded from
+ * a JSON file exported by another Amical install). Duplicates against the
+ * existing table are resolved by `mode`:
+ *   - "skip":      keep the existing row, return the input entry in `skipped`
+ *   - "overwrite": update the existing row's replacementWord / isReplacement
+ *
+ * Existing `word` rows are matched by lowercase `word` to follow the same
+ * convention as `getVocabularyByWord`. Rows that were never in the table get
+ * inserted with a fresh `dateAdded` of `now`.
+ */
+export interface VocabularyImportEntry {
+  word: string;
+  replacementWord?: string | null;
+  isReplacement?: boolean;
+}
+
+export interface VocabularyImportResult {
+  inserted: number;
+  updated: number;
+  skipped: VocabularyImportEntry[];
+}
+
+export async function importVocabularyEntries(
+  entries: VocabularyImportEntry[],
+  mode: "skip" | "overwrite",
+): Promise<VocabularyImportResult> {
+  if (entries.length === 0) {
+    return { inserted: 0, updated: 0, skipped: [] };
+  }
+
+  const normalized = entries
+    .map((e) => ({
+      word: e.word.toLowerCase().trim(),
+      replacementWord: e.replacementWord ?? null,
+      isReplacement: e.isReplacement ?? false,
+    }))
+    .filter((e) => e.word.length > 0);
+
+  if (normalized.length === 0) {
+    return { inserted: 0, updated: 0, skipped: [] };
+  }
+
+  const words = normalized.map((e) => e.word);
+  const existingRows = await db
+    .select()
+    .from(vocabulary)
+    .where(inArray(vocabulary.word, words));
+  const existingMap = new Map(existingRows.map((r) => [r.word, r]));
+
+  const now = new Date();
+  let inserted = 0;
+  let updated = 0;
+  const skipped: VocabularyImportEntry[] = [];
+
+  for (const entry of normalized) {
+    const existing = existingMap.get(entry.word);
+    if (existing) {
+      if (mode === "skip") {
+        skipped.push({
+          word: entry.word,
+          replacementWord: entry.replacementWord,
+          isReplacement: entry.isReplacement,
+        });
+      } else {
+        await db
+          .update(vocabulary)
+          .set({
+            replacementWord: entry.replacementWord,
+            isReplacement: entry.isReplacement,
+            updatedAt: now,
+          })
+          .where(eq(vocabulary.id, existing.id));
+        updated++;
+      }
+    } else {
+      await db.insert(vocabulary).values({
+        word: entry.word,
+        replacementWord: entry.replacementWord,
+        isReplacement: entry.isReplacement,
+        dateAdded: now,
+        createdAt: now,
+        updatedAt: now,
+      });
+      inserted++;
+    }
+  }
+
+  return { inserted, updated, skipped };
 }
