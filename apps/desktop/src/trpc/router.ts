@@ -12,6 +12,7 @@ import { authRouter } from "./routers/auth";
 import { onboardingRouter } from "./routers/onboarding";
 import { featureFlagsRouter } from "./routers/feature-flags";
 import { telemetryRouter } from "./routers/telemetry";
+import { misrecognitionRouter } from "./routers/misrecognition";
 import { createRouter, procedure } from "./trpc";
 
 export const router = createRouter({
@@ -77,6 +78,9 @@ export const router = createRouter({
 
   // Telemetry router
   telemetry: telemetryRouter,
+
+  // Misrecognition candidates router
+  misrecognition: misrecognitionRouter,
 });
 
 export type AppRouter = typeof router;
