@@ -279,18 +279,41 @@ export class NativeBridge extends EventEmitter {
     const helperName = getNativeHelperName();
     const helperDir = getNativeHelperDir();
 
-    return electronApp.isPackaged
-      ? path.join(process.resourcesPath, "bin", helperName)
-      : path.join(
-          electronApp.getAppPath(),
-          "..",
-          "..",
-          "packages",
-          "native-helpers",
-          helperDir,
-          "bin",
-          helperName,
-        );
+    if (electronApp.isPackaged) {
+      return path.join(process.resourcesPath, "bin", helperName);
+    }
+
+    // Dev mode: app.getAppPath() returns different anchors depending on the
+    // Electron version and how it was launched — sometimes `apps/desktop`,
+    // sometimes `apps/desktop/.vite/build`. Probe both candidate roots so we
+    // resolve `packages/native-helpers/<dir>/bin/<name>` either way. Falls
+    // back to the first candidate so the existing error path stays readable.
+    const appPath = electronApp.getAppPath();
+    const candidates = [
+      path.join(
+        appPath,
+        "..",
+        "..",
+        "packages",
+        "native-helpers",
+        helperDir,
+        "bin",
+        helperName,
+      ),
+      path.join(
+        appPath,
+        "..",
+        "..",
+        "..",
+        "..",
+        "packages",
+        "native-helpers",
+        helperDir,
+        "bin",
+        helperName,
+      ),
+    ];
+    return candidates.find((p) => fs.existsSync(p)) ?? candidates[0];
   }
 
   private startHelperProcess(): void {

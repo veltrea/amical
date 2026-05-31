@@ -378,6 +378,10 @@
       "about": {
         "title": "About",
         "description": "About Amical and version information"
+      },
+      "misrecognition": {
+        "title": "Misrecognition Candidates",
+        "description": "Review auto-extracted words and register replacements."
       }
     },
     "sidebar": {
@@ -1069,6 +1073,42 @@
           "downloadFailed": "Download failed: {{message}}",
           "loginSuccess": "Login successful!"
         }
+      }
+    },
+    "misrecognition": {
+      "title": "Misrecognition Candidates",
+      "description": "Words auto-extracted from your dictation history that may be ASR misrecognitions. Enter the correct word to add a replacement to your vocabulary. Nothing here affects live dictation until you register it.",
+      "scan": "Scan",
+      "scanAll": "Full rescan",
+      "groupByReading": "Group by reading",
+      "selectAll": "Select all",
+      "selectedCount": "{{count}} selected",
+      "lastScan": "Last scan: {{value}}",
+      "neverScanned": "never",
+      "loading": "Loading candidates...",
+      "empty": "No candidates. Click Scan to analyze your transcription history.",
+      "readingGroup": "Same reading: {{key}} (×{{total}})",
+      "replacementPlaceholder": "Correct word",
+      "register": "Register",
+      "dismiss": "Dismiss",
+      "dismissSelected": "Dismiss selected",
+      "bulkRegister": "Register selected with one correct word",
+      "bulkDialog": {
+        "title": "Register selected candidates",
+        "description": "Register {{count}} selected candidate(s) to vocabulary, all mapped to the same correct word.",
+        "replacementLabel": "Correct word",
+        "placeholder": "Enter the correct word",
+        "cancel": "Cancel",
+        "submit": "Register"
+      },
+      "toast": {
+        "scanComplete": "Scan done. scanned {{scanned}}, +{{inserted}} new, {{updated}} updated.",
+        "scanFailed": "Scan failed: {{message}}",
+        "dismissFailed": "Failed to dismiss: {{message}}",
+        "registered": "Registered to vocabulary.",
+        "registerFailed": "Failed to register: {{message}}",
+        "bulkRegistered": "Registered {{registered}}, skipped {{skipped}}.",
+        "emptyReplacement": "Enter the correct word first."
       }
     }
   }

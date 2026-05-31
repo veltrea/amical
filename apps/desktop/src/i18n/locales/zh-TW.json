@@ -378,6 +378,10 @@
       "about": {
         "title": "關於",
         "description": "關於 Amical 和版本資訊"
+      },
+      "misrecognition": {
+        "title": "誤識別候選詞",
+        "description": "檢視自動擷取的詞彙並登錄替換項。"
       }
     },
     "sidebar": {
@@ -1038,6 +1042,42 @@
           "downloadFailed": "下載發生錯誤：{{message}}",
           "loginSuccess": "順利完成登入！"
         }
+      }
+    },
+    "misrecognition": {
+      "title": "誤識別候選詞",
+      "description": "從聽寫歷史中自動擷取的可能誤識別詞彙。輸入正確的詞彙以新增取代規則到詞彙表。",
+      "scan": "掃描",
+      "scanAll": "全部重新掃描",
+      "groupByReading": "依讀音分組",
+      "selectAll": "全選",
+      "selectedCount": "已選 {{count}} 個",
+      "lastScan": "上次掃描：{{value}}",
+      "neverScanned": "從未",
+      "loading": "載入中...",
+      "empty": "尚無候選詞。按一下「掃描」分析歷史紀錄。",
+      "readingGroup": "同讀音：{{key}} (×{{total}})",
+      "replacementPlaceholder": "正確的詞彙",
+      "register": "登錄",
+      "dismiss": "捨棄",
+      "dismissSelected": "捨棄所選",
+      "bulkRegister": "以同一正確詞批次登錄所選",
+      "bulkDialog": {
+        "title": "登錄所選候選詞",
+        "description": "將 {{count}} 個候選詞以同一個正確詞登錄到詞彙表。",
+        "replacementLabel": "正確的詞彙",
+        "placeholder": "輸入正確的詞彙",
+        "cancel": "取消",
+        "submit": "登錄"
+      },
+      "toast": {
+        "scanComplete": "掃描完成。檢查 {{scanned}}、新增 {{inserted}}、更新 {{updated}}。",
+        "scanFailed": "掃描失敗：{{message}}",
+        "dismissFailed": "捨棄失敗：{{message}}",
+        "registered": "已登錄到詞彙表。",
+        "registerFailed": "登錄失敗：{{message}}",
+        "bulkRegistered": "已登錄 {{registered}}、略過 {{skipped}}。",
+        "emptyReplacement": "請先輸入正確的詞彙。"
       }
     }
   }
