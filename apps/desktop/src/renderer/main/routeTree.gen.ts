@@ -19,6 +19,7 @@ import { Route as AppSettingsVocabularyRouteImport } from './routes/_app/setting
 import { Route as AppSettingsSnippetsRouteImport } from './routes/_app/settings/snippets'
 import { Route as AppSettingsShortcutsRouteImport } from './routes/_app/settings/shortcuts'
 import { Route as AppSettingsPreferencesRouteImport } from './routes/_app/settings/preferences'
+import { Route as AppSettingsMisrecognitionRouteImport } from './routes/_app/settings/misrecognition'
 import { Route as AppSettingsDictationRouteImport } from './routes/_app/settings/dictation'
 import { Route as AppSettingsAiModelsRouteImport } from './routes/_app/settings/ai-models'
 import { Route as AppSettingsAdvancedRouteImport } from './routes/_app/settings/advanced'
@@ -74,6 +75,12 @@ const AppSettingsPreferencesRoute = AppSettingsPreferencesRouteImport.update({
   path: '/settings/preferences',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppSettingsMisrecognitionRoute =
+  AppSettingsMisrecognitionRouteImport.update({
+    id: '/settings/misrecognition',
+    path: '/settings/misrecognition',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
 const AppSettingsDictationRoute = AppSettingsDictationRouteImport.update({
   id: '/settings/dictation',
   path: '/settings/dictation',
@@ -109,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/settings/advanced': typeof AppSettingsAdvancedRoute
   '/settings/ai-models': typeof AppSettingsAiModelsRoute
   '/settings/dictation': typeof AppSettingsDictationRoute
+  '/settings/misrecognition': typeof AppSettingsMisrecognitionRoute
   '/settings/preferences': typeof AppSettingsPreferencesRoute
   '/settings/shortcuts': typeof AppSettingsShortcutsRoute
   '/settings/snippets': typeof AppSettingsSnippetsRoute
@@ -124,6 +132,7 @@ export interface FileRoutesByTo {
   '/settings/advanced': typeof AppSettingsAdvancedRoute
   '/settings/ai-models': typeof AppSettingsAiModelsRoute
   '/settings/dictation': typeof AppSettingsDictationRoute
+  '/settings/misrecognition': typeof AppSettingsMisrecognitionRoute
   '/settings/preferences': typeof AppSettingsPreferencesRoute
   '/settings/shortcuts': typeof AppSettingsShortcutsRoute
   '/settings/snippets': typeof AppSettingsSnippetsRoute
@@ -142,6 +151,7 @@ export interface FileRoutesById {
   '/_app/settings/advanced': typeof AppSettingsAdvancedRoute
   '/_app/settings/ai-models': typeof AppSettingsAiModelsRoute
   '/_app/settings/dictation': typeof AppSettingsDictationRoute
+  '/_app/settings/misrecognition': typeof AppSettingsMisrecognitionRoute
   '/_app/settings/preferences': typeof AppSettingsPreferencesRoute
   '/_app/settings/shortcuts': typeof AppSettingsShortcutsRoute
   '/_app/settings/snippets': typeof AppSettingsSnippetsRoute
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/settings/advanced'
     | '/settings/ai-models'
     | '/settings/dictation'
+    | '/settings/misrecognition'
     | '/settings/preferences'
     | '/settings/shortcuts'
     | '/settings/snippets'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/settings/advanced'
     | '/settings/ai-models'
     | '/settings/dictation'
+    | '/settings/misrecognition'
     | '/settings/preferences'
     | '/settings/shortcuts'
     | '/settings/snippets'
@@ -192,6 +204,7 @@ export interface FileRouteTypes {
     | '/_app/settings/advanced'
     | '/_app/settings/ai-models'
     | '/_app/settings/dictation'
+    | '/_app/settings/misrecognition'
     | '/_app/settings/preferences'
     | '/_app/settings/shortcuts'
     | '/_app/settings/snippets'
@@ -277,6 +290,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsPreferencesRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/settings/misrecognition': {
+      id: '/_app/settings/misrecognition'
+      path: '/settings/misrecognition'
+      fullPath: '/settings/misrecognition'
+      preLoaderRoute: typeof AppSettingsMisrecognitionRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/settings/dictation': {
       id: '/_app/settings/dictation'
       path: '/settings/dictation'
@@ -336,6 +356,7 @@ interface AppRouteRouteChildren {
   AppSettingsAdvancedRoute: typeof AppSettingsAdvancedRoute
   AppSettingsAiModelsRoute: typeof AppSettingsAiModelsRoute
   AppSettingsDictationRoute: typeof AppSettingsDictationRoute
+  AppSettingsMisrecognitionRoute: typeof AppSettingsMisrecognitionRoute
   AppSettingsPreferencesRoute: typeof AppSettingsPreferencesRoute
   AppSettingsShortcutsRoute: typeof AppSettingsShortcutsRoute
   AppSettingsSnippetsRoute: typeof AppSettingsSnippetsRoute
@@ -350,6 +371,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppSettingsAdvancedRoute: AppSettingsAdvancedRoute,
   AppSettingsAiModelsRoute: AppSettingsAiModelsRoute,
   AppSettingsDictationRoute: AppSettingsDictationRoute,
+  AppSettingsMisrecognitionRoute: AppSettingsMisrecognitionRoute,
   AppSettingsPreferencesRoute: AppSettingsPreferencesRoute,
   AppSettingsShortcutsRoute: AppSettingsShortcutsRoute,
   AppSettingsSnippetsRoute: AppSettingsSnippetsRoute,

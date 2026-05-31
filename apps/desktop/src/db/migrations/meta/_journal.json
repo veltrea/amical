@@ -43,6 +43,13 @@
       "when": 1779621178923,
       "tag": "0005_neat_emma_frost",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1780198454703,
+      "tag": "0006_perfect_big_bertha",
+      "breakpoints": true
     }
   ]
 }

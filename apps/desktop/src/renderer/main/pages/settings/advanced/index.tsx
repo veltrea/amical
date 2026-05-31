@@ -89,6 +89,20 @@ export default function AdvancedSettingsPage() {
       },
     });
 
+  const repairPermissionsMutation = api.permissions.repair.useMutation({
+    onMutate: () => {
+      toast.info(t("settings.advanced.permissions.repair.toast.relaunching"));
+    },
+    onError: (error) => {
+      console.error("Failed to repair permissions:", error);
+      toast.error(
+        t("settings.advanced.permissions.repair.toast.failed", {
+          message: error.message,
+        }),
+      );
+    },
+  });
+
   const resetAppMutation = api.settings.resetApp.useMutation({
     onMutate: () => {
       setIsResetting(true);
@@ -454,6 +468,64 @@ export default function AdvancedSettingsPage() {
                 {t("settings.advanced.machineId.copy")}
               </Button>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>{t("settings.advanced.permissions.title")}</CardTitle>
+          <CardDescription>
+            {t("settings.advanced.permissions.description")}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label htmlFor="repair-permissions">
+                {t("settings.advanced.permissions.repair.label")}
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {t("settings.advanced.permissions.repair.description")}
+              </p>
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  id="repair-permissions"
+                  disabled={repairPermissionsMutation.isPending}
+                >
+                  {t("settings.advanced.permissions.repair.button")}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {t("settings.advanced.permissions.repair.dialog.title")}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t(
+                      "settings.advanced.permissions.repair.dialog.description",
+                    )}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>
+                    {t(
+                      "settings.advanced.permissions.repair.dialog.cancel",
+                    )}
+                  </AlertDialogCancel>
+                  <Button
+                    onClick={() => repairPermissionsMutation.mutate()}
+                  >
+                    {t(
+                      "settings.advanced.permissions.repair.dialog.confirm",
+                    )}
+                  </Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </CardContent>
       </Card>

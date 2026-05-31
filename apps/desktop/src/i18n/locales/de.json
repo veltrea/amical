@@ -378,6 +378,10 @@
       "about": {
         "title": "Über",
         "description": "Über Amical und Versionsinformationen"
+      },
+      "misrecognition": {
+        "title": "Falscherkennungs-Kandidaten",
+        "description": "Automatisch extrahierte Wörter prüfen und Ersetzungen registrieren."
       }
     },
     "sidebar": {
@@ -546,6 +550,25 @@
         "logSaved": "Protokolldatei erfolgreich gespeichert",
         "logSaveFailed": "Protokolldatei konnte nicht gespeichert werden",
         "machineIdCopied": "Geräte-ID in die Zwischenablage kopiert"
+      },
+      "permissions": {
+        "title": "Berechtigungen",
+        "description": "Repariert macOS Accessibility/Mikrofon-Berechtigungen, wenn sie nach einem Rebuild nicht mehr wirken.",
+        "repair": {
+          "label": "Berechtigungen reparieren",
+          "description": "Setzt veraltete TCC-Einträge zurück, startet die App neu und zeigt frische Berechtigungsdialoge.",
+          "button": "Reparieren",
+          "dialog": {
+            "title": "Berechtigungen reparieren?",
+            "description": "Amical löscht seine Accessibility/Mikrofon-Berechtigungseinträge und startet neu. Du wirst erneut um Zustimmung gebeten.",
+            "cancel": "Abbrechen",
+            "confirm": "Reparieren und neu starten"
+          },
+          "toast": {
+            "relaunching": "Berechtigungen werden zurückgesetzt und neu gestartet…",
+            "failed": "Reparatur fehlgeschlagen: {{message}}"
+          }
+        }
       }
     },
     "about": {
@@ -1041,6 +1064,42 @@
           "downloadFailed": "Download fehlgeschlagen: {{message}}",
           "loginSuccess": "Anmeldung erfolgreich!"
         }
+      }
+    },
+    "misrecognition": {
+      "title": "Falscherkennungs-Kandidaten",
+      "description": "Wörter, die aus dem Diktatverlauf automatisch extrahiert wurden. Korrektes Wort eingeben, um eine Ersetzung im Vokabular anzulegen.",
+      "scan": "Scannen",
+      "scanAll": "Vollständig neu scannen",
+      "groupByReading": "Nach Lesung gruppieren",
+      "selectAll": "Alle auswählen",
+      "selectedCount": "{{count}} ausgewählt",
+      "lastScan": "Letzter Scan: {{value}}",
+      "neverScanned": "nie",
+      "loading": "Lade...",
+      "empty": "Keine Kandidaten. Auf 'Scannen' klicken, um den Verlauf zu analysieren.",
+      "readingGroup": "Gleiche Lesung: {{key}} (×{{total}})",
+      "replacementPlaceholder": "Korrektes Wort",
+      "register": "Registrieren",
+      "dismiss": "Verwerfen",
+      "dismissSelected": "Auswahl verwerfen",
+      "bulkRegister": "Auswahl mit einem Wort registrieren",
+      "bulkDialog": {
+        "title": "Ausgewählte Kandidaten registrieren",
+        "description": "Registriert {{count}} Kandidaten mit demselben korrekten Wort.",
+        "replacementLabel": "Korrektes Wort",
+        "placeholder": "Korrektes Wort eingeben",
+        "cancel": "Abbrechen",
+        "submit": "Registrieren"
+      },
+      "toast": {
+        "scanComplete": "Scan fertig. {{scanned}} geprüft, +{{inserted}} neu, {{updated}} aktualisiert.",
+        "scanFailed": "Scan fehlgeschlagen: {{message}}",
+        "dismissFailed": "Verwerfen fehlgeschlagen: {{message}}",
+        "registered": "Im Vokabular registriert.",
+        "registerFailed": "Registrierung fehlgeschlagen: {{message}}",
+        "bulkRegistered": "{{registered}} registriert, {{skipped}} übersprungen.",
+        "emptyReplacement": "Bitte zuerst das korrekte Wort eingeben."
       }
     }
   }

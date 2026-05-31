@@ -378,6 +378,10 @@
       "about": {
         "title": "Acerca de",
         "description": "Acerca de Amical e información de versión"
+      },
+      "misrecognition": {
+        "title": "Candidatos de Reconocimiento Erróneo",
+        "description": "Revisa palabras extraídas automáticamente y registra reemplazos."
       }
     },
     "sidebar": {
@@ -535,6 +539,25 @@
         "logSaved": "Archivo de registro guardado correctamente",
         "logSaveFailed": "No se pudo guardar el archivo de registro",
         "machineIdCopied": "ID de máquina copiado al portapapeles"
+      },
+      "permissions": {
+        "title": "Permisos",
+        "description": "Repara los permisos de Accesibilidad y Micrófono de macOS cuando dejan de funcionar tras una recompilación.",
+        "repair": {
+          "label": "Reparar permisos",
+          "description": "Restablece entradas TCC obsoletas, reinicia la app y vuelve a mostrar los diálogos de permiso.",
+          "button": "Reparar",
+          "dialog": {
+            "title": "¿Reparar permisos?",
+            "description": "Amical eliminará sus registros de permisos y se reiniciará. Se te pedirá conceder acceso de nuevo.",
+            "cancel": "Cancelar",
+            "confirm": "Reparar y reiniciar"
+          },
+          "toast": {
+            "relaunching": "Restableciendo permisos y reiniciando…",
+            "failed": "Fallo en la reparación: {{message}}"
+          }
+        }
       }
     },
     "about": {
@@ -1019,6 +1042,42 @@
           "downloadFailed": "La descarga falló: {{message}}",
           "loginSuccess": "¡Inicio de sesión exitoso!"
         }
+      }
+    },
+    "misrecognition": {
+      "title": "Candidatos de Reconocimiento Erróneo",
+      "description": "Palabras extraídas automáticamente del historial de dictado. Introduce la palabra correcta para registrar un reemplazo en el vocabulario.",
+      "scan": "Escanear",
+      "scanAll": "Reescaneo completo",
+      "groupByReading": "Agrupar por lectura",
+      "selectAll": "Seleccionar todo",
+      "selectedCount": "{{count}} seleccionados",
+      "lastScan": "Último escaneo: {{value}}",
+      "neverScanned": "nunca",
+      "loading": "Cargando...",
+      "empty": "Sin candidatos. Pulsa Escanear para analizar el historial.",
+      "readingGroup": "Misma lectura: {{key}} (×{{total}})",
+      "replacementPlaceholder": "Palabra correcta",
+      "register": "Registrar",
+      "dismiss": "Descartar",
+      "dismissSelected": "Descartar selección",
+      "bulkRegister": "Registrar selección con una sola palabra",
+      "bulkDialog": {
+        "title": "Registrar candidatos seleccionados",
+        "description": "Registra {{count}} candidato(s) con la misma palabra correcta.",
+        "replacementLabel": "Palabra correcta",
+        "placeholder": "Introduce la palabra correcta",
+        "cancel": "Cancelar",
+        "submit": "Registrar"
+      },
+      "toast": {
+        "scanComplete": "Escaneo listo. {{scanned}} revisados, +{{inserted}} nuevos, {{updated}} actualizados.",
+        "scanFailed": "Falló el escaneo: {{message}}",
+        "dismissFailed": "Error al descartar: {{message}}",
+        "registered": "Registrado en el vocabulario.",
+        "registerFailed": "Error al registrar: {{message}}",
+        "bulkRegistered": "{{registered}} registrados, {{skipped}} omitidos.",
+        "emptyReplacement": "Introduce primero la palabra correcta."
       }
     }
   }

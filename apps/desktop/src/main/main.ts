@@ -9,6 +9,7 @@ import started from "electron-squirrel-startup";
 import { AppManager } from "./core/app-manager";
 import { isWindows } from "../utils/platform";
 import { ServiceManager } from "./managers/service-manager";
+import { maybePromptForRevokedPermissions } from "./permissions-bootstrap";
 
 // Trust the OS certificate store on top of Node's bundled CA list. Corporate
 // TLS-inspection proxies (e.g. Zscaler) re-sign HTTPS with a root that lives in
@@ -104,6 +105,11 @@ app.whenReady().then(async () => {
   try {
     await appManager.initialize();
     isInitialized = true;
+
+    // If this instance was relaunched by the "Repair Permissions" button
+    // (--prompt-permissions arg), fire the fresh OS dialogs now that
+    // SwiftHelper is up. No-op otherwise.
+    await maybePromptForRevokedPermissions();
 
     // Process any deep link that was received before initialization completed
     if (pendingDeepLink) {

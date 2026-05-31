@@ -290,8 +290,28 @@ export class NativeBridge extends EventEmitter {
     // back to the first candidate so the existing error path stays readable.
     const appPath = electronApp.getAppPath();
     const candidates = [
-      path.join(appPath, "..", "..", "packages", "native-helpers", helperDir, "bin", helperName),
-      path.join(appPath, "..", "..", "..", "..", "packages", "native-helpers", helperDir, "bin", helperName),
+      path.join(
+        appPath,
+        "..",
+        "..",
+        "packages",
+        "native-helpers",
+        helperDir,
+        "bin",
+        helperName,
+      ),
+      path.join(
+        appPath,
+        "..",
+        "..",
+        "..",
+        "..",
+        "packages",
+        "native-helpers",
+        helperDir,
+        "bin",
+        helperName,
+      ),
     ];
     return candidates.find((p) => fs.existsSync(p)) ?? candidates[0];
   }
