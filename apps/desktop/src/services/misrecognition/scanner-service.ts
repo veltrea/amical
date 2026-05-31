@@ -66,10 +66,15 @@ export async function runScan(
 
     const result = scanRows(rows, vocab);
 
+    // Phase A scaffolding: the legacy v1 scanner emits a single bag of
+    // candidates with no detector id attached. Tag them as "legacy-v1" so
+    // the new detectorIds column has a non-empty value until the rule
+    // detectors land in Phase A.3 and replace this code path entirely.
     const upserts = result.candidates.map((c) => ({
       word: c.word,
       normalizedKey: c.normalizedKey,
       occurrencesDelta: c.occurrences,
+      detectorIds: ["legacy-v1"],
     }));
     const { inserted, updated } = await upsertCandidates(upserts);
 

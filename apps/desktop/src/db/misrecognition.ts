@@ -5,6 +5,9 @@ import {
   misrecognitionScanState,
   type MisrecognitionCandidate,
 } from "./schema";
+import type { ContextSample } from "../services/misrecognition/detectors/types";
+
+const MAX_CONTEXT_SAMPLES = 3;
 
 export interface ListCandidatesOptions {
   limit?: number;
@@ -83,6 +86,43 @@ export interface UpsertCandidateInput {
   word: string;
   normalizedKey: string;
   occurrencesDelta: number; // how many new occurrences observed this scan
+  detectorIds: string[]; // detectors that flagged this candidate in the scan
+  contextSample?: ContextSample[];
+  detectorScores?: Record<string, number>;
+}
+
+function unionDetectorIds(existing: unknown, incoming: string[]): string[] {
+  const existingArr = Array.isArray(existing)
+    ? (existing as string[])
+    : [];
+  return [...new Set([...existingArr, ...incoming])];
+}
+
+function mergeContextSamples(
+  existing: unknown,
+  incoming: ContextSample[] | undefined,
+): ContextSample[] | null {
+  const existingArr: ContextSample[] = Array.isArray(existing)
+    ? (existing as ContextSample[])
+    : [];
+  // Keep newest first so the UI sees the most recent context at the top.
+  const merged = [...(incoming ?? []), ...existingArr].slice(
+    0,
+    MAX_CONTEXT_SAMPLES,
+  );
+  return merged.length > 0 ? merged : null;
+}
+
+function mergeDetectorScores(
+  existing: unknown,
+  incoming: Record<string, number> | undefined,
+): Record<string, number> | null {
+  const base =
+    existing && typeof existing === "object" && !Array.isArray(existing)
+      ? (existing as Record<string, number>)
+      : {};
+  const merged = { ...base, ...(incoming ?? {}) };
+  return Object.keys(merged).length > 0 ? merged : null;
 }
 
 /**
@@ -90,6 +130,10 @@ export interface UpsertCandidateInput {
  * rows (and bumps `lastSeenAt`), or inserts a new row. Dismissed rows are
  * never resurrected by upsert — we skip them at insert via the partial unique
  * index, but since SQLite doesn't easily give us that, we filter manually.
+ *
+ * For the v3 detector framework, each input also carries `detectorIds`
+ * (union'd into the row), and optional `contextSample` / `detectorScores`
+ * (merged with newest-first preference / per-detector overwrite).
  */
 export async function upsertCandidates(
   inputs: UpsertCandidateInput[],
@@ -99,7 +143,6 @@ export async function upsertCandidates(
   let inserted = 0;
   let updated = 0;
 
-  // Read existing rows (incl. dismissed) for all words we are about to write.
   const words = inputs.map((i) => i.word);
   const existing = await db
     .select()
@@ -117,6 +160,15 @@ export async function upsertCandidates(
           occurrenceCount: row.occurrenceCount + input.occurrencesDelta,
           lastSeenAt: now,
           updatedAt: now,
+          detectorIds: unionDetectorIds(row.detectorIds, input.detectorIds),
+          contextSample: mergeContextSamples(
+            row.contextSample,
+            input.contextSample,
+          ),
+          detectorScores: mergeDetectorScores(
+            row.detectorScores,
+            input.detectorScores,
+          ),
         })
         .where(eq(misrecognitionCandidates.id, row.id));
       updated++;
@@ -129,6 +181,9 @@ export async function upsertCandidates(
         lastSeenAt: now,
         createdAt: now,
         updatedAt: now,
+        detectorIds: input.detectorIds,
+        contextSample: input.contextSample ?? null,
+        detectorScores: input.detectorScores ?? null,
       });
       inserted++;
     }
