@@ -50,6 +50,13 @@
       "when": 1780198454703,
       "tag": "0006_perfect_big_bertha",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1780246077737,
+      "tag": "0007_great_human_robot",
+      "breakpoints": true
     }
   ]
 }

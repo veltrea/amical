@@ -76,6 +76,29 @@ export const misrecognitionCandidates = sqliteTable(
       .notNull()
       .default(false),
     dismissedAt: integer("dismissed_at", { mode: "timestamp" }),
+    // IDs of detectors that flagged this candidate (one candidate can be
+    // surfaced by several detectors at once). Stored as a JSON string array
+    // because SQLite has no native array type; filtering by detector ID is
+    // done via LIKE `%"detector-id"%`. Rows created before v3 keep the
+    // default `[]` and are treated as legacy until rescanned.
+    detectorIds: text("detector_ids", { mode: "json" })
+      .$type<string[]>()
+      .notNull()
+      .default(sql`'[]'`),
+    // Up to 3 occurrence samples surfaced as `{left, right, transcriptionId}`
+    // tuples so the UI can show context without re-querying transcriptions.
+    contextSample: text("context_sample", { mode: "json" }).$type<Array<{
+      left: string;
+      right: string;
+      transcriptionId: number;
+    }> | null>(),
+    // Per-detector scores attached by the detector that produced them
+    // (e.g. cooccurrence-divergence: 0.12). Keyed by detector ID. Null when
+    // none of the detectors that flagged this row emit numeric scores.
+    detectorScores: text("detector_scores", { mode: "json" }).$type<Record<
+      string,
+      number
+    > | null>(),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .default(sql`(unixepoch())`),
