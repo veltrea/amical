@@ -25,15 +25,20 @@ import { useTranslation } from "react-i18next";
  *   - flush to the parent on blur (and on composition end + uncomposed change)
  *   - only re-sync from the prop when not focused, so server-side echo of our
  *     own write doesn't snap the cursor.
+ *
+ * Reused for the User Preferences block AND the Custom System Prompt escape
+ * hatch — both fields persist via the same optimistic-mutation hook.
  */
-function UserInstructionsField({
+function ImeSafeTextarea({
   value,
   onSave,
   placeholder,
+  rows = 5,
 }: {
   value: string;
   onSave: (next: string) => void;
   placeholder: string;
+  rows?: number;
 }) {
   const [draft, setDraft] = useState(value);
   const isComposingRef = useRef(false);
@@ -55,7 +60,7 @@ function UserInstructionsField({
     <Textarea
       value={draft}
       placeholder={placeholder}
-      rows={5}
+      rows={rows}
       className="font-mono text-xs"
       onFocus={() => {
         isFocusedRef.current = true;
@@ -93,10 +98,13 @@ export function FormattingSettings() {
     handleFormattingEnabledChange,
     handleFormattingModelChange,
     handleUserInstructionsChange,
+    handleCustomSystemPromptChange,
     handleCloudLogin,
     isLoginPending,
     userInstructions,
+    customSystemPrompt,
   } = useFormattingSettings();
+  const isAdvancedActive = customSystemPrompt.trim().length > 0;
 
   return (
     <div className="">
@@ -210,15 +218,27 @@ export function FormattingSettings() {
             </div>
 
             {/* User-supplied proofreading instructions — layered into the system
-                prompt as a separate "User Preferences" block. Free-form text. */}
-            <div className="space-y-2 pt-2">
+                prompt as a separate "User Preferences" block. Free-form text.
+                Greyed out (but still editable) when the advanced custom system
+                prompt is active, since that path ignores this field. */}
+            <div
+              className={`space-y-2 pt-2 ${
+                isAdvancedActive ? "opacity-50" : ""
+              }`}
+            >
               <Label className="text-sm font-medium text-foreground block">
                 {t("settings.dictation.formatting.userInstructionsLabel")}
               </Label>
               <p className="text-xs text-muted-foreground">
-                {t("settings.dictation.formatting.userInstructionsDescription")}
+                {isAdvancedActive
+                  ? t(
+                      "settings.dictation.formatting.userInstructionsOverridden",
+                    )
+                  : t(
+                      "settings.dictation.formatting.userInstructionsDescription",
+                    )}
               </p>
-              <UserInstructionsField
+              <ImeSafeTextarea
                 value={userInstructions}
                 onSave={handleUserInstructionsChange}
                 placeholder={t(
@@ -226,6 +246,40 @@ export function FormattingSettings() {
                 )}
               />
             </div>
+
+            {/* Power-user escape hatch: full system prompt replacement.
+                Collapsed by default. When the textarea is non-empty after
+                trim, this replaces the built-in template entirely — safety
+                rules, examples, output-format directives all gone. */}
+            <details
+              className="pt-2 border-t border-border"
+              open={isAdvancedActive}
+            >
+              <summary className="text-sm font-medium text-foreground cursor-pointer select-none">
+                {t("settings.dictation.formatting.customSystemPromptLabel")}
+                {isAdvancedActive && (
+                  <Badge className="ml-2 text-[10px] px-1.5 py-0 bg-amber-500/20 text-amber-500 hover:bg-amber-500/20">
+                    {t("settings.dictation.formatting.customSystemPromptActiveBadge")}
+                  </Badge>
+                )}
+              </summary>
+              <div className="space-y-2 pt-3">
+                <p className="text-xs text-muted-foreground">
+                  {t("settings.dictation.formatting.customSystemPromptDescription")}
+                </p>
+                <p className="text-xs text-amber-500/80">
+                  {t("settings.dictation.formatting.customSystemPromptWarning")}
+                </p>
+                <ImeSafeTextarea
+                  value={customSystemPrompt}
+                  onSave={handleCustomSystemPromptChange}
+                  placeholder={t(
+                    "settings.dictation.formatting.customSystemPromptPlaceholder",
+                  )}
+                  rows={12}
+                />
+              </div>
+            </details>
           </div>
         </div>
       )}

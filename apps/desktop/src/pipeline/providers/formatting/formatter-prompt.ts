@@ -19,8 +19,13 @@ export function constructFormatterPrompt(context: FormatParams["context"]): {
   systemPrompt: string;
   userPrompt: (input: string) => string;
 } {
-  const { accessibilityContext, vocabulary, language, userInstructions } =
-    context;
+  const {
+    accessibilityContext,
+    vocabulary,
+    language,
+    userInstructions,
+    customSystemPrompt,
+  } = context;
 
   const appType = detectApplicationType(accessibilityContext);
   const beforeText =
@@ -35,6 +40,7 @@ export function constructFormatterPrompt(context: FormatParams["context"]): {
     afterText,
     language,
     userInstructions,
+    customSystemPrompt,
   });
 }
 

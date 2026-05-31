@@ -18,4 +18,15 @@ export interface FormatterConfig {
   // as a separate "User Preferences" block, kept distinct from the curated
   // few-shot examples so user rules cannot collide with built-in demonstrations.
   userInstructions?: string;
+  // POWER-USER ESCAPE HATCH. When set (non-empty after trim) this string
+  // becomes the FULL system prompt — built-in safety rules, examples, and
+  // output-format instructions are all replaced. Useful when the curated
+  // few-shot examples in the default template ("minimal formatting only")
+  // actively work against the user's intent — e.g. converting casual speech
+  // to a formal email tone, applying a domain-specific style guide, or
+  // translating between language registers.
+  // The user is responsible for telling the model to wrap its output in
+  // <formatted_text>...</formatted_text> — otherwise extract-formatted-text
+  // falls back to the raw transcription.
+  customSystemPrompt?: string;
 }

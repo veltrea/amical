@@ -17,6 +17,7 @@ interface UseFormattingSettingsReturn {
   selectedModelId: string;
   formattingOptions: ComboboxOption[];
   userInstructions: string;
+  customSystemPrompt: string;
 
   // Derived booleans
   disableFormattingToggle: boolean;
@@ -30,6 +31,7 @@ interface UseFormattingSettingsReturn {
   handleFormattingEnabledChange: (enabled: boolean) => void;
   handleFormattingModelChange: (modelId: string) => void;
   handleUserInstructionsChange: (value: string) => void;
+  handleCustomSystemPromptChange: (value: string) => void;
   handleCloudLogin: () => Promise<void>;
 
   // Loading state
@@ -291,6 +293,20 @@ export function useFormattingSettings(): UseFormattingSettingsReturn {
     [formatterConfig, setFormatterConfigMutation],
   );
 
+  // Power-user escape hatch. When set, replaces the entire built-in system
+  // prompt. See FormatterConfig.customSystemPrompt for the safety implications.
+  const handleCustomSystemPromptChange = useCallback(
+    (value: string) => {
+      const nextConfig: FormatterConfig = {
+        ...(formatterConfig ?? {}),
+        enabled: formatterConfig?.enabled ?? false,
+        customSystemPrompt: value,
+      };
+      setFormatterConfigMutation.mutate(nextConfig);
+    },
+    [formatterConfig, setFormatterConfigMutation],
+  );
+
   const handleCloudLogin = useCallback(async () => {
     try {
       await loginMutation.mutateAsync();
@@ -305,6 +321,7 @@ export function useFormattingSettings(): UseFormattingSettingsReturn {
     selectedModelId,
     formattingOptions,
     userInstructions: formatterConfig?.userInstructions ?? "",
+    customSystemPrompt: formatterConfig?.customSystemPrompt ?? "",
 
     // Derived booleans
     disableFormattingToggle,
@@ -318,6 +335,7 @@ export function useFormattingSettings(): UseFormattingSettingsReturn {
     handleFormattingEnabledChange,
     handleFormattingModelChange,
     handleUserInstructionsChange,
+    handleCustomSystemPromptChange,
     handleCloudLogin,
 
     // Loading state

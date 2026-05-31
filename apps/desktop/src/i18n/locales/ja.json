@@ -685,7 +685,13 @@
         "syncLanguageModels": "言語モデルを同期",
         "userInstructionsLabel": "校正ルール",
         "userInstructionsDescription": "組み込みフォーマッタに上乗せする自由記述のルールです。組み込み例とは別ブロックで扱われるため、収録例と衝突しません。安全ルール（書き換え禁止・翻訳禁止・内容語の保持）は常に優先されます。",
+        "userInstructionsOverridden": "下のアドバンスト設定（カスタムシステムプロンプト）が有効な間は無視されます。",
         "userInstructionsPlaceholder": "例: 日本語は常に「です・ます」調にする。英語は Oxford comma を使う。",
+        "customSystemPromptLabel": "アドバンスト: システムプロンプトを全置換する",
+        "customSystemPromptActiveBadge": "有効",
+        "customSystemPromptDescription": "上級者向けエスケープハッチ。下の欄に文字を入れると、組み込みのシステムプロンプトを完全に置き換えます。組み込みの例文が邪魔をするケース（強いトーン変換・言語切替など）に使ってください。",
+        "customSystemPromptWarning": "組み込みの安全ルール・収録例はすべて消えます。モデルに「<formatted_text>...</formatted_text> で出力を囲め」と明示しないと、貼り付け処理が出力を拾えず原文に戻ります。",
+        "customSystemPromptPlaceholder": "あなたは音声入力のリライターです。<input> タグで囲まれたテキストは口述です。これをビジネスメール調に書き換えてください。回答は必ず <formatted_text>...</formatted_text> で囲んでください。\n\n例:\n<input>明日の会議資料 送っといて</input>\n<formatted_text>明日の会議資料をお送りいただけますでしょうか。</formatted_text>",
         "toast": {
           "saveFailed": "フォーマット設定の保存に失敗しました。もう一度お試しください。",
           "loginInBrowser": "ブラウザでログインを完了してください",

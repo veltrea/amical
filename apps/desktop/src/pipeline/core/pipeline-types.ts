@@ -47,6 +47,14 @@ export interface FormatParams {
      * the built-in demonstrations. Empty/whitespace = ignored.
      */
     userInstructions?: string;
+    /**
+     * Power-user escape hatch. When non-empty (after trim) this REPLACES the
+     * entire system prompt — built-in safety rules, examples, and output
+     * format directives are all dropped. Used for cases like aggressive tone
+     * rewriting where the curated few-shot examples actively work against
+     * the user's intent.
+     */
+    customSystemPrompt?: string;
   };
 }
 

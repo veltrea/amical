@@ -138,6 +138,9 @@ export interface AppSettingsData {
     mlxMemoryStrategy?: "balanced" | "fast" | "low";
     // Free-form user proofreading instructions, layered into the system prompt.
     userInstructions?: string;
+    // Power-user escape hatch: when set (non-empty after trim) this replaces
+    // the entire system prompt — built-in safety rules and examples included.
+    customSystemPrompt?: string;
   };
   ui?: {
     theme: "light" | "dark" | "system";

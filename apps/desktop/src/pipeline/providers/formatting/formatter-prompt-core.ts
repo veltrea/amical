@@ -198,6 +198,20 @@ export interface FormattingContext {
    * never collide with the curated demonstrations.
    */
   userInstructions?: string;
+  /**
+   * POWER-USER ESCAPE HATCH. When non-empty (after trim) this string REPLACES
+   * the entire built-in system prompt — safety rules, examples, output format
+   * directives, vocabulary block, app-type rules, context tags, all of it.
+   * Required when the user wants behaviour the curated few-shot examples
+   * actively suppress (aggressive tone rewriting, language switching, …).
+   * The user is responsible for telling the model to wrap its output in
+   * <formatted_text>...</formatted_text>; otherwise extract-formatted-text
+   * falls back to the raw transcription.
+   *
+   * When set, `userInstructions` and `vocabulary`/`beforeText`/`afterText`
+   * are IGNORED — there is no template to inject them into.
+   */
+  customSystemPrompt?: string;
 }
 
 function buildVocabInstruction(vocabulary?: string[]): string {
@@ -260,7 +274,19 @@ export function buildFormattingPrompt(context: FormattingContext): {
     afterText,
     language,
     userInstructions,
+    customSystemPrompt,
   } = context;
+
+  // Escape hatch first: when the user provided a full replacement prompt,
+  // honour it verbatim. Don't even try to splice in vocabulary or context
+  // — if the user wanted those they would have included references inline.
+  const customTrimmed = customSystemPrompt?.trim();
+  if (customTrimmed) {
+    return {
+      systemPrompt: customTrimmed,
+      userPrompt: (input: string) => `<input>${input}</input>`,
+    };
+  }
   const vocabInstr = buildVocabInstruction(vocabulary);
   const contextInstr = buildContextInstruction(beforeText, afterText);
   const userInstrBlock = buildUserInstructionsBlock(userInstructions);

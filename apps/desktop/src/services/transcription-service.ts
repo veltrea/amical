@@ -835,6 +835,7 @@ export class TranscriptionService {
       accessibilityContext?: StreamingSession["context"]["sharedData"]["accessibilityContext"];
       language?: string;
       userInstructions?: string;
+      customSystemPrompt?: string;
     },
   ): Promise<{ text: string; duration: number } | null> {
     const startTime = performance.now();
@@ -849,6 +850,7 @@ export class TranscriptionService {
           aggregatedTranscription: text,
           language: context.language,
           userInstructions: context.userInstructions,
+          customSystemPrompt: context.customSystemPrompt,
         },
       });
 
@@ -945,6 +947,7 @@ export class TranscriptionService {
               accessibilityContext: options.accessibilityContext,
               language: options.language,
               userInstructions: formatterConfig.userInstructions,
+              customSystemPrompt: formatterConfig.customSystemPrompt,
             },
           );
           if (result) {

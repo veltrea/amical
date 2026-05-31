@@ -707,7 +707,13 @@
         "syncLanguageModels": "Sync language models",
         "userInstructionsLabel": "Your proofreading rules",
         "userInstructionsDescription": "Free-form rules layered on top of the built-in formatter. Kept separate from the curated examples so your rules cannot collide with them. The safety rules (no rewriting, no translation, preserve content words) always take precedence.",
+        "userInstructionsOverridden": "Ignored while the advanced custom system prompt below is active.",
         "userInstructionsPlaceholder": "e.g. Always use polite form (です/ます) in Japanese. Prefer the Oxford comma in English.",
+        "customSystemPromptLabel": "Advanced: replace the system prompt entirely",
+        "customSystemPromptActiveBadge": "Active",
+        "customSystemPromptDescription": "Power-user escape hatch. The text below — when non-empty — completely replaces the built-in system prompt. Use this when you need behaviour the curated examples actively work against (aggressive tone rewriting, language switching, etc.).",
+        "customSystemPromptWarning": "All built-in safety rules and curated examples are dropped. You must instruct the model to wrap its output in <formatted_text>...</formatted_text>, otherwise nothing will be pasted.",
+        "customSystemPromptPlaceholder": "You are a transcription rewriter. The input between <input> tags is dictated speech. Rewrite it in a formal business-email tone. Always wrap your answer in <formatted_text>...</formatted_text>.\n\nExample:\n<input>send the report by friday thanks</input>\n<formatted_text>Please send the report by Friday. Thank you.</formatted_text>",
         "toast": {
           "saveFailed": "Failed to save formatting settings. Please try again.",
           "loginInBrowser": "Complete login in your browser",
