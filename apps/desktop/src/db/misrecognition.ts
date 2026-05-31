@@ -13,7 +13,10 @@ const MAX_CONTEXT_SAMPLES = 3;
 export interface ListCandidatesOptions {
   limit?: number;
   offset?: number;
-  sortBy?: "occurrenceCount" | "lastSeenAt" | "word";
+  // `detectorCount` orders by how many detectors flagged the row (= the
+  // length of the JSON array stored in detector_ids), with occurrenceCount
+  // as a deterministic tiebreaker so multi-tag candidates surface first.
+  sortBy?: "occurrenceCount" | "lastSeenAt" | "word" | "detectorCount";
   sortOrder?: "asc" | "desc";
   includeDismissed?: boolean;
   // OR semantics: row matches if any of its detectorIds is in this list.
@@ -62,19 +65,26 @@ export async function listCandidates(
     sortOrder = "desc",
   } = options;
 
-  const column =
-    sortBy === "word"
-      ? misrecognitionCandidates.word
-      : sortBy === "lastSeenAt"
-        ? misrecognitionCandidates.lastSeenAt
-        : misrecognitionCandidates.occurrenceCount;
   const orderFn = sortOrder === "asc" ? asc : desc;
+  const orderClauses =
+    sortBy === "word"
+      ? [orderFn(misrecognitionCandidates.word)]
+      : sortBy === "lastSeenAt"
+        ? [orderFn(misrecognitionCandidates.lastSeenAt)]
+        : sortBy === "detectorCount"
+          ? [
+              orderFn(
+                sql`json_array_length(${misrecognitionCandidates.detectorIds})`,
+              ),
+              desc(misrecognitionCandidates.occurrenceCount),
+            ]
+          : [orderFn(misrecognitionCandidates.occurrenceCount)];
 
   const where = buildWhereClauses(options);
 
   let q = db.select().from(misrecognitionCandidates).$dynamic();
   if (where) q = q.where(where);
-  return await q.orderBy(orderFn(column)).limit(limit).offset(offset);
+  return await q.orderBy(...orderClauses).limit(limit).offset(offset);
 }
 
 export async function countCandidates(

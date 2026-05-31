@@ -8,6 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogFooter,
@@ -62,6 +69,9 @@ export default function MisrecognitionSettingsPage() {
   );
   const [searchWord, setSearchWord] = useState("");
   const [searchReading, setSearchReading] = useState("");
+  const [sortBy, setSortBy] = useState<
+    "occurrenceCount" | "detectorCount" | "lastSeenAt" | "word"
+  >("detectorCount");
 
   const detectorsQuery = api.misrecognition.listDetectors.useQuery();
 
@@ -81,8 +91,8 @@ export default function MisrecognitionSettingsPage() {
   const candidatesQuery = api.misrecognition.listCandidates.useQuery({
     limit: 100,
     offset: 0,
-    sortBy: "occurrenceCount",
-    sortOrder: "desc",
+    sortBy,
+    sortOrder: sortBy === "word" ? "asc" : "desc",
     groupByNormalizedKey: groupByReading,
     searchWord: searchWord.trim() || undefined,
     searchReading: searchReading.trim() || undefined,
@@ -386,7 +396,7 @@ export default function MisrecognitionSettingsPage() {
         </CardContent>
       </Card>
 
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
         <Input
           value={searchWord}
           onChange={(e) => setSearchWord(e.target.value)}
@@ -399,6 +409,33 @@ export default function MisrecognitionSettingsPage() {
           placeholder={t("settings.misrecognition.search.readingPlaceholder")}
           className="max-w-xs"
         />
+        <div className="flex items-center gap-2 ml-auto">
+          <Label className="text-xs text-muted-foreground">
+            {t("settings.misrecognition.sortBy.label")}
+          </Label>
+          <Select
+            value={sortBy}
+            onValueChange={(v) => setSortBy(v as typeof sortBy)}
+          >
+            <SelectTrigger className="w-64">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="detectorCount">
+                {t("settings.misrecognition.sortBy.detectorCount")}
+              </SelectItem>
+              <SelectItem value="occurrenceCount">
+                {t("settings.misrecognition.sortBy.occurrenceCount")}
+              </SelectItem>
+              <SelectItem value="lastSeenAt">
+                {t("settings.misrecognition.sortBy.lastSeenAt")}
+              </SelectItem>
+              <SelectItem value="word">
+                {t("settings.misrecognition.sortBy.word")}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="flex items-center justify-between mb-3 text-sm">

@@ -1122,6 +1122,13 @@
         "wordPlaceholder": "単語で絞り込み…",
         "readingPlaceholder": "読みで絞り込み (ひらがな/カタカナ)…"
       },
+      "sortBy": {
+        "label": "並び替え",
+        "occurrenceCount": "出現回数",
+        "detectorCount": "タグ数 (複数検出器ヒット優先)",
+        "lastSeenAt": "最終出現",
+        "word": "単語"
+      },
       "detectorPanel": {
         "title": "検出器を選ぶ",
         "description": "それぞれの検出器は別の角度で「誤認識かも」を抽出します。複数選択すると合算プールになります。",

@@ -21,7 +21,12 @@ import {
   listDetectorDescriptors,
 } from "../../services/misrecognition/detectors";
 
-const SortBy = z.enum(["occurrenceCount", "lastSeenAt", "word"]);
+const SortBy = z.enum([
+  "occurrenceCount",
+  "lastSeenAt",
+  "word",
+  "detectorCount",
+]);
 const SortOrder = z.enum(["asc", "desc"]);
 
 const ReplacementWord = z

@@ -1144,6 +1144,13 @@
         "wordPlaceholder": "Filter by word…",
         "readingPlaceholder": "Filter by reading (hira/kata)…"
       },
+      "sortBy": {
+        "label": "Sort",
+        "occurrenceCount": "Occurrences",
+        "detectorCount": "Tag count (multi-detector hits first)",
+        "lastSeenAt": "Last seen",
+        "word": "Word"
+      },
       "detectorPanel": {
         "title": "Pick detectors",
         "description": "Each detector surfaces candidates from a different angle. Selecting more detectors widens the candidate pool.",
