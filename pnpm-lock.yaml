@@ -265,6 +265,9 @@ importers:
       keytar:
         specifier: ^7.9.0
         version: 7.9.0
+      kuromoji:
+        specifier: ^0.1.2
+        version: 0.1.2
       lexical:
         specifier: ^0.38.1
         version: 0.38.2
@@ -434,9 +437,6 @@ importers:
       fs-extra:
         specifier: ^11.3.2
         version: 11.3.2
-      kuromoji:
-        specifier: ^0.1.2
-        version: 0.1.2
       prettier:
         specifier: ^3.5.3
         version: 3.6.2

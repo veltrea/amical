@@ -68,6 +68,9 @@ export interface MorphToken {
 }
 
 export interface MorphAnalyzer {
+  // Called once before any tokenize() call when the analyzer needs async
+  // setup (e.g. loading a dictionary). Idempotent.
+  init?(): Promise<void>;
   // Analyze a single text. Implementations should cache per-text results so
   // repeated calls from multiple detectors over the same row don't re-tokenize.
   tokenize(text: string): MorphToken[];

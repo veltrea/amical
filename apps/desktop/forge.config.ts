@@ -42,6 +42,10 @@ export const EXTERNAL_DEPENDENCIES = [
   "libsql",
   "onnxruntime-node",
   "@amical/whisper-wrapper",
+  // kuromoji is pure JS but it locates its dictionary by relative path from
+  // its own package directory, so we keep it out of the Vite bundle and have
+  // it `require`d straight from node_modules.
+  "kuromoji",
   // Add any other native modules you need here
 ];
 
@@ -448,6 +452,10 @@ const config: ForgeConfig = {
       }`,
       "./models",
       "./assets",
+      // kuromoji dictionary (~12 MB) for the morphological misrecognition
+      // detectors. Lives at monorepo node_modules; gets copied to
+      // Resources/dict in the packaged app.
+      "../../node_modules/kuromoji/dict",
     ],
     extendInfo: {
       NSMicrophoneUsageDescription:
