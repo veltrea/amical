@@ -307,18 +307,24 @@ export function extractCandidates(
   }
 
   // Pre-compute: which katakana words have a near-edit-distance variant in
-  // their key group.
+  // their key group AND are minority (non-dominant) members of that group.
+  //
+  // The dominant member (highest occurrence) is treated as the intended
+  // spelling and is NOT flagged — only the rarer variants are candidates
+  // for replacement. Without this filter common words (`テスト` × 792) get
+  // flagged just because a single typo (`デスト` × 1) shares the reading.
   const katakanaVariantWords = new Set<string>();
   for (const arr of kataByKey.values()) {
     if (arr.length < 2) continue;
+    const maxCount = Math.max(...arr.map((t) => t.count));
     for (let i = 0; i < arr.length; i++) {
       for (let j = i + 1; j < arr.length; j++) {
         if (
           editDistance(arr[i].word, arr[j].word, KATAKANA_VARIANT_MAX_EDIT) <=
           KATAKANA_VARIANT_MAX_EDIT
         ) {
-          katakanaVariantWords.add(arr[i].word);
-          katakanaVariantWords.add(arr[j].word);
+          if (arr[i].count < maxCount) katakanaVariantWords.add(arr[i].word);
+          if (arr[j].count < maxCount) katakanaVariantWords.add(arr[j].word);
         }
       }
     }
@@ -350,7 +356,10 @@ export function extractCandidates(
       rules.push("mixed-script");
     }
 
-    if (tc.word.length >= minLen) {
+    // near-vocab: only fire on low-frequency tokens. High-frequency tokens
+    // that happen to be edit-distance 1 from a vocabulary entry are usually
+    // legitimate words, not typos of the vocab entry.
+    if (tc.count <= LOW_FREQ_MAX && tc.word.length >= minLen) {
       for (const v of vocabList) {
         if (Math.abs(v.length - tc.word.length) > NEAR_MISS_MAX_EDIT) continue;
         if (editDistance(v, tc.word, NEAR_MISS_MAX_EDIT) <= NEAR_MISS_MAX_EDIT) {
