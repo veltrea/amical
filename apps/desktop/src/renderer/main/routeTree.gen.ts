@@ -16,10 +16,10 @@ import { Route as AppHistoryRouteImport } from './routes/_app/history'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
 import { Route as AppNotesIndexRouteImport } from './routes/_app/notes.index'
 import { Route as AppSettingsVocabularyRouteImport } from './routes/_app/settings/vocabulary'
-import { Route as AppSettingsMisrecognitionRouteImport } from './routes/_app/settings/misrecognition'
 import { Route as AppSettingsSnippetsRouteImport } from './routes/_app/settings/snippets'
 import { Route as AppSettingsShortcutsRouteImport } from './routes/_app/settings/shortcuts'
 import { Route as AppSettingsPreferencesRouteImport } from './routes/_app/settings/preferences'
+import { Route as AppSettingsMisrecognitionRouteImport } from './routes/_app/settings/misrecognition'
 import { Route as AppSettingsDictationRouteImport } from './routes/_app/settings/dictation'
 import { Route as AppSettingsAiModelsRouteImport } from './routes/_app/settings/ai-models'
 import { Route as AppSettingsAdvancedRouteImport } from './routes/_app/settings/advanced'
@@ -60,12 +60,6 @@ const AppSettingsVocabularyRoute = AppSettingsVocabularyRouteImport.update({
   path: '/settings/vocabulary',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppSettingsMisrecognitionRoute =
-  AppSettingsMisrecognitionRouteImport.update({
-    id: '/settings/misrecognition',
-    path: '/settings/misrecognition',
-    getParentRoute: () => AppRouteRoute,
-  } as any)
 const AppSettingsSnippetsRoute = AppSettingsSnippetsRouteImport.update({
   id: '/settings/snippets',
   path: '/settings/snippets',
@@ -81,6 +75,12 @@ const AppSettingsPreferencesRoute = AppSettingsPreferencesRouteImport.update({
   path: '/settings/preferences',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppSettingsMisrecognitionRoute =
+  AppSettingsMisrecognitionRouteImport.update({
+    id: '/settings/misrecognition',
+    path: '/settings/misrecognition',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
 const AppSettingsDictationRoute = AppSettingsDictationRouteImport.update({
   id: '/settings/dictation',
   path: '/settings/dictation',
@@ -269,13 +269,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsVocabularyRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/_app/settings/misrecognition': {
-      id: '/_app/settings/misrecognition'
-      path: '/settings/misrecognition'
-      fullPath: '/settings/misrecognition'
-      preLoaderRoute: typeof AppSettingsMisrecognitionRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/_app/settings/snippets': {
       id: '/_app/settings/snippets'
       path: '/settings/snippets'
@@ -295,6 +288,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/preferences'
       fullPath: '/settings/preferences'
       preLoaderRoute: typeof AppSettingsPreferencesRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/settings/misrecognition': {
+      id: '/_app/settings/misrecognition'
+      path: '/settings/misrecognition'
+      fullPath: '/settings/misrecognition'
+      preLoaderRoute: typeof AppSettingsMisrecognitionRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/settings/dictation': {
