@@ -1,4 +1,5 @@
-import { and, asc, desc, eq, gt, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, like, or, sql } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
 import { db } from ".";
 import {
   misrecognitionCandidates,
@@ -15,6 +16,40 @@ export interface ListCandidatesOptions {
   sortBy?: "occurrenceCount" | "lastSeenAt" | "word";
   sortOrder?: "asc" | "desc";
   includeDismissed?: boolean;
+  // OR semantics: row matches if any of its detectorIds is in this list.
+  filterDetectors?: string[];
+  // Prefix LIKE on word.
+  searchWord?: string;
+  // Prefix LIKE on normalizedKey.
+  searchReading?: string;
+}
+
+function buildWhereClauses(opts: ListCandidatesOptions): SQL | undefined {
+  const clauses: (SQL | undefined)[] = [];
+  if (!opts.includeDismissed) {
+    clauses.push(eq(misrecognitionCandidates.dismissed, false));
+  }
+  if (opts.filterDetectors && opts.filterDetectors.length > 0) {
+    const detectorClauses = opts.filterDetectors.map(
+      (id) =>
+        sql`${misrecognitionCandidates.detectorIds} LIKE ${`%"${id}"%`}`,
+    );
+    clauses.push(or(...detectorClauses));
+  }
+  if (opts.searchWord && opts.searchWord.length > 0) {
+    clauses.push(
+      like(misrecognitionCandidates.word, `${opts.searchWord}%`),
+    );
+  }
+  if (opts.searchReading && opts.searchReading.length > 0) {
+    clauses.push(
+      like(misrecognitionCandidates.normalizedKey, `${opts.searchReading}%`),
+    );
+  }
+  const filtered = clauses.filter((c): c is SQL => Boolean(c));
+  if (filtered.length === 0) return undefined;
+  if (filtered.length === 1) return filtered[0];
+  return and(...filtered);
 }
 
 export async function listCandidates(
@@ -25,7 +60,6 @@ export async function listCandidates(
     offset = 0,
     sortBy = "occurrenceCount",
     sortOrder = "desc",
-    includeDismissed = false,
   } = options;
 
   const column =
@@ -36,19 +70,17 @@ export async function listCandidates(
         : misrecognitionCandidates.occurrenceCount;
   const orderFn = sortOrder === "asc" ? asc : desc;
 
-  const where = includeDismissed
-    ? undefined
-    : eq(misrecognitionCandidates.dismissed, false);
+  const where = buildWhereClauses(options);
 
   let q = db.select().from(misrecognitionCandidates).$dynamic();
   if (where) q = q.where(where);
   return await q.orderBy(orderFn(column)).limit(limit).offset(offset);
 }
 
-export async function countCandidates(includeDismissed = false) {
-  const where = includeDismissed
-    ? undefined
-    : eq(misrecognitionCandidates.dismissed, false);
+export async function countCandidates(
+  options: Omit<ListCandidatesOptions, "limit" | "offset" | "sortBy" | "sortOrder"> = {},
+) {
+  const where = buildWhereClauses(options);
   let q = db
     .select({ value: sql<number>`count(*)` })
     .from(misrecognitionCandidates)

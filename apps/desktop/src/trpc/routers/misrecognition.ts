@@ -12,7 +12,14 @@ import {
   createVocabularyWord,
   getVocabularyByWord,
 } from "../../db/vocabulary";
-import { isScanRunning, runScan } from "../../services/misrecognition/scanner-service";
+import {
+  isScanRunning,
+  runScan,
+} from "../../services/misrecognition/scanner-service";
+import {
+  ensureDetectorsRegistered,
+  listDetectorDescriptors,
+} from "../../services/misrecognition/detectors";
 
 const SortBy = z.enum(["occurrenceCount", "lastSeenAt", "word"]);
 const SortOrder = z.enum(["asc", "desc"]);
@@ -23,7 +30,14 @@ const ReplacementWord = z
   .transform((s) => s.trim())
   .refine((s) => s.length > 0, { message: "replacementWord must not be empty" });
 
+const DetectorIdList = z.array(z.string().min(1)).max(50);
+
 export const misrecognitionRouter = createRouter({
+  listDetectors: procedure.query(async () => {
+    ensureDetectorsRegistered();
+    return listDetectorDescriptors();
+  }),
+
   listCandidates: procedure
     .input(
       z.object({
@@ -32,6 +46,9 @@ export const misrecognitionRouter = createRouter({
         sortBy: SortBy.optional(),
         sortOrder: SortOrder.optional(),
         groupByNormalizedKey: z.boolean().optional(),
+        filterDetectors: DetectorIdList.optional(),
+        searchWord: z.string().optional(),
+        searchReading: z.string().optional(),
       }),
     )
     .query(async ({ input }) => {
@@ -40,6 +57,9 @@ export const misrecognitionRouter = createRouter({
         offset: input.offset,
         sortBy: input.sortBy,
         sortOrder: input.sortOrder,
+        filterDetectors: input.filterDetectors,
+        searchWord: input.searchWord,
+        searchReading: input.searchReading,
       });
       if (!input.groupByNormalizedKey) {
         return { mode: "flat" as const, rows };
@@ -64,9 +84,23 @@ export const misrecognitionRouter = createRouter({
       };
     }),
 
-  countCandidates: procedure.query(async () => {
-    return await countCandidates();
-  }),
+  countCandidates: procedure
+    .input(
+      z
+        .object({
+          filterDetectors: DetectorIdList.optional(),
+          searchWord: z.string().optional(),
+          searchReading: z.string().optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ input }) => {
+      return await countCandidates({
+        filterDetectors: input?.filterDetectors,
+        searchWord: input?.searchWord,
+        searchReading: input?.searchReading,
+      });
+    }),
 
   dismissCandidates: procedure
     .input(z.object({ ids: z.array(z.number().int().positive()).min(1) }))
@@ -139,9 +173,19 @@ export const misrecognitionRouter = createRouter({
     }),
 
   scanNow: procedure
-    .input(z.object({ fullRescan: z.boolean().optional() }).optional())
+    .input(
+      z
+        .object({
+          detectorIds: DetectorIdList.optional(),
+          fullRescan: z.boolean().optional(),
+        })
+        .optional(),
+    )
     .mutation(async ({ input }) => {
-      return await runScan({ fullRescan: input?.fullRescan });
+      return await runScan({
+        detectorIds: input?.detectorIds,
+        fullRescan: input?.fullRescan,
+      });
     }),
 
   getScanStatus: procedure.query(async () => {
