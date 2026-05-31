@@ -535,6 +535,25 @@
         "logSaved": "日誌檔案儲存成功",
         "logSaveFailed": "日誌檔案儲存失敗",
         "machineIdCopied": "系統識別碼已複製到剪貼簿"
+      },
+      "permissions": {
+        "title": "權限",
+        "description": "在重新編譯後 macOS 協助使用權/麥克風權限失效時，於此修復。",
+        "repair": {
+          "label": "修復權限",
+          "description": "清除過期的 TCC 條目、重新啟動應用、並重新顯示授權對話框。",
+          "button": "修復",
+          "dialog": {
+            "title": "要修復權限嗎？",
+            "description": "Amical 將清除其協助使用權與麥克風的權限紀錄並立即重新啟動，會再次出現授權對話框。",
+            "cancel": "取消",
+            "confirm": "修復並重新啟動"
+          },
+          "toast": {
+            "relaunching": "正在重設權限並重新啟動…",
+            "failed": "修復失敗：{{message}}"
+          }
+        }
       }
     },
     "about": {

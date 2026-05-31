@@ -555,6 +555,25 @@
         "logSaved": "Log file saved successfully",
         "logSaveFailed": "Failed to save log file",
         "machineIdCopied": "Machine ID copied to clipboard"
+      },
+      "permissions": {
+        "title": "Permissions",
+        "description": "Repair macOS Accessibility and Microphone permissions when grants are no longer effective after a rebuild.",
+        "repair": {
+          "label": "Repair permissions",
+          "description": "Resets stale TCC entries, relaunches the app, and shows fresh permission dialogs. Use this when the permission toggles appear ON but the app behaves as if revoked (common after a rebuild changes the code signature).",
+          "button": "Repair",
+          "dialog": {
+            "title": "Repair permissions?",
+            "description": "Amical will clear its Accessibility and Microphone permission records and relaunch immediately. You'll be prompted to grant access again. Any in-flight dictation will be lost.",
+            "cancel": "Cancel",
+            "confirm": "Repair and relaunch"
+          },
+          "toast": {
+            "relaunching": "Resetting permissions and relaunching…",
+            "failed": "Repair failed: {{message}}"
+          }
+        }
       }
     },
     "about": {

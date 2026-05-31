@@ -546,6 +546,25 @@
         "logSaved": "Protokolldatei erfolgreich gespeichert",
         "logSaveFailed": "Protokolldatei konnte nicht gespeichert werden",
         "machineIdCopied": "Geräte-ID in die Zwischenablage kopiert"
+      },
+      "permissions": {
+        "title": "Berechtigungen",
+        "description": "Repariert macOS Accessibility/Mikrofon-Berechtigungen, wenn sie nach einem Rebuild nicht mehr wirken.",
+        "repair": {
+          "label": "Berechtigungen reparieren",
+          "description": "Setzt veraltete TCC-Einträge zurück, startet die App neu und zeigt frische Berechtigungsdialoge.",
+          "button": "Reparieren",
+          "dialog": {
+            "title": "Berechtigungen reparieren?",
+            "description": "Amical löscht seine Accessibility/Mikrofon-Berechtigungseinträge und startet neu. Du wirst erneut um Zustimmung gebeten.",
+            "cancel": "Abbrechen",
+            "confirm": "Reparieren und neu starten"
+          },
+          "toast": {
+            "relaunching": "Berechtigungen werden zurückgesetzt und neu gestartet…",
+            "failed": "Reparatur fehlgeschlagen: {{message}}"
+          }
+        }
       }
     },
     "about": {

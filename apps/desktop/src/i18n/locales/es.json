@@ -535,6 +535,25 @@
         "logSaved": "Archivo de registro guardado correctamente",
         "logSaveFailed": "No se pudo guardar el archivo de registro",
         "machineIdCopied": "ID de máquina copiado al portapapeles"
+      },
+      "permissions": {
+        "title": "Permisos",
+        "description": "Repara los permisos de Accesibilidad y Micrófono de macOS cuando dejan de funcionar tras una recompilación.",
+        "repair": {
+          "label": "Reparar permisos",
+          "description": "Restablece entradas TCC obsoletas, reinicia la app y vuelve a mostrar los diálogos de permiso.",
+          "button": "Reparar",
+          "dialog": {
+            "title": "¿Reparar permisos?",
+            "description": "Amical eliminará sus registros de permisos y se reiniciará. Se te pedirá conceder acceso de nuevo.",
+            "cancel": "Cancelar",
+            "confirm": "Reparar y reiniciar"
+          },
+          "toast": {
+            "relaunching": "Restableciendo permisos y reiniciando…",
+            "failed": "Fallo en la reparación: {{message}}"
+          }
+        }
       }
     },
     "about": {
