@@ -7,12 +7,22 @@
  * Concrete detectors are added per phase (see SPEC-misrecognition-v3.md §6).
  */
 
+import { registerDetector } from "./registry";
+import { katakanaVariantDetector } from "./katakana-variant";
+import { lowFrequencyRareDetector } from "./low-frequency-rare";
+import { mixedScriptDetector } from "./mixed-script";
+import { nearVocabularyDetector } from "./near-vocabulary";
+
 let registered = false;
 
 export function ensureDetectorsRegistered(): void {
   if (registered) return;
   registered = true;
   // Phase A.3: rule-based detectors
+  registerDetector(katakanaVariantDetector);
+  registerDetector(lowFrequencyRareDetector);
+  registerDetector(mixedScriptDetector);
+  registerDetector(nearVocabularyDetector);
   // Phase A.4: morphological detectors
   // Phase B:   statistical / phonetic detectors
   // Phase C:   LLM detectors
