@@ -1167,6 +1167,10 @@
           "label": "辞書ニアミス",
           "description": "既存 vocabulary 行と編集距離 1 の低頻度トークン。"
         },
+        "trailing-omission": {
+          "label": "末尾欠落 (長音・促音)",
+          "description": "カタカナ語の末尾長音/促音/撥音が欠けたもの (`コーヒ` ↔ `コーヒー`、`サーバ` ↔ `サーバー`、`ロケッ` ↔ `ロケット`)。corpus に長い綴りが存在する場合のみ flag。"
+        },
         "same-reading-group": {
           "label": "同読みグループ (kuromoji)",
           "description": "形態素解析の reading で同じ読みを持つ surface を 1 グループにする。漢字/ひらがな/カタカナをまたぐ。表記揺れと誤認識の両方が出る (区別はユーザーが行う)。"

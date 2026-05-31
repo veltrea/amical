@@ -12,6 +12,7 @@ import { katakanaVariantDetector } from "./katakana-variant";
 import { lowFrequencyRareDetector } from "./low-frequency-rare";
 import { mixedScriptDetector } from "./mixed-script";
 import { nearVocabularyDetector } from "./near-vocabulary";
+import { trailingOmissionDetector } from "./trailing-omission";
 import { sameReadingGroupDetector } from "./same-reading-group";
 import { unknownWordDetector } from "./unknown-word";
 
@@ -25,6 +26,7 @@ export function ensureDetectorsRegistered(): void {
   registerDetector(lowFrequencyRareDetector);
   registerDetector(mixedScriptDetector);
   registerDetector(nearVocabularyDetector);
+  registerDetector(trailingOmissionDetector);
   // Phase A.4: morphological detectors
   registerDetector(sameReadingGroupDetector);
   registerDetector(unknownWordDetector);
