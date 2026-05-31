@@ -1137,7 +1137,59 @@
         "registered": "Registered to vocabulary.",
         "registerFailed": "Failed to register: {{message}}",
         "bulkRegistered": "Registered {{registered}}, skipped {{skipped}}.",
-        "emptyReplacement": "Enter the correct word first."
+        "emptyReplacement": "Enter the correct word first.",
+        "noDetectorsSelected": "Select at least one detector."
+      },
+      "search": {
+        "wordPlaceholder": "Filter by word…",
+        "readingPlaceholder": "Filter by reading (hira/kata)…"
+      },
+      "detectorPanel": {
+        "title": "Pick detectors",
+        "description": "Each detector surfaces candidates from a different angle. Selecting more detectors widens the candidate pool.",
+        "selectAll": "Select all",
+        "resetDefaults": "Reset to defaults",
+        "fast": "fast",
+        "medium": "medium",
+        "slow": "slow",
+        "requiresMlx": "MLX"
+      },
+      "detectorCategory": {
+        "rule": "Rule",
+        "morph": "Morphological",
+        "statistical": "Statistical",
+        "phonetic": "Phonetic",
+        "llm": "LLM judgement"
+      },
+      "detector": {
+        "legacy-v1": {
+          "label": "(legacy) v1 extraction",
+          "description": "Candidates surfaced by the v1 monolithic scanner."
+        },
+        "katakana-variant": {
+          "label": "Katakana variants",
+          "description": "Katakana words sharing a surface-normalized reading (dakuten preserved) and within edit distance 2; only minority members are flagged."
+        },
+        "low-frequency-rare": {
+          "label": "Rare katakana/ASCII",
+          "description": "Katakana or ASCII tokens of length ≥ 3 appearing at most 3 times in the corpus."
+        },
+        "mixed-script": {
+          "label": "Mixed ASCII + Japanese",
+          "description": "Single tokens containing both ASCII letters and Japanese characters (e.g. `Apple果物`)."
+        },
+        "near-vocabulary": {
+          "label": "Near vocabulary",
+          "description": "Low-frequency tokens within edit distance 1 of an existing vocabulary entry."
+        },
+        "same-reading-group": {
+          "label": "Same-reading group (kuromoji)",
+          "description": "Surfaces grouped by their kuromoji reading. Spans kanji/hiragana/katakana. Surfaces both real misrecognitions and legitimate script-style variants; the user picks."
+        },
+        "unknown-word": {
+          "label": "Unknown words (kuromoji)",
+          "description": "Tokens kuromoji could not look up in its dictionary. Mixes domain terminology with truncated misrecognitions (`システムプロンプ` etc.)."
+        }
       }
     }
   }

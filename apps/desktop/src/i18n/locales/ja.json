@@ -1115,7 +1115,59 @@
         "registered": "辞書に登録しました",
         "registerFailed": "登録失敗: {{message}}",
         "bulkRegistered": "{{registered}} 件登録 / {{skipped}} 件スキップ",
-        "emptyReplacement": "正しい単語を入力してください"
+        "emptyReplacement": "正しい単語を入力してください",
+        "noDetectorsSelected": "検出器を1つ以上選んでください"
+      },
+      "search": {
+        "wordPlaceholder": "単語で絞り込み…",
+        "readingPlaceholder": "読みで絞り込み (ひらがな/カタカナ)…"
+      },
+      "detectorPanel": {
+        "title": "検出器を選ぶ",
+        "description": "それぞれの検出器は別の角度で「誤認識かも」を抽出します。複数選択すると合算プールになります。",
+        "selectAll": "すべて選択",
+        "resetDefaults": "既定に戻す",
+        "fast": "高速",
+        "medium": "中速",
+        "slow": "低速",
+        "requiresMlx": "MLX要"
+      },
+      "detectorCategory": {
+        "rule": "ルール",
+        "morph": "形態素解析",
+        "statistical": "統計",
+        "phonetic": "音韻",
+        "llm": "LLM 判定"
+      },
+      "detector": {
+        "legacy-v1": {
+          "label": "(legacy) v1 抽出",
+          "description": "旧バージョンが抽出した候補。"
+        },
+        "katakana-variant": {
+          "label": "カタカナ表記揺れ",
+          "description": "同読み (濁点を含めて一致) のカタカナ語ペアで、編集距離 2 以内かつ少数派の方を flag。"
+        },
+        "low-frequency-rare": {
+          "label": "低頻度カナ・英字",
+          "description": "全履歴で 1〜3 回だけ出現する長さ 3 以上のカタカナ/英字トークン。"
+        },
+        "mixed-script": {
+          "label": "英日混在トークン",
+          "description": "1 つのトークンに英字と日本語が混ざるもの (`Apple果物` 等)。"
+        },
+        "near-vocabulary": {
+          "label": "辞書ニアミス",
+          "description": "既存 vocabulary 行と編集距離 1 の低頻度トークン。"
+        },
+        "same-reading-group": {
+          "label": "同読みグループ (kuromoji)",
+          "description": "形態素解析の reading で同じ読みを持つ surface を 1 グループにする。漢字/ひらがな/カタカナをまたぐ。表記揺れと誤認識の両方が出る (区別はユーザーが行う)。"
+        },
+        "unknown-word": {
+          "label": "未知語 (kuromoji)",
+          "description": "kuromoji の辞書に載っていない surface。専門用語と切れた誤認識 (`システムプロンプ` 等) が混ざる。"
+        }
       }
     }
   }

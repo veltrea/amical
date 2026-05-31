@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Trash2, RefreshCw, RotateCcw, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,13 +18,33 @@ import { api } from "@/trpc/react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
+type DetectorDescriptor = {
+  id: string;
+  category: "rule" | "morph" | "statistical" | "phonetic" | "llm";
+  labelKey: string;
+  descriptionKey: string;
+  requiresMorph: boolean;
+  requiresMlx: boolean;
+  estimatedDuration: "fast" | "medium" | "slow";
+  defaultEnabled: boolean;
+};
+
 type Candidate = {
   id: number;
   word: string;
   normalizedKey: string;
   occurrenceCount: number;
   lastSeenAt: Date;
+  detectorIds: string[];
 };
+
+const CATEGORY_ORDER: DetectorDescriptor["category"][] = [
+  "rule",
+  "morph",
+  "statistical",
+  "phonetic",
+  "llm",
+];
 
 export default function MisrecognitionSettingsPage() {
   const { t } = useTranslation();
@@ -36,6 +57,26 @@ export default function MisrecognitionSettingsPage() {
   >({});
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkValue, setBulkValue] = useState("");
+  const [selectedDetectors, setSelectedDetectors] = useState<Set<string>>(
+    new Set(),
+  );
+  const [searchWord, setSearchWord] = useState("");
+  const [searchReading, setSearchReading] = useState("");
+
+  const detectorsQuery = api.misrecognition.listDetectors.useQuery();
+
+  // Initialize selectedDetectors from defaultEnabled once detectors load.
+  useEffect(() => {
+    if (!detectorsQuery.data) return;
+    setSelectedDetectors((prev) => {
+      if (prev.size > 0) return prev;
+      return new Set(
+        detectorsQuery.data
+          .filter((d) => d.defaultEnabled)
+          .map((d) => d.id),
+      );
+    });
+  }, [detectorsQuery.data]);
 
   const candidatesQuery = api.misrecognition.listCandidates.useQuery({
     limit: 100,
@@ -43,6 +84,8 @@ export default function MisrecognitionSettingsPage() {
     sortBy: "occurrenceCount",
     sortOrder: "desc",
     groupByNormalizedKey: groupByReading,
+    searchWord: searchWord.trim() || undefined,
+    searchReading: searchReading.trim() || undefined,
   });
 
   const scanStatusQuery = api.misrecognition.getScanStatus.useQuery();
@@ -70,6 +113,17 @@ export default function MisrecognitionSettingsPage() {
         t("settings.misrecognition.toast.scanFailed", { message: e.message }),
       ),
   });
+
+  const triggerScan = (fullRescan: boolean) => {
+    if (selectedDetectors.size === 0) {
+      toast.error(t("settings.misrecognition.toast.noDetectorsSelected"));
+      return;
+    }
+    scanMutation.mutate({
+      fullRescan,
+      detectorIds: [...selectedDetectors],
+    });
+  };
 
   const dismissMutation = api.misrecognition.dismissCandidates.useMutation({
     onSuccess: () => {
@@ -118,7 +172,6 @@ export default function MisrecognitionSettingsPage() {
       ),
   });
 
-  // Flatten candidates from either response shape for selection / bulk ops.
   const flatRows: Candidate[] = useMemo(() => {
     const data = candidatesQuery.data;
     if (!data) return [];
@@ -148,6 +201,30 @@ export default function MisrecognitionSettingsPage() {
       }
       return next;
     });
+  };
+
+  const toggleDetector = (id: string, checked: boolean) => {
+    setSelectedDetectors((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const setAllDetectors = (mode: "all" | "default") => {
+    if (!detectorsQuery.data) return;
+    if (mode === "all") {
+      setSelectedDetectors(new Set(detectorsQuery.data.map((d) => d.id)));
+    } else {
+      setSelectedDetectors(
+        new Set(
+          detectorsQuery.data
+            .filter((d) => d.defaultEnabled)
+            .map((d) => d.id),
+        ),
+      );
+    }
   };
 
   const handleRegisterOne = (id: number) => {
@@ -187,6 +264,17 @@ export default function MisrecognitionSettingsPage() {
     ? new Date(lastScanAt).toLocaleString()
     : t("settings.misrecognition.neverScanned");
 
+  // Group detectors by category for the panel.
+  const detectorsByCategory = useMemo(() => {
+    const groups: Record<string, DetectorDescriptor[]> = {};
+    for (const d of (detectorsQuery.data as DetectorDescriptor[] | undefined) ?? []) {
+      const arr = groups[d.category] ?? [];
+      arr.push(d);
+      groups[d.category] = arr;
+    }
+    return groups;
+  }, [detectorsQuery.data]);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -201,7 +289,7 @@ export default function MisrecognitionSettingsPage() {
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            onClick={() => scanMutation.mutate({ fullRescan: false })}
+            onClick={() => triggerScan(false)}
             disabled={scanMutation.isPending}
             className="flex items-center gap-2"
           >
@@ -210,7 +298,7 @@ export default function MisrecognitionSettingsPage() {
           </Button>
           <Button
             variant="outline"
-            onClick={() => scanMutation.mutate({ fullRescan: true })}
+            onClick={() => triggerScan(true)}
             disabled={scanMutation.isPending}
             className="flex items-center gap-2"
           >
@@ -218,6 +306,99 @@ export default function MisrecognitionSettingsPage() {
             {t("settings.misrecognition.scanAll")}
           </Button>
         </div>
+      </div>
+
+      <Card className="mb-4">
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <h2 className="text-sm font-semibold">
+                {t("settings.misrecognition.detectorPanel.title")}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t("settings.misrecognition.detectorPanel.description")}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setAllDetectors("all")}
+              >
+                {t("settings.misrecognition.detectorPanel.selectAll")}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setAllDetectors("default")}
+              >
+                {t("settings.misrecognition.detectorPanel.resetDefaults")}
+              </Button>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+            {CATEGORY_ORDER.filter((cat) => detectorsByCategory[cat]).map(
+              (cat) => (
+                <div key={cat}>
+                  <h3 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                    {t(`settings.misrecognition.detectorCategory.${cat}`)}
+                  </h3>
+                  <div className="space-y-2">
+                    {detectorsByCategory[cat].map((d) => (
+                      <label
+                        key={d.id}
+                        className="flex items-start gap-2 cursor-pointer"
+                      >
+                        <Checkbox
+                          checked={selectedDetectors.has(d.id)}
+                          onCheckedChange={(c) =>
+                            toggleDetector(d.id, c === true)
+                          }
+                          className="mt-0.5"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-sm">{t(d.labelKey)}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {t(
+                                `settings.misrecognition.detectorPanel.${d.estimatedDuration}`,
+                              )}
+                            </Badge>
+                            {d.requiresMlx ? (
+                              <Badge variant="secondary" className="text-xs">
+                                {t(
+                                  "settings.misrecognition.detectorPanel.requiresMlx",
+                                )}
+                              </Badge>
+                            ) : null}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {t(d.descriptionKey)}
+                          </p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ),
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex items-center gap-2 mb-3">
+        <Input
+          value={searchWord}
+          onChange={(e) => setSearchWord(e.target.value)}
+          placeholder={t("settings.misrecognition.search.wordPlaceholder")}
+          className="max-w-xs"
+        />
+        <Input
+          value={searchReading}
+          onChange={(e) => setSearchReading(e.target.value)}
+          placeholder={t("settings.misrecognition.search.readingPlaceholder")}
+          className="max-w-xs"
+        />
       </div>
 
       <div className="flex items-center justify-between mb-3 text-sm">
@@ -407,10 +588,19 @@ function CandidateRow({
         onCheckedChange={(c) => onCheck(c === true)}
       />
       <div className="flex-1 min-w-0">
-        <span className="text-sm">{candidate.word}</span>
-        <span className="ml-2 text-xs text-muted-foreground">
-          ×{candidate.occurrenceCount}
-        </span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm">{candidate.word}</span>
+          <span className="text-xs text-muted-foreground">
+            ×{candidate.occurrenceCount}
+          </span>
+          {candidate.detectorIds.map((id) => (
+            <Badge key={id} variant="outline" className="text-[10px] py-0">
+              {t(`settings.misrecognition.detector.${id}.label`, {
+                defaultValue: id,
+              })}
+            </Badge>
+          ))}
+        </div>
       </div>
       <Input
         className="w-48"
