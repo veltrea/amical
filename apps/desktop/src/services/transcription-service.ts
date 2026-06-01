@@ -25,7 +25,8 @@ import {
 } from "../db/transcriptions";
 import { deleteAudioFile } from "../utils/audio-file-cleanup";
 import { incrementDailyStats } from "../db/daily-stats";
-import { getActiveVocabulary } from "../db/vocabulary";
+import { getAllVocabulary } from "../db/vocabulary";
+import { getActiveDictionaryEntries } from "./dictionary-library";
 import { getAllSnippets } from "../db/snippets";
 import { logger } from "../main/logger";
 import { v4 as uuid } from "uuid";
@@ -35,7 +36,7 @@ import { dialog } from "electron";
 import { AVAILABLE_MODELS, getSpeechEngine } from "../constants/models";
 import { AppError, ErrorCodes } from "../types/error";
 import { applyTextReplacements } from "../utils/text-replacement";
-import { selectVocabularyHints } from "../utils/vocabulary-hints";
+import { selectVocabularyHintsFromMixed } from "../utils/vocabulary-hints";
 import * as fs from "node:fs";
 import { PROVIDER_TYPES } from "../constants/provider-types";
 import {
@@ -767,21 +768,39 @@ export class TranscriptionService {
         ? undefined
         : languages;
 
-    // Load vocabulary — only rows with isActive=true. Inactive rows (e.g. a
-    // bundled dictionary toggled off in settings) stay in the DB but are
-    // skipped here. See SPEC-dictionary-library.md §5.
-    const vocabEntries = await getActiveVocabulary();
-    for (const entry of vocabEntries) {
+    // Effective vocabulary = manually-authored entries UNION the entries of
+    // every activated bundled dictionary. Dictionary contents are read from
+    // JSON assets, never stored in the vocabulary table. See
+    // SPEC-dictionary-library.md §5 (model B).
+    const manualEntries = await getAllVocabulary();
+    const dictEntries = await getActiveDictionaryEntries();
+
+    // Replacement rules: manual entries win, so add them first and skip any
+    // dictionary entry whose word a manual rule already covers.
+    const replacementSeen = new Set<string>();
+    for (const entry of manualEntries) {
       if (entry.isReplacement) {
         context.sharedData.replacements.set(
           entry.word,
           entry.replacementWord || "",
         );
+        replacementSeen.add(entry.word);
       }
     }
-    // Non-replacement vocabulary is sent to the LLM formatter as hints; the
-    // hint list is capped separately from storage so the prompt stays bounded.
-    context.sharedData.vocabulary.push(...selectVocabularyHints(vocabEntries));
+    for (const entry of dictEntries) {
+      if (entry.isReplacement && !replacementSeen.has(entry.word)) {
+        context.sharedData.replacements.set(
+          entry.word,
+          entry.replacementWord || "",
+        );
+        replacementSeen.add(entry.word);
+      }
+    }
+    // Non-replacement words are sent to the LLM formatter as hints; manual
+    // words come first so they survive the cap, then dictionary words.
+    context.sharedData.vocabulary.push(
+      ...selectVocabularyHintsFromMixed(manualEntries, dictEntries),
+    );
 
     // Load snippets — trigger phrases that expand into longer content.
     // Snippets piggy-back on the same replacement pipeline as vocabulary replacements.
