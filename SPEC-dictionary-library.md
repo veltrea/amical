@@ -1,467 +1,380 @@
-# SPEC: 辞書ライブラリ (Dictionary Library)
+# SPEC: 辞書ライブラリ (Dictionary Library) — モデル B
 
-**ステータス:** 設計のみ (未実装)
-**派生元:** `develop` (旧 `feat/mlx-proofreading`、SPEC 着手時点 HEAD = `a3f2400`)
-**着手:** 別セッションで並行開発予定
-**並行する別 SPEC:** `SPEC-mcp-server.md`
+**ステータス:** 設計確定 / 実装やり直し中
+**派生元:** `develop` (HEAD = `55e7d4f` 時点)
+**改訂理由:** 初版 (モデル A) は同梱辞書を `vocabulary` テーブルに展開する設計だったが、`vocabulary.word` の UNIQUE 制約と衝突し、「手動登録済みの単語と同じ辞書を有効化すると skip され、永久に未インストール表示のまま」という実害が出た。辞書の有効状態を**単語単位ではなく辞書単位**で持つモデル B に全面変更する。
 
 ---
 
-## 1. 目的
+## 0. モデル A がなぜ破綻したか (記録)
 
-ユーザーが分野別のプリセット辞書を **マトリックス UI から 1 click で有効化** できるようにする。アプリ同梱型 (アセット同梱) のため、ネット環境不要・ダウンロード処理不要・JSON 軽量 (数十 KB)。
+初版実装 (develop に merge 済み、commit `53276a8`〜`b3ba23d`) は:
 
-「カスタム辞書登録は面倒」というハードルを、**「分野を選んで色を点灯」** で下げる。
+- `vocabulary` に `source` (TEXT) と `isActive` (BOOLEAN) カラムを追加
+- 「有効化」= 同梱辞書 JSON の entries を `vocabulary` に `source=library:<id>` タグ付きで insert (skip モード)
+- カードの state = `vocabulary` の source 別集計から算出
 
-### 1.1 解決したい課題
+**破綻:**
 
-1. ASR が誤認識する固有名詞 (技術用語、企業名、サービス名、AI モデル名等) を、ユーザーが手で 1 件ずつ登録するのは現実的でない
-2. 本家 Amical はカスタム辞書を奥まった設定に隠している = 機能の存在感が薄い
-3. fork (veltrea/amical) は逆に **辞書を主役にする** ポジショニングを取る
-4. ただし、辞書を増やしすぎると ASR パイプラインへの負荷が上がる → アクティブ/非アクティブ切替が必要
+1. `vocabulary.word` は **UNIQUE**。1 単語 = 1 行 = 1 source しか持てない。
+2. ユーザーが手動 import 済み (source=NULL) の単語と同じ辞書を「有効化」すると、skip モードで全部スキップ → `source=library:<id>` の行が 1 件も入らない → state が永久に `not-installed`。
+3. 実 DB で確認: 681 行すべて source=NULL、`library:*` 行はゼロ。
+4. 「所有権」問題: 同じ単語が手動と辞書のどちらに属すか、UNIQUE 制約下では表現不能。
 
-### 1.2 非目的
+**結論:** 同梱辞書を `vocabulary` に展開する設計が根本的に誤り。辞書は**束 (バンドル) のまま on/off** するべきで、単語テーブルに流し込んではいけない。
 
-- 辞書コンテンツのオンライン更新 (将来検討、初回はアプリ同梱で十分)
-- ユーザー投稿型辞書ライブラリ (将来検討)
-- 辞書の差分インクリメンタル更新 (初回は丸ごと適用/削除)
+---
+
+## 1. モデル B の核心
+
+### 1.1 データの持ち方
+
+| 層 | 何を持つ | どこに |
+|---|---|---|
+| 手動 vocabulary | ユーザーが手で追加 / import / 誤認識候補から登録した単語 | `vocabulary` テーブル (既存) |
+| 同梱辞書の中身 | 分野別の単語リスト (read-only) | `apps/desktop/assets/dictionaries/*.json` (DB に展開しない) |
+| 辞書の有効状態 | どの同梱辞書 id を有効にしたか **だけ** | `app_settings` の JSON カラム内 `activeDictionaries: string[]` |
+
+**ポイント:** 同梱辞書の単語は **DB に一切入らない**。`vocabulary` テーブルは手動登録分だけのまま軽い。有効状態は辞書 id の配列 1 つ。
+
+### 1.2 ASR パイプラインでの合成
+
+ASR が vocabulary を読むとき (`transcription-service.ts`):
+
+```
+有効な語彙 = 手動 vocabulary (全件)
+           ∪ 有効化された各辞書 JSON の entries
+```
+
+- 手動分は `getAllVocabulary()` で取得 (← `getActiveVocabulary()` から戻す)
+- 有効辞書分は `activeDictionaries` の各 id について JSON を読み、entries を展開
+- **重複は union 時に dedupe** (手動 "Twitter" と辞書 "Twitter" が両方あっても 1 つに)。手動分を優先 (ユーザーが置換先を設定している可能性があるため)
+
+### 1.3 利点
+
+- UNIQUE 制約との衝突が**構造的に発生しない** (辞書単語は DB に入らないので)
+- 「有効化 / 無効化」= `activeDictionaries` 配列の 1 要素 add/remove = 一瞬。数千行の出し入れなし
+- 削除/無効化で手動単語は**無傷**
+- `vocabulary` テーブルが手動分だけで軽いまま (= ASR パイプラインの DB 負荷が辞書数に依存しない)
+- 「アニメ実況の日だけアニメ辞書 on」がフラグ toggle で済む
+- 同梱辞書 JSON は read-only 資産。ユーザーが個別 edit する想定をしない (= mixed 状態が消えてカード状態が active/inactive の 2 値に単純化)
 
 ---
 
 ## 2. データモデル
 
-### 2.1 schema 改修
+### 2.1 app_settings 拡張
 
-`vocabulary` テーブルに 2 カラム追加:
+`AppSettingsData` (`apps/desktop/src/db/schema.ts`) に追加 (mcpServer と同じ要領、**migration 不要** — JSON カラムへの追加):
 
 ```ts
-// apps/desktop/src/db/schema.ts
-export const vocabulary = sqliteTable("vocabulary", {
-  // ... 既存カラム
-  source: text("source"),                              // どの辞書由来か。NULL = user-authored
-  isActive: integer("is_active", { mode: "boolean" })  // ASR パイプラインで使うか
-    .notNull()
-    .default(true),
-});
+export interface AppSettingsData {
+  // ... 既存 (formatterConfig, mcpServer, ...)
+  /** 有効化された同梱辞書の id リスト。例: ["services", "anime"] */
+  activeDictionaries?: string[];
+}
 ```
 
-#### マイグレーション
+### 2.2 vocabulary テーブルの source / isActive カラム
 
-`drizzle-kit generate` で `0008_*.sql` を自動生成:
+モデル A で追加された `source` / `isActive` カラム (migration `0007_green_nova.sql`) は**モデル B では使わない**。
 
-```sql
-ALTER TABLE `vocabulary` ADD `source` text;
-ALTER TABLE `vocabulary` ADD `is_active` integer NOT NULL DEFAULT 1;
-```
+**方針: 残す (drop migration を新規に切らない)。**
+- `source` カラム: 将来 MCP 経由の登録元タグ付け等に使える余地がある。NULL のまま放置。
+- `isActive` カラム: 不要だが、drop には migration が要る。残しても害はない (常に true)。
+- ただし **ASR パイプラインは `getActiveVocabulary()` をやめて `getAllVocabulary()` に戻す** (§5)。`isActive` でフィルタしない。
 
-既存行は `source = NULL`, `isActive = TRUE` で migrate (= 既存ユーザーの環境を壊さない)。
+> 補足: もし将来クリーンにしたければ、別途 `0008` migration で 2 カラムを drop する。今回はスコープ外。
 
-### 2.2 source の値の規約
+### 2.3 同梱辞書 JSON
 
-- `NULL` = user-authored (手動追加、誤認識候補から登録、import (mode: skip/overwrite) 経由)
-- `"library:<dictionary-id>"` = 同梱辞書由来 (例: `"library:services"`, `"library:ai-companies"`)
-
-prefix `library:` で「同梱辞書から来た行」を識別可能。将来 `"mcp:<source>"` 等の他経路も追加できる構造。
+モデル A から**変更なし**。`apps/desktop/assets/dictionaries/` の `index.json` + 各辞書ファイルをそのまま使う。`catalog.ts` の読み出しロジック (`readBundledIndex`, `readBundledDictionaryFile`) も再利用。
 
 ---
 
-## 3. 同梱辞書ファイル
+## 3. サービス層
 
-### 3.1 ディレクトリ構造
+### 3.1 残す (catalog.ts)
 
-```
-apps/desktop/assets/dictionaries/
-├── index.json
-├── services.json
-├── ai-companies.json
-├── ai-models.json
-├── software.json
-├── programming.json
-├── anime-2026.json
-├── light-novel-titles.json
-├── cooking.json
-└── ...
-```
+`apps/desktop/src/services/dictionary-library/catalog.ts`:
+- `readBundledIndex()` — index.json を読む。**そのまま使う**
+- `readBundledDictionaryFile(id)` — 個別辞書 JSON を読む。**そのまま使う**
+- `librarySourceTag(id)` — モデル B では不要。削除可 (または残置)
+- 型 `BundledDictionary`, `DictionaryEntry`, `DictionaryFile` — そのまま使う
 
-### 3.2 index.json
+### 3.2 作り直し (operations.ts)
 
-利用可能な辞書のメタ情報を列挙:
+`apps/desktop/src/services/dictionary-library/operations.ts` を全面書き換え:
 
-```json
-{
-  "version": 1,
-  "dictionaries": [
-    {
-      "id": "services",
-      "name": "Online Services",
-      "name_ja": "オンラインサービス",
-      "description": "Twitter, Notion, Slack, Spotify, etc.",
-      "description_ja": "Twitter, Notion, Slack, Spotify など",
-      "category": "general",
-      "language": "ja",
-      "tags": ["service", "social", "saas"],
-      "entryCount": 100,
-      "file": "services.json"
+```ts
+// state は active / not-active の 2 値に単純化
+export type DictionaryState = "active" | "inactive";
+
+export interface DictionaryWithState extends BundledDictionary {
+  state: DictionaryState;   // activeDictionaries に id が含まれるか
+}
+
+/** index.json の全辞書 + 各々の有効状態を返す */
+export async function listBundledDictionariesWithState(): Promise<DictionaryWithState[]> {
+  const [index, active] = await Promise.all([
+    readBundledIndex(),
+    getActiveDictionaryIds(),   // app_settings から
+  ]);
+  const activeSet = new Set(active);
+  return index.dictionaries.map((meta) => ({
+    ...meta,
+    state: activeSet.has(meta.id) ? "active" : "inactive",
+  }));
+}
+
+/** 辞書を有効化 = activeDictionaries に id を追加 */
+export async function activateDictionary(id: string): Promise<void> {
+  // id が実在する辞書か検証 (index.json にあるか) してから追加
+}
+
+/** 辞書を無効化 = activeDictionaries から id を削除 */
+export async function deactivateDictionary(id: string): Promise<void>;
+
+/**
+ * 有効化された全辞書の entries を展開して返す。ASR パイプラインが
+ * 手動 vocabulary と union するために使う。
+ */
+export async function getActiveDictionaryEntries(): Promise<DictionaryEntry[]> {
+  const active = await getActiveDictionaryIds();
+  const all: DictionaryEntry[] = [];
+  for (const id of active) {
+    try {
+      const { file } = await readBundledDictionaryFile(id);
+      all.push(...file.entries);
+    } catch {
+      // 辞書 id が index にあるが file が読めない場合はスキップ (ログ)
     }
-  ]
-}
-```
-
-#### category
-
-- `"general"`: 全般 (サービス、AI企業、ソフトウェア)
-- `"developer"`: 開発者向け (プログラミング、Git)
-- `"creator"`: クリエイター向け (アニメ、ラノベ、料理)
-- `"professional"`: 専門職 (医療、法律 - 将来)
-
-UI ではこの category でフィルタ/グループ化。
-
-### 3.3 個別辞書ファイル
-
-既存の vocabulary export 形式と互換 (`importJson` がそのまま使える):
-
-```json
-{
-  "version": 1,
-  "exportedAt": "2026-06-01T00:00:00.000Z",
-  "entries": [
-    { "word": "Twitter", "replacementWord": null, "isReplacement": false },
-    { "word": "ツイッター", "replacementWord": "Twitter", "isReplacement": true }
-  ]
-}
-```
-
-### 3.4 同梱方法 (forge.config)
-
-`apps/desktop/forge.config.ts` の `extraResource` には既に `"./assets"` が含まれているため、**追加設定不要**。`assets/dictionaries/` を置けば自動的に `<App>.app/Contents/Resources/assets/dictionaries/` へコピーされる。
-
-### 3.5 実行時パス解決
-
-```ts
-// apps/desktop/src/services/dictionary-library/paths.ts
-import { app } from "electron";
-import path from "node:path";
-
-export function dictionariesDir(): string {
-  if (app.isPackaged) {
-    return path.join(process.resourcesPath, "assets", "dictionaries");
   }
-  return path.join(app.getAppPath(), "assets", "dictionaries");
+  return all;
 }
 ```
+
+### 3.3 app_settings アクセサ
+
+`getActiveDictionaryIds()` / `setActiveDictionaryIds(ids)` を app-settings サービス経由で実装。既存の app_settings 読み書きパターン (`mcpServer` の取得方法) に倣う。
 
 ---
 
-## 4. DB アクセサ
-
-### 4.1 新規追加
+## 4. DB アクセサのロールバック
 
 `apps/desktop/src/db/vocabulary.ts`:
-
-```ts
-/** ASR パイプライン用: isActive=true の vocabulary だけ返す */
-export async function getActiveVocabulary(): Promise<Vocabulary[]> {
-  return await db.select().from(vocabulary).where(eq(vocabulary.isActive, true));
-}
-
-/** 設定画面で source タグ単位の集計を返す */
-export interface VocabularySourceSummary {
-  source: string;       // 例: "library:services"
-  totalCount: number;   // その source の行数
-  activeCount: number;  // その source のうち isActive=true
-}
-export async function getVocabularySourceSummaries(): Promise<VocabularySourceSummary[]>;
-
-/** library:<id> の全行を delete (UI の「完全削除」用) */
-export async function deleteVocabularyBySource(source: string): Promise<{ deleted: number }>;
-
-/** library:<id> の全行を isActive で update */
-export async function setVocabularySourceActive(
-  source: string,
-  isActive: boolean,
-): Promise<{ updated: number }>;
-```
-
-### 4.2 既存 `importVocabularyEntries` の改修
-
-`source` を受け取れるよう拡張:
-
-```ts
-export async function importVocabularyEntries(
-  entries: VocabularyImportEntry[],
-  mode: "skip" | "overwrite",
-  source: string | null = null,   // ← 追加
-): Promise<VocabularyImportResult>;
-```
-
-- `source` が指定された場合、新規 insert 時に source カラムにその値をセット
-- 既存 export/import (UI 経由) は `source = null` のまま
+- `getActiveVocabulary()` — **使わなくなる**。削除 or 残置 (transcription-service が呼ばなくなれば dead code)。
+- `getVocabularySourceSummaries()` / `deleteVocabularyBySource()` / `setVocabularySourceActive()` — モデル A 専用。**削除**してよい (どこからも呼ばれなくなる)。ただし削除前に grep で参照ゼロを確認。
+- `importVocabularyEntries(..., source?)` の `source` 引数 — import/export 機能 (手動) では NULL のまま使われる。**引数は残す** (将来用)。
 
 ---
 
 ## 5. ASR パイプライン変更
 
-### 5.1 修正対象
+`apps/desktop/src/services/transcription-service.ts` の vocab 読み込み箇所 (現在 line 773 付近):
 
-[`apps/desktop/src/services/transcription-service.ts:772`](apps/desktop/src/services/transcription-service.ts:772) で `getAllVocabulary()` を呼んでいる。これを `getActiveVocabulary()` に差し替える。
+### 5.1 現状 (モデル A)
 
-```diff
-- const vocabEntries = await getAllVocabulary();
-+ const vocabEntries = await getActiveVocabulary();
+```ts
+const vocabEntries = await getActiveVocabulary();
+for (const entry of vocabEntries) {
+  if (entry.isReplacement) {
+    context.sharedData.replacements.set(entry.word, entry.replacementWord || "");
+  }
+}
+context.sharedData.vocabulary.push(...selectVocabularyHints(vocabEntries));
 ```
 
-影響範囲:
-- 置換 (isReplacement) → `isActive=false` の置換ルールは適用されない
-- 非置換 (LLM hint) → `isActive=false` のヒントは LLM に渡されない
+### 5.2 モデル B
 
-### 5.2 既存 `getAllVocabulary` の用途
+```ts
+// 手動 vocabulary は全件。
+const manualEntries = await getAllVocabulary();
+// 有効化された辞書の entries を展開。
+const dictEntries = await getActiveDictionaryEntries();
 
-- export 機能 (`vocabulary.exportAll`): 全件 (active/inactive 両方) を返す現状維持
-- 設定画面の vocabulary 一覧 (`vocabulary.getVocabulary`): 全件返す現状維持 + active フィルタオプション追加
+// 置換ルール: 手動分を先に入れる (ユーザー設定優先)。辞書分は word が
+// まだ無いものだけ追加 (dedupe)。
+const replacementSeen = new Set<string>();
+for (const e of manualEntries) {
+  if (e.isReplacement) {
+    context.sharedData.replacements.set(e.word, e.replacementWord || "");
+    replacementSeen.add(e.word);
+  }
+}
+for (const e of dictEntries) {
+  if (e.isReplacement && !replacementSeen.has(e.word)) {
+    context.sharedData.replacements.set(e.word, e.replacementWord || "");
+    replacementSeen.add(e.word);
+  }
+}
 
-→ `getAllVocabulary` は削除しない、`getActiveVocabulary` を新規追加するパターン。
+// LLM ヒント: 手動 + 辞書の非置換語を union して selectVocabularyHints に渡す。
+// 型を合わせるため DictionaryEntry を Vocabulary 風に正規化するヘルパを用意。
+const hintWords = selectVocabularyHintsFromMixed(manualEntries, dictEntries);
+context.sharedData.vocabulary.push(...hintWords);
+```
+
+### 5.3 selectVocabularyHints の調整
+
+`apps/desktop/src/utils/vocabulary-hints.ts`:
+- 現在 `Vocabulary[]` を受け、非置換語を最新順で `MAX_VOCABULARY_HINTS` 件返す。
+- モデル B では「手動 + 辞書」の混合を受ける必要がある。
+- 新ヘルパ `selectVocabularyHintsFromMixed(manual: Vocabulary[], dict: DictionaryEntry[]): string[]`:
+  - 非置換語だけ集める (手動 + 辞書)
+  - 重複 word を dedupe
+  - cap (MAX_VOCABULARY_HINTS) 適用
+  - 既存の `selectVocabularyHints` は単体テストがあれば壊さない (signature 維持、新ヘルパを追加する形)
+
+> **注意 (性能):** 辞書を大量に有効化すると hint が MAX_VOCABULARY_HINTS を超える。cap があるので prompt は bounded だが、「どの hint を優先するか」のランキングは将来課題 (現状は手動優先 + 残りを辞書から)。
 
 ---
 
 ## 6. tRPC API
 
-### 6.1 新規 router: `dictionaryLibrary`
-
-`apps/desktop/src/trpc/routers/dictionary-library.ts`:
+`apps/desktop/src/trpc/routers/dictionary-library.ts` を作り直し:
 
 ```ts
 export const dictionaryLibraryRouter = createRouter({
-  // index.json + 各辞書の installation/active 状態を返す
-  list: procedure.query(async () => {
-    return await listBundledDictionariesWithState();
-  }),
+  // 全辞書 + 有効状態
+  list: procedure.query(async () => listBundledDictionariesWithState()),
 
-  // 適用 (= source タグ付きで bulk_add、mode: "skip")
-  // NB: procedure 名を `apply` にしない。tRPC は Function.prototype の名前
-  // (apply/call/bind/...) を予約語として弾く ("Reserved words used in
-  // `router({})` call: apply" で main process が即クラッシュする)。
-  applyDictionary: procedure
+  // 有効化。tRPC 予約語回避のため activate という名前 (apply は NG)
+  activateDictionary: procedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      return await applyBundledDictionary(input.id);
+      await activateDictionary(input.id);
+      return { ok: true };
     }),
 
-  // 完全削除 (DELETE WHERE source = library:<id>)
-  remove: procedure
+  // 無効化
+  deactivateDictionary: procedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      return await removeBundledDictionary(input.id);
-    }),
-
-  // isActive を切り替え (UPDATE WHERE source = library:<id>)
-  setActive: procedure
-    .input(z.object({ id: z.string(), isActive: z.boolean() }))
-    .mutation(async ({ input }) => {
-      return await setBundledDictionaryActive(input.id, input.isActive);
+      await deactivateDictionary(input.id);
+      return { ok: true };
     }),
 });
 ```
 
-### 6.2 戻り値の型 (`list` query)
+> **重要:** procedure 名に tRPC 予約語 (`apply` / `call` / `bind` / `toString` / ...) を使わない。モデル A で `apply` を使って main process が起動時クラッシュした (commit `55e7d4f` で修正済み)。
 
-```ts
-interface DictionaryWithState {
-  id: string;
-  name: string;
-  name_ja?: string;
-  description: string;
-  description_ja?: string;
-  category: string;
-  language: string;
-  tags: string[];
-  entryCount: number;
-  state: "not-installed" | "active" | "inactive";  // 現在のインストール状態
-  installedEntries?: number;                        // installed の場合、実際に入った件数 (skip でスキップされた分があるので index.entryCount と一致しない可能性)
-}
-```
+remove (完全削除) は不要になる: 辞書は DB に展開されないので「削除」概念がなく、無効化で十分。
 
 ---
 
-## 7. UI 設計
+## 7. UI
 
-### 7.1 ルート
+`apps/desktop/src/renderer/main/pages/settings/dictionary-library/index.tsx` を調整:
 
-新規ページ: `apps/desktop/src/renderer/main/pages/settings/dictionary-library/index.tsx`
-ルート: `apps/desktop/src/renderer/main/routes/_app/settings/dictionary-library.tsx`
-`settings-navigation.ts` で「カスタム辞書」の隣に「辞書ライブラリ」を追加。
-
-### 7.2 レイアウト (ASCII ワイヤフレーム)
-
-```
-┌─────────────────────────────────────────────────────────┐
-│ 辞書ライブラリ                                            │
-│ 分野別のプリセット辞書を 1 click で有効化できます。       │
-│                                                         │
-│ [すべて] [一般] [開発者] [クリエイター]                  │
-│                                                         │
-│ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐    │
-│ │ サービス  │ │ AI 企業  │ │ プログラム│ │ アニメ    │    │
-│ │ 100 件    │ │  76 件   │ │ 198 件   │ │  60 件    │    │
-│ │ 一般      │ │ 一般     │ │ 開発者   │ │ クリエイター│    │
-│ │           │ │          │ │          │ │           │    │
-│ │ [有効化]  │ │ [有効]✓ │ │ [無効]  │ │ [有効化]  │    │
-│ │           │ │  色変化  │ │  グレー  │ │           │    │
-│ └──────────┘ └──────────┘ └──────────┘ └──────────┘    │
-│                                                         │
-│ ┌──────────┐ ...                                        │
-│ │ ラノベ    │                                            │
-│ │  ...      │                                            │
-│ └──────────┘                                            │
-└─────────────────────────────────────────────────────────┘
-```
-
-### 7.3 カードの状態
+### 7.1 カード状態 (2 値に単純化)
 
 | 状態 | 色 | アクション |
 |---|---|---|
-| `not-installed` | デフォルト (border のみ) | 「有効化」ボタン → `apply` |
-| `active` | アクティブカラー (primary, 塗りつぶし or border 強調) | 「無効化」ボタン → `setActive(false)` 、「削除」アイコン → `remove` |
-| `inactive` | グレーアウト | 「有効化」ボタン → `setActive(true)`、「削除」アイコン → `remove` |
+| `inactive` | デフォルト (border のみ) | 「有効化」ボタン → `activateDictionary` |
+| `active` | アクティブカラー (塗りつぶし / border 強調) | 「無効化」ボタン → `deactivateDictionary` |
 
-「適用 (有効化)」と「アクティブ化」を分けない: `not-installed` → `apply` (= bulk_add + isActive=true)、その後は `setActive(true/false)` でトグル。
+- `not-installed` / `mixed` 状態は廃止。
+- 「削除 (🗑)」アクションは廃止 (無効化で代替)。
+- entryCount は index.json の値をそのまま表示 (DB 集計が不要に)。
 
-### 7.4 インタラクション
+### 7.2 mutation 後の invalidate
 
-- カード全体をクリック可能領域に (チェックマークではなくタイル全体タップで状態変化)
-- 複数選択モード (`Cmd-Click` or 「複数選択」モードボタン) → 一括有効化
-- ホバーで詳細 (entries の最初の 5 件プレビュー)
-- カテゴリフィルタタブで絞り込み
+`activateDictionary` / `deactivateDictionary` 成功後に `utils.dictionaryLibrary.list.invalidate()`。`vocabulary.getVocabulary.invalidate()` は**不要** (辞書は vocabulary テーブルを触らないので)。
 
-### 7.5 i18n キー (en + ja)
+### 7.3 i18n キーの調整
 
-```
-settings.dictionaryLibrary.title
-settings.dictionaryLibrary.description
-settings.dictionaryLibrary.filter.all
-settings.dictionaryLibrary.filter.general
-settings.dictionaryLibrary.filter.developer
-settings.dictionaryLibrary.filter.creator
-settings.dictionaryLibrary.card.entryCount   ({{count}} 件)
-settings.dictionaryLibrary.card.state.notInstalled
-settings.dictionaryLibrary.card.state.active
-settings.dictionaryLibrary.card.state.inactive
-settings.dictionaryLibrary.card.action.activate    // 有効化
-settings.dictionaryLibrary.card.action.deactivate  // 無効化
-settings.dictionaryLibrary.card.action.delete      // 完全削除
-settings.dictionaryLibrary.toast.applied
-settings.dictionaryLibrary.toast.removed
-settings.dictionaryLibrary.toast.activated
-settings.dictionaryLibrary.toast.deactivated
-settings.dictionaryLibrary.toast.failed
-settings.dictionaryLibrary.confirmDelete.title
-settings.dictionaryLibrary.confirmDelete.message    // この辞書由来の {{count}} 件をすべて削除します。
-```
+既存の `settings.dictionaryLibrary.*` キーから:
+- `card.state.notInstalled` / `card.state.mixed` を削除 (or 未使用化)
+- `card.action.delete` を削除
+- `toast.removed` / `toast.applied` の文言を「有効化しました / 無効化しました」に統一 (`activated` / `deactivated` に寄せる)
+- `confirmDelete.*` を削除
 
 ---
 
-## 8. 実装ステップ (5 commit)
+## 8. 実装ステップ (commit 単位)
 
-各 commit の後で **必ず `scripts/install-dev.sh` で .app build 検証**。型 check 通過は build 通過ではない。
+各 commit の後で **必ず**:
+1. `pnpm --filter @amical/desktop type:check`
+2. `pnpm --filter @amical/desktop package` (build 通過 — ただし build 通過 ≠ 起動成功)
+3. **節目で `scripts/install-dev.sh` で実際に起動**して、起動時クラッシュ (tRPC 予約語、初期化エラー) がないこと + 機能が動くことを確認。
+   - 教訓: モデル A の `apply` クラッシュは build を通過し、起動して初めて発覚した。
 
-### Commit 1: schema migration
+### Commit 1: app_settings に activeDictionaries + アクセサ
 
-- `vocabulary` に `source` + `isActive` カラム追加
-- `pnpm db:generate` で migration ファイル生成
-- 既存行はデフォルト値で migrate
-- type check + .app build 検証
+- `AppSettingsData` に `activeDictionaries?: string[]`
+- `getActiveDictionaryIds()` / `setActiveDictionaryIds()` を app-settings サービスに追加
+- migration 不要
+- type check + package
 
-### Commit 2: ASR パイプラインを isActive フィルタに切り替え
+### Commit 2: operations.ts をモデル B に書き換え
 
-- `getActiveVocabulary()` を `db/vocabulary.ts` に追加
-- `transcription-service.ts` の `getAllVocabulary()` → `getActiveVocabulary()` 差し替え
-- 既存 export / 設定画面用 `getAllVocabulary()` は無変更
-- .app build 検証 + 動作確認 (既存環境が壊れていないこと)
+- `listBundledDictionariesWithState` (active/inactive 2 値)
+- `activateDictionary` / `deactivateDictionary`
+- `getActiveDictionaryEntries`
+- モデル A の `applyBundledDictionary` / `removeBundledDictionary` / `setBundledDictionaryActive` を削除
+- type check + package
 
-### Commit 3: 同梱辞書ファイル + DB アクセサ + tRPC
+### Commit 3: tRPC router 作り直し
 
-- `apps/desktop/assets/dictionaries/index.json` + 最初の 4 ファイル (services, ai-companies, software, programming) を配置 (今のセッションで Claude が `/Users/user/Downloads/` に書いた 4 ファイルを使う、リポジトリにコピー)
-- `db/vocabulary.ts` に新規アクセサ (getVocabularySourceSummaries, deleteVocabularyBySource, setVocabularySourceActive, importVocabularyEntries に source 引数追加)
-- `services/dictionary-library/` ディレクトリ作成、index.json 読み出しロジック + apply/remove/setActive 実装
-- `trpc/routers/dictionary-library.ts` 新規
-- root tRPC router (`apps/desktop/src/trpc/router.ts`) に `dictionaryLibrary` を mount
+- `list` / `activateDictionary` / `deactivateDictionary`
+- モデル A の `applyDictionary` / `remove` / `setActive` を削除
+- type check + package
 
-### Commit 4: UI
+### Commit 4: ASR パイプライン合成
 
-- 設定 navigation に「辞書ライブラリ」追加
-- 新規ページ + route
-- マトリックスレイアウト (Card grid)
-- アクティブカラー / 状態切替
-- カテゴリフィルタ
-- i18n キー (en + ja)
-- .app build 検証 (UI の見た目をユーザーが install-dev.sh で確認)
+- `transcription-service.ts`: `getActiveVocabulary()` → `getAllVocabulary()` + `getActiveDictionaryEntries()` の union
+- `vocabulary-hints.ts`: `selectVocabularyHintsFromMixed` 追加
+- `db/vocabulary.ts`: モデル A 専用アクセサ (`getVocabularySourceSummaries` 等) を削除
+- type check + package
+- **install-dev.sh で起動確認** (ASR の vocab load が壊れていないこと)
 
-### Commit 5: 追加コンテンツ
+### Commit 5: UI + i18n
 
-- アニメ、ライトノベル、料理、釣り 等の分野別辞書 JSON を追加
-- 各辞書は Claude (別セッション or 同セッション) が JSON 生成 → assets/dictionaries/ に配置
-- index.json 更新
-
----
-
-## 9. 動作確認手順 (各 commit で)
-
-```bash
-# 1. 型チェック
-pnpm --filter @amical/desktop type:check
-
-# 2. .app build + install + 起動
-scripts/install-dev.sh
-
-# 3. ユーザーが手動で確認:
-# - 設定 > 辞書ライブラリ ページを開く
-# - カードのグリッド表示
-# - 「有効化」 → アクティブカラーになる
-# - 「無効化」 → グレーアウト
-# - 「削除」 → カードが 「未インストール」 に戻る
-# - dictation 実行 → 有効な辞書由来の単語が ASR / LLM hint に反映される
-```
+- カードを active/inactive 2 値に
+- delete アクション削除、状態色調整
+- i18n キー整理 (en + ja)
+- type check + package
+- **install-dev.sh で起動 + 実機確認**:
+  - 辞書カードの「有効化」→ 即座に「有効」表示 (DB 待ちなし)
+  - 「無効化」→「未有効」表示
+  - 有効化した辞書の単語が dictation で効く
+  - 手動登録済みの単語と重複する辞書を有効化しても正しく「有効」表示される (モデル A の主バグが直っていること)
 
 ---
 
-## 10. リスクと既知の論点
+## 9. 動作確認 (Commit 5 後の受け入れ基準)
 
-### 10.1 性能 (vocabulary 件数増加)
+1. fresh な状態 (辞書未有効) でカードが全部「未有効 (inactive)」
+2. 「サービス」カードの有効化 → 即「有効」表示 (手動 import 済みの単語と重複していても)
+3. dictation で `Notion` 等が正しく変換される
+4. 無効化 → カードが「未有効」に戻り、dictation で辞書語が効かなくなる (手動登録語は残る)
+5. 複数辞書を同時有効化できる
+6. アプリ再起動後も有効状態が保持される (app_settings 永続化)
 
-辞書を 10〜20 個入れると vocabulary テーブルが数千〜数万行になる。`getActiveVocabulary` は全件読み込みなので、件数増加で遅くなる可能性。
+---
 
-対策の選択肢 (後で必要に応じて):
-- index を `is_active` に追加
-- 結果を transcription-service 側でキャッシュ (vocabulary 更新時に invalidate)
-- 「全部有効化」を UI で防ぐ (ユーザーが必要なものだけ選ぶ運用を促す)
+## 10. モデル A 実装の撤去リスト
 
-### 10.2 source タグの衝突
+develop に merge 済みのモデル A から**消す / 変える**もの:
 
-`source = "library:services"` で適用された行を、ユーザーが UI で手動 edit したらどうする?
-- 案 A: 編集時に source を NULL に変える (= 「user-authored 扱い」に移管)
-- 案 B: source を保持する (= 同梱辞書を「個別 customize した状態」として持つ)
-
-実装最初は **案 B** (シンプル)、edit UI で「customize した」マーク表示。将来要望次第で A に変更。
-
-### 10.3 同梱辞書の更新
-
-アプリのバージョンアップで同梱辞書の内容を更新する場合、既にユーザーが「有効化」してインストール済みの行はどうする?
-- 案 A: 既存 source の行を全削除 → 新内容で再 import (ユーザーの edit が消える)
-- 案 B: 既存は維持、新規 entry だけ追加 (skip モード)
-- 案 C: アプリ起動時に index.json の version を見て「更新あり」を表示、ユーザーが手動で「更新」ボタン
-
-実装最初は **更新を扱わない** (アプリリリース時に同梱内容を変える前提で、ユーザー側は「削除 → 再適用」を選択)。将来要望次第。
-
-### 10.4 言語タグ
-
-`index.json` の `language` フィールド。今は `ja` 中心だが、将来英語ユーザーや中国語ユーザーへの対応。
-- UI 側で「アプリ表示言語と一致する辞書」をデフォルト表示 + 「他言語の辞書も表示」トグル
+| 対象 | 処理 |
+|---|---|
+| `operations.ts` の apply/remove/setActive/source-based state | モデル B に書き換え |
+| `db/vocabulary.ts` の `getVocabularySourceSummaries` / `deleteVocabularyBySource` / `setVocabularySourceActive` | 削除 (参照ゼロ確認後) |
+| `db/vocabulary.ts` の `getActiveVocabulary` | 削除 or 残置 (transcription-service が呼ばなくなる) |
+| `transcription-service.ts` の `getActiveVocabulary()` 呼び出し | `getAllVocabulary()` + 辞書 union に変更 |
+| tRPC `applyDictionary` / `remove` / `setActive` | `activateDictionary` / `deactivateDictionary` に置換 |
+| UI の not-installed/mixed 状態, delete アクション | 削除 |
+| `vocabulary.source` / `isActive` カラム | 残置 (drop migration はスコープ外) |
+| `catalog.ts` (JSON 読み出し) | **そのまま再利用** |
+| `assets/dictionaries/*.json` | **そのまま再利用** |
 
 ---
 
 ## 11. 未決事項 (実装中にユーザーに確認)
 
-1. `index.json` の category 一覧の最終形 (`general` / `developer` / `creator` / `professional` 以外?)
-2. 「複数選択 → 一括有効化」モードを最初から実装するか、後回しか
-3. カードのデザイン (色、サイズ、アイコン使用) — Amical 既存の design system に合わせる
-4. 同梱辞書の更新ポリシー (アプリリリース時)
-5. デフォルトで有効化されている辞書はあるか、それとも完全に opt-in か (現案: 完全 opt-in)
+1. `vocabulary.source` / `isActive` カラムを今 drop するか、残置か (現案: 残置)
+2. 辞書 hint と手動 hint の優先順位 (現案: 手動優先 + 残りを辞書から、cap 適用)
+3. デフォルトで有効化されている辞書はあるか (現案: 完全 opt-in、全部 inactive スタート)
+4. 同じ単語が複数の有効辞書に出る場合の置換先の優先 (現案: 先に読んだ辞書 = activeDictionaries 配列の順)
