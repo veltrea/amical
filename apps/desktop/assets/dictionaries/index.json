@@ -48,6 +48,66 @@
       "tags": ["programming", "framework", "devops"],
       "entryCount": 198,
       "file": "programming.json"
+    },
+    {
+      "id": "anime",
+      "name": "Anime & Manga",
+      "name_ja": "アニメ / マンガ",
+      "description": "Popular anime and manga titles in current Japanese pop culture.",
+      "description_ja": "鬼滅の刃・呪術廻戦・推しの子など、最近のアニメ・マンガ作品名。",
+      "category": "creator",
+      "language": "ja",
+      "tags": ["anime", "manga", "pop-culture"],
+      "entryCount": 46,
+      "file": "anime.json"
+    },
+    {
+      "id": "light-novels",
+      "name": "Light Novels",
+      "name_ja": "ライトノベル",
+      "description": "Light-novel titles — isekai, fantasy and rom-com series.",
+      "description_ja": "ライトノベル作品名 (リゼロ・転スラ・本好きの下剋上 ほか)。",
+      "category": "creator",
+      "language": "ja",
+      "tags": ["light-novel", "isekai", "fantasy"],
+      "entryCount": 36,
+      "file": "light-novels.json"
+    },
+    {
+      "id": "games",
+      "name": "Video Games",
+      "name_ja": "ゲーム",
+      "description": "Game titles and platforms — Nintendo, PlayStation, mobile gachas.",
+      "description_ja": "ゼルダ・ポケモン・モンハン・原神 などゲームタイトルとハード名。",
+      "category": "creator",
+      "language": "ja",
+      "tags": ["game", "console", "title"],
+      "entryCount": 49,
+      "file": "games.json"
+    },
+    {
+      "id": "cooking",
+      "name": "Cooking",
+      "name_ja": "料理",
+      "description": "Ingredients, seasonings and Japanese cooking terms.",
+      "description_ja": "醤油・出汁・薄力粉など、料理の材料・調味料・専門用語。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["cooking", "ingredient", "seasoning"],
+      "entryCount": 69,
+      "file": "cooking.json"
+    },
+    {
+      "id": "fishing",
+      "name": "Fishing",
+      "name_ja": "釣り",
+      "description": "Tackle, techniques and species for Japanese sport fishing.",
+      "description_ja": "ルアー・エギング・PEライン・アオリイカなど釣り用語。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["fishing", "tackle", "outdoor"],
+      "entryCount": 42,
+      "file": "fishing.json"
     }
   ]
 }
