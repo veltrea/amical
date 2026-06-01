@@ -45,8 +45,20 @@ if [[ ! -d "${BUILT_APP}" ]]; then
   exit 1
 fi
 
-echo "[install-dev] Installing to ${APP_PATH} (overwrite)…"
+echo "[install-dev] Installing to ${APP_PATH} (clean overwrite)…"
+# Remove the destination FIRST. ditto-ing onto an existing bundle leaves
+# stale files from a previous (differently-shaped) build behind, which makes
+# codesign report "a sealed resource is missing or invalid". A clean wipe
+# guarantees the installed bundle is byte-identical to the freshly built one.
+rm -rf "${APP_PATH}"
 ditto "${BUILT_APP}" "${APP_PATH}"
+
+# Re-sign in place after copying. Per the ad-hoc distribution playbook
+# (FloatingMacro), the bundle must be deep-signed AFTER all contents are in
+# their final location, or TCC won't register the app's mic/accessibility
+# requests. --timestamp=none because ad-hoc has no Apple timestamp server.
+echo "[install-dev] Ad-hoc deep-signing ${APP_PATH}…"
+codesign --sign - --deep --force --timestamp=none "${APP_PATH}"
 
 echo "[install-dev] Verifying code signature…"
 codesign --verify "${APP_PATH}"
