@@ -2,6 +2,7 @@ import {
   IconSettings,
   IconMicrophone,
   IconBook,
+  IconBooks,
   IconBrain,
   IconScissors,
   IconHistory,
@@ -65,6 +66,13 @@ export const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
     url: "/settings/vocabulary",
     descriptionKey: "settings.nav.vocabulary.description",
     icon: IconBook,
+    type: "settings",
+  },
+  {
+    titleKey: "settings.nav.dictionaryLibrary.title",
+    url: "/settings/dictionary-library",
+    descriptionKey: "settings.nav.dictionaryLibrary.description",
+    icon: IconBooks,
     type: "settings",
   },
   {

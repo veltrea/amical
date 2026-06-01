@@ -382,6 +382,10 @@
       "misrecognition": {
         "title": "誤認識候補",
         "description": "履歴から抽出した誤認識候補に正解を入力して辞書に登録します。"
+      },
+      "dictionaryLibrary": {
+        "title": "辞書ライブラリ",
+        "description": "分野別の同梱辞書を 1 click で有効化できます。"
       }
     },
     "sidebar": {
@@ -1138,6 +1142,50 @@
         "registerFailed": "登録失敗: {{message}}",
         "bulkRegistered": "{{registered}} 件登録 / {{skipped}} 件スキップ",
         "emptyReplacement": "正しい単語を入力してください"
+      }
+    },
+    "dictionaryLibrary": {
+      "title": "辞書ライブラリ",
+      "description": "分野別のプリセット辞書をまとめて有効化できます。カードをクリックすると、その分野の単語が即座にディクテーションで使えるようになります。オフにすればデータを残したまま無効化できます。",
+      "loading": "辞書を読み込み中...",
+      "empty": "このビルドには同梱辞書がありません。",
+      "filter": {
+        "all": "すべて",
+        "general": "一般",
+        "developer": "開発者",
+        "creator": "クリエイター",
+        "professional": "専門職"
+      },
+      "card": {
+        "entryCount": "{{count}} 件",
+        "activeEntries": "{{active}} / {{total}} 件 有効",
+        "state": {
+          "notInstalled": "未インストール",
+          "active": "有効",
+          "inactive": "無効",
+          "mixed": "一部のみ有効"
+        },
+        "action": {
+          "activate": "有効化",
+          "enable": "オン",
+          "disable": "オフ",
+          "delete": "削除"
+        }
+      },
+      "toast": {
+        "applied": "{{name}} を適用しました ({{inserted}} 件追加 / {{skipped}} 件スキップ)",
+        "removed": "{{name}} を削除しました ({{deleted}} 件)",
+        "activated": "{{name}} を有効化しました ({{count}} 件)",
+        "deactivated": "{{name}} を無効化しました ({{count}} 件)",
+        "applyFailed": "適用に失敗: {{message}}",
+        "removeFailed": "削除に失敗: {{message}}",
+        "setActiveFailed": "切り替えに失敗: {{message}}"
+      },
+      "confirmDelete": {
+        "title": "{{name}} を削除しますか?",
+        "message": "この辞書由来の {{count}} 件をすべて削除します。ユーザーが手動で登録した単語には影響しません。",
+        "cancel": "キャンセル",
+        "confirm": "削除"
       }
     }
   }

@@ -382,6 +382,10 @@
       "misrecognition": {
         "title": "Misrecognition Candidates",
         "description": "Review auto-extracted words and register replacements."
+      },
+      "dictionaryLibrary": {
+        "title": "Dictionary Library",
+        "description": "Activate bundled vocabulary by topic with one click."
       }
     },
     "sidebar": {
@@ -1160,6 +1164,50 @@
         "registerFailed": "Failed to register: {{message}}",
         "bulkRegistered": "Registered {{registered}}, skipped {{skipped}}.",
         "emptyReplacement": "Enter the correct word first."
+      }
+    },
+    "dictionaryLibrary": {
+      "title": "Dictionary Library",
+      "description": "Bundled, topic-based vocabulary sets. Click a card to apply it; the words become available to dictation immediately. Toggle off to pause without losing the data.",
+      "loading": "Loading dictionaries...",
+      "empty": "No dictionaries are bundled with this build.",
+      "filter": {
+        "all": "All",
+        "general": "General",
+        "developer": "Developer",
+        "creator": "Creator",
+        "professional": "Professional"
+      },
+      "card": {
+        "entryCount": "{{count}} entries",
+        "activeEntries": "{{active}} / {{total}} active",
+        "state": {
+          "notInstalled": "Not installed",
+          "active": "Active",
+          "inactive": "Inactive",
+          "mixed": "Partially active"
+        },
+        "action": {
+          "activate": "Activate",
+          "enable": "Turn on",
+          "disable": "Turn off",
+          "delete": "Remove"
+        }
+      },
+      "toast": {
+        "applied": "Applied {{name}} ({{inserted}} new, {{skipped}} skipped).",
+        "removed": "Removed {{name}} ({{deleted}} entries).",
+        "activated": "Turned on {{name}} ({{count}} entries).",
+        "deactivated": "Turned off {{name}} ({{count}} entries).",
+        "applyFailed": "Failed to apply: {{message}}",
+        "removeFailed": "Failed to remove: {{message}}",
+        "setActiveFailed": "Failed to update: {{message}}"
+      },
+      "confirmDelete": {
+        "title": "Remove {{name}}?",
+        "message": "This will delete {{count}} bundled entries from this dictionary. User-authored entries are not affected.",
+        "cancel": "Cancel",
+        "confirm": "Remove"
       }
     }
   }
