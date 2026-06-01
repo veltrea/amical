@@ -20,6 +20,7 @@ import { Route as AppSettingsSnippetsRouteImport } from './routes/_app/settings/
 import { Route as AppSettingsShortcutsRouteImport } from './routes/_app/settings/shortcuts'
 import { Route as AppSettingsPreferencesRouteImport } from './routes/_app/settings/preferences'
 import { Route as AppSettingsMisrecognitionRouteImport } from './routes/_app/settings/misrecognition'
+import { Route as AppSettingsMcpServerRouteImport } from './routes/_app/settings/mcp-server'
 import { Route as AppSettingsDictationRouteImport } from './routes/_app/settings/dictation'
 import { Route as AppSettingsAiModelsRouteImport } from './routes/_app/settings/ai-models'
 import { Route as AppSettingsAdvancedRouteImport } from './routes/_app/settings/advanced'
@@ -81,6 +82,11 @@ const AppSettingsMisrecognitionRoute =
     path: '/settings/misrecognition',
     getParentRoute: () => AppRouteRoute,
   } as any)
+const AppSettingsMcpServerRoute = AppSettingsMcpServerRouteImport.update({
+  id: '/settings/mcp-server',
+  path: '/settings/mcp-server',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppSettingsDictationRoute = AppSettingsDictationRouteImport.update({
   id: '/settings/dictation',
   path: '/settings/dictation',
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/settings/advanced': typeof AppSettingsAdvancedRoute
   '/settings/ai-models': typeof AppSettingsAiModelsRoute
   '/settings/dictation': typeof AppSettingsDictationRoute
+  '/settings/mcp-server': typeof AppSettingsMcpServerRoute
   '/settings/misrecognition': typeof AppSettingsMisrecognitionRoute
   '/settings/preferences': typeof AppSettingsPreferencesRoute
   '/settings/shortcuts': typeof AppSettingsShortcutsRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/settings/advanced': typeof AppSettingsAdvancedRoute
   '/settings/ai-models': typeof AppSettingsAiModelsRoute
   '/settings/dictation': typeof AppSettingsDictationRoute
+  '/settings/mcp-server': typeof AppSettingsMcpServerRoute
   '/settings/misrecognition': typeof AppSettingsMisrecognitionRoute
   '/settings/preferences': typeof AppSettingsPreferencesRoute
   '/settings/shortcuts': typeof AppSettingsShortcutsRoute
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/_app/settings/advanced': typeof AppSettingsAdvancedRoute
   '/_app/settings/ai-models': typeof AppSettingsAiModelsRoute
   '/_app/settings/dictation': typeof AppSettingsDictationRoute
+  '/_app/settings/mcp-server': typeof AppSettingsMcpServerRoute
   '/_app/settings/misrecognition': typeof AppSettingsMisrecognitionRoute
   '/_app/settings/preferences': typeof AppSettingsPreferencesRoute
   '/_app/settings/shortcuts': typeof AppSettingsShortcutsRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/settings/advanced'
     | '/settings/ai-models'
     | '/settings/dictation'
+    | '/settings/mcp-server'
     | '/settings/misrecognition'
     | '/settings/preferences'
     | '/settings/shortcuts'
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/settings/advanced'
     | '/settings/ai-models'
     | '/settings/dictation'
+    | '/settings/mcp-server'
     | '/settings/misrecognition'
     | '/settings/preferences'
     | '/settings/shortcuts'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/_app/settings/advanced'
     | '/_app/settings/ai-models'
     | '/_app/settings/dictation'
+    | '/_app/settings/mcp-server'
     | '/_app/settings/misrecognition'
     | '/_app/settings/preferences'
     | '/_app/settings/shortcuts'
@@ -297,6 +309,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsMisrecognitionRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/settings/mcp-server': {
+      id: '/_app/settings/mcp-server'
+      path: '/settings/mcp-server'
+      fullPath: '/settings/mcp-server'
+      preLoaderRoute: typeof AppSettingsMcpServerRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/settings/dictation': {
       id: '/_app/settings/dictation'
       path: '/settings/dictation'
@@ -356,6 +375,7 @@ interface AppRouteRouteChildren {
   AppSettingsAdvancedRoute: typeof AppSettingsAdvancedRoute
   AppSettingsAiModelsRoute: typeof AppSettingsAiModelsRoute
   AppSettingsDictationRoute: typeof AppSettingsDictationRoute
+  AppSettingsMcpServerRoute: typeof AppSettingsMcpServerRoute
   AppSettingsMisrecognitionRoute: typeof AppSettingsMisrecognitionRoute
   AppSettingsPreferencesRoute: typeof AppSettingsPreferencesRoute
   AppSettingsShortcutsRoute: typeof AppSettingsShortcutsRoute
@@ -371,6 +391,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppSettingsAdvancedRoute: AppSettingsAdvancedRoute,
   AppSettingsAiModelsRoute: AppSettingsAiModelsRoute,
   AppSettingsDictationRoute: AppSettingsDictationRoute,
+  AppSettingsMcpServerRoute: AppSettingsMcpServerRoute,
   AppSettingsMisrecognitionRoute: AppSettingsMisrecognitionRoute,
   AppSettingsPreferencesRoute: AppSettingsPreferencesRoute,
   AppSettingsShortcutsRoute: AppSettingsShortcutsRoute,

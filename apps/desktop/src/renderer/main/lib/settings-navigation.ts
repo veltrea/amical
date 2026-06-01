@@ -10,6 +10,7 @@ import {
   IconAdjustments,
   IconNotes,
   IconSparkles,
+  IconServerCog,
   type Icon,
 } from "@tabler/icons-react";
 
@@ -86,6 +87,13 @@ export const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
     url: "/settings/ai-models",
     descriptionKey: "settings.nav.aiModels.description",
     icon: IconBrain,
+    type: "settings",
+  },
+  {
+    titleKey: "settings.nav.mcpServer.title",
+    url: "/settings/mcp-server",
+    descriptionKey: "settings.nav.mcpServer.description",
+    icon: IconServerCog,
     type: "settings",
   },
   {
