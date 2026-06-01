@@ -300,6 +300,12 @@ export interface AppSettingsData {
     notesLexical?: number;
     dictationDailyStats?: number;
   };
+  mcpServer?: {
+    enabled: boolean; // default false (opt-in)
+    port: number; // default 7878
+    token: string; // bearer token (URL-safe base64)
+    bindAddress: "127.0.0.1"; // reserved for future, always loopback today
+  };
 }
 
 // Notes table

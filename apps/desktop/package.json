@@ -113,6 +113,7 @@
     "@libsql/client": "^0.15.9",
     "@libsql/darwin-x64": "0.5.13",
     "@libsql/win32-x64-msvc": "^0.5.13",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@openrouter/ai-sdk-provider": "^0.7.2",
     "@radix-ui/react-accordion": "^1.2.10",
     "@radix-ui/react-alert-dialog": "^1.1.13",
