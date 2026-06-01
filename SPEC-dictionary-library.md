@@ -237,7 +237,10 @@ export const dictionaryLibraryRouter = createRouter({
   }),
 
   // 適用 (= source タグ付きで bulk_add、mode: "skip")
-  apply: procedure
+  // NB: procedure 名を `apply` にしない。tRPC は Function.prototype の名前
+  // (apply/call/bind/...) を予約語として弾く ("Reserved words used in
+  // `router({})` call: apply" で main process が即クラッシュする)。
+  applyDictionary: procedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       return await applyBundledDictionary(input.id);

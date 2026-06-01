@@ -19,7 +19,9 @@ export const dictionaryLibraryRouter = createRouter({
   // Insert the rows of the bundled dictionary `id` into the vocabulary
   // table, tagged as `library:<id>`. Existing words are kept (skip mode)
   // so user-authored entries are not clobbered.
-  apply: procedure.input(IdSchema).mutation(async ({ input }) => {
+  // NB: must NOT be named `apply` — tRPC reserves Function.prototype names
+  // (apply/call/bind/...) as procedure keys.
+  applyDictionary: procedure.input(IdSchema).mutation(async ({ input }) => {
     return await applyBundledDictionary(input.id);
   }),
 

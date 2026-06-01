@@ -59,7 +59,7 @@ export default function DictionaryLibrarySettingsPage() {
     utils.vocabulary.getVocabulary.invalidate();
   };
 
-  const applyMutation = api.dictionaryLibrary.apply.useMutation({
+  const applyMutation = api.dictionaryLibrary.applyDictionary.useMutation({
     onSuccess: (res, vars) => {
       const meta = listQuery.data?.find((d) => d.id === vars.id);
       const name = meta ? localizedName(meta, i18n.language) : vars.id;
