@@ -44,12 +44,49 @@ Developer ID が未設定なら、ビルドが自動で **ad-hoc 署名**しま�
 
 Qwen3-ASR は [soniqo/speech-swift](https://github.com/soniqo/speech-swift)（MLX）を使います。モデルは初回利用時に Hugging Face からダウンロードされ、`~/Library/Caches/qwen3-speech/` にキャッシュされます。
 
+## MCP サーバー（Claude Code 連携）
+
+Amical は辞書・発話履歴・誤認識候補プールを Claude Code（および任意の HTTP-MCP クライアント）にローカル Streamable-HTTP エンドポイント経由で公開できます。
+
+**デフォルトは OFF** です。有効化手順:
+
+1. Amical で **設定 → MCP サーバー** を開き、トグルを **有効化** に切替。
+2. URL（`http://127.0.0.1:7878/mcp`）と Bearer トークンをコピー。
+3. Claude Code に登録:
+
+   ```bash
+   claude mcp add amical \
+     --transport http \
+     --url http://127.0.0.1:7878/mcp \
+     --header "Authorization: Bearer <token>"
+   ```
+
+サーバーは **loopback 限定**でバインドされます。LAN からはアクセス不能です。有効化すると Claude は次の tool を使えます:
+
+- `vocabulary_list`, `vocabulary_add`, `vocabulary_update`, `vocabulary_delete`, `vocabulary_bulk_add`, `vocabulary_search`
+- `transcriptions_recent`, `transcriptions_search`
+- `misrec_candidates_list`, `misrec_candidates_register`, `misrec_candidates_dismiss`
+
+**プライバシー上の注意:** `transcriptions_recent` は発話履歴を相手の LLM に渡します。発話履歴には極めて個人的な内容を含む可能性があります。何が送られるかを理解した上で有効化してください。
+
+Amical を起動せずに wire protocol だけ確認したい場合はスモークテストスクリプトが使えます:
+
+```bash
+pnpm exec tsx scripts/mcp-smoketest.ts
+# 別シェルで:
+curl -s -X POST http://127.0.0.1:7878/mcp \
+  -H "Authorization: Bearer $MCP_TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
 ## Roadmap（構想・未実装）
 
 このフォークが探求していく方向です——いずれも オンデバイス／エージェント連携の AI:
 
 - **MLX 組み込みの AI 校正** — AI の校正/整形 LLM を MLX でアプリに組み込み、別ソフト（Ollama 等）のインストール無しで動くようにする。
-- **MCP/ACP による AI 辞書編集** — カスタム辞書を MCP/ACP 経由で公開し、AI エージェントが各分野の専門用語を自動追加。手入力をなくす。
+- **MCP による AI 辞書編集** — このフォークで実装済み。上の「MCP サーバー」を参照。Claude Code から直接、辞書の追加・編集・重複整理ができます。
 - **履歴からの自動学習** — AI に文字起こし履歴を分析させ、誤変換した単語を検出して辞書へ自動登録。
 
 ## クレジット
