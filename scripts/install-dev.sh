@@ -1,20 +1,26 @@
 #!/usr/bin/env bash
 #
-# Build the Amical .app, install it to /Applications/Amical.app (overwriting
-# whatever is there), and launch it.
+# Build the Amical .app and launch it FROM THE BUILD OUTPUT DIRECTORY.
 #
 # This is the ONLY supported way to do manual smoke testing of Amical
-# changes. Dev launch (electron-forge start / scripts/dev.sh) is forbidden
-# because it churns the bundle's cdHash every run and silent-revokes the TCC
-# (mic / accessibility) permissions of the user's daily-driver Amical.app.
+# changes. Two things are deliberately avoided:
 #
-# The .app must keep its name (`Amical.app`) and its path
-# (`/Applications/Amical.app`) — never rename, never put it elsewhere.
-# Renaming creates parallel TCC entries that eventually corrupt the TCC
-# database to a state where the only recovery is wiping all permissions.
+#   1. Dev launch (electron-forge start / scripts/dev.sh) — churns the
+#      bundle cdHash every run; not a real .app.
 #
-# Idempotent: safe to re-run. Quits the running Amical first, waits briefly
-# for it to exit, then overwrites the bundle and re-launches.
+#   2. Copying to /Applications — macOS tags anything under /Applications
+#      with the com.apple.provenance xattr and treats it as App Management.
+#      Under Sequoia, ad-hoc-signed apps in App Management have their TCC
+#      (accessibility / mic) permission SILENTLY revoked on every rebuild
+#      (cdHash change), and eventually the System Settings toggle stops
+#      working entirely — the only recovery is removing the entry and
+#      re-adding the app by hand. FloatingMacro hit this and settled on
+#      launching straight from its build output dir. We do the same.
+#
+# So: build, ad-hoc deep-sign in place, and `open` the bundle right where
+# electron-forge produced it. No copy, no /Applications.
+#
+# Idempotent: quits a running instance first, then rebuilds and relaunches.
 
 set -euo pipefail
 
@@ -23,15 +29,14 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$REPO_ROOT"
 
 APP_NAME="Amical"
-APP_PATH="/Applications/${APP_NAME}.app"
 BUILD_OUTPUT_DIR="apps/desktop/out/${APP_NAME}-darwin-arm64"
 BUILT_APP="${BUILD_OUTPUT_DIR}/${APP_NAME}.app"
 
 echo "[install-dev] Quitting ${APP_NAME} if running…"
 osascript -e "tell application \"${APP_NAME}\" to quit" >/dev/null 2>&1 || true
-# Wait up to ~5s for the bundle's main process to exit before we overwrite.
+# Wait up to ~5s for the main process to exit before we rebuild.
 for _ in 1 2 3 4 5; do
-  if ! pgrep -f "${APP_PATH}/Contents/MacOS/${APP_NAME}\$" >/dev/null 2>&1; then
+  if ! pgrep -fx ".*/${APP_NAME}.app/Contents/MacOS/${APP_NAME}" >/dev/null 2>&1; then
     break
   fi
   sleep 1
@@ -45,25 +50,17 @@ if [[ ! -d "${BUILT_APP}" ]]; then
   exit 1
 fi
 
-echo "[install-dev] Installing to ${APP_PATH} (clean overwrite)…"
-# Remove the destination FIRST. ditto-ing onto an existing bundle leaves
-# stale files from a previous (differently-shaped) build behind, which makes
-# codesign report "a sealed resource is missing or invalid". A clean wipe
-# guarantees the installed bundle is byte-identical to the freshly built one.
-rm -rf "${APP_PATH}"
-ditto "${BUILT_APP}" "${APP_PATH}"
-
-# Re-sign in place after copying. Per the ad-hoc distribution playbook
-# (FloatingMacro), the bundle must be deep-signed AFTER all contents are in
-# their final location, or TCC won't register the app's mic/accessibility
-# requests. --timestamp=none because ad-hoc has no Apple timestamp server.
-echo "[install-dev] Ad-hoc deep-signing ${APP_PATH}…"
-codesign --sign - --deep --force --timestamp=none "${APP_PATH}"
+# electron-forge's postPackage hook already ad-hoc deep-signs the bundle,
+# but re-sign once more here as a guard in case the tree was touched after
+# packaging. --timestamp=none is the ad-hoc convention.
+echo "[install-dev] Ad-hoc deep-signing in place…"
+codesign --sign - --deep --force --timestamp=none "${BUILT_APP}"
 
 echo "[install-dev] Verifying code signature…"
-codesign --verify "${APP_PATH}"
+codesign --verify "${BUILT_APP}"
 
-echo "[install-dev] Launching ${APP_PATH}…"
-open "${APP_PATH}"
+ABS_APP="${REPO_ROOT}/${BUILT_APP}"
+echo "[install-dev] Launching ${ABS_APP}…"
+open "${ABS_APP}"
 
-echo "[install-dev] Done."
+echo "[install-dev] Done. (launched from build output, not /Applications)"
