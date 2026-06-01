@@ -232,6 +232,7 @@ export interface VocabularyImportResult {
 export async function importVocabularyEntries(
   entries: VocabularyImportEntry[],
   mode: "skip" | "overwrite",
+  source: string | null = null,
 ): Promise<VocabularyImportResult> {
   if (entries.length === 0) {
     return { inserted: 0, updated: 0, skipped: [] };
@@ -286,6 +287,10 @@ export async function importVocabularyEntries(
         word: entry.word,
         replacementWord: entry.replacementWord,
         isReplacement: entry.isReplacement,
+        // Tag the row's origin when a source is supplied (e.g.
+        // "library:services"). User-driven imports pass null so the row
+        // looks identical to a manually added one.
+        source: source ?? null,
         dateAdded: now,
         createdAt: now,
         updatedAt: now,
@@ -295,4 +300,73 @@ export async function importVocabularyEntries(
   }
 
   return { inserted, updated, skipped };
+}
+
+/**
+ * Aggregate counts grouped by the `source` column. Used by the dictionary
+ * library UI to report how many rows came from each bundled dictionary and
+ * how many are currently active.
+ *
+ * Rows with source = NULL (user-authored) are excluded from this result —
+ * callers that need user-authored counts use `getVocabularyCount` instead.
+ */
+export interface VocabularySourceSummary {
+  source: string;
+  totalCount: number;
+  activeCount: number;
+}
+
+export async function getVocabularySourceSummaries(): Promise<
+  VocabularySourceSummary[]
+> {
+  const rows = await db
+    .select({
+      source: vocabulary.source,
+      totalCount: count(),
+      // SUM(CASE WHEN is_active THEN 1 ELSE 0 END) counts active rows per
+      // group in a single round-trip. We coerce to number on the JS side
+      // because SQLite returns this as a string for large groups.
+      activeCount: sql<number>`SUM(CASE WHEN ${vocabulary.isActive} THEN 1 ELSE 0 END)`,
+    })
+    .from(vocabulary)
+    .where(sql`${vocabulary.source} IS NOT NULL`)
+    .groupBy(vocabulary.source);
+
+  return rows.map((r) => ({
+    source: r.source ?? "",
+    totalCount: Number(r.totalCount ?? 0),
+    activeCount: Number(r.activeCount ?? 0),
+  }));
+}
+
+/**
+ * Delete every row tagged with the given source value. Used by the
+ * dictionary library UI when the user clicks "Remove" on an installed
+ * bundled dictionary. Returns the number of rows actually removed.
+ */
+export async function deleteVocabularyBySource(
+  source: string,
+): Promise<{ deleted: number }> {
+  const rows = await db
+    .delete(vocabulary)
+    .where(eq(vocabulary.source, source))
+    .returning({ id: vocabulary.id });
+  return { deleted: rows.length };
+}
+
+/**
+ * Toggle the `isActive` flag for every row with the given source value.
+ * Returns the number of rows touched (== rows changed since the
+ * predicate matches all rows of that source regardless of prior state).
+ */
+export async function setVocabularySourceActive(
+  source: string,
+  isActive: boolean,
+): Promise<{ updated: number }> {
+  const rows = await db
+    .update(vocabulary)
+    .set({ isActive, updatedAt: new Date() })
+    .where(eq(vocabulary.source, source))
+    .returning({ id: vocabulary.id });
+  return { updated: rows.length };
 }

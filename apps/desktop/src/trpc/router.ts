@@ -14,6 +14,7 @@ import { featureFlagsRouter } from "./routers/feature-flags";
 import { telemetryRouter } from "./routers/telemetry";
 import { permissionsRouter } from "./routers/permissions";
 import { misrecognitionRouter } from "./routers/misrecognition";
+import { dictionaryLibraryRouter } from "./routers/dictionary-library";
 import { createRouter, procedure } from "./trpc";
 
 export const router = createRouter({
@@ -85,6 +86,9 @@ export const router = createRouter({
 
   // Misrecognition candidates router
   misrecognition: misrecognitionRouter,
+
+  // Bundled dictionary library router (Commit 3 of SPEC-dictionary-library.md)
+  dictionaryLibrary: dictionaryLibraryRouter,
 });
 
 export type AppRouter = typeof router;

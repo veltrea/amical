@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "exportedAt": "2026-06-01T10:45:00.000Z",
+  "entries": [
+    { "word": "Meta", "replacementWord": null, "isReplacement": false },
+    { "word": "メタ", "replacementWord": "Meta", "isReplacement": true },
+
+    { "word": "DeepMind", "replacementWord": null, "isReplacement": false },
+    { "word": "ディープマインド", "replacementWord": "DeepMind", "isReplacement": true },
+    { "word": "Google DeepMind", "replacementWord": null, "isReplacement": false },
+
+    { "word": "xAI", "replacementWord": null, "isReplacement": false },
+    { "word": "エックスエーアイ", "replacementWord": "xAI", "isReplacement": true },
+
+    { "word": "Mistral AI", "replacementWord": null, "isReplacement": false },
+    { "word": "ミストラルエーアイ", "replacementWord": "Mistral AI", "isReplacement": true },
+
+    { "word": "Cohere", "replacementWord": null, "isReplacement": false },
+    { "word": "コヒア", "replacementWord": "Cohere", "isReplacement": true },
+    { "word": "コーヒア", "replacementWord": "Cohere", "isReplacement": true },
+
+    { "word": "Stability AI", "replacementWord": null, "isReplacement": false },
+    { "word": "スタビリティエーアイ", "replacementWord": "Stability AI", "isReplacement": true },
+
+    { "word": "Black Forest Labs", "replacementWord": null, "isReplacement": false },
+    { "word": "ブラックフォレストラボ", "replacementWord": "Black Forest Labs", "isReplacement": true },
+    { "word": "Flux", "replacementWord": null, "isReplacement": false },
+    { "word": "フラックス", "replacementWord": "Flux", "isReplacement": true },
+
+    { "word": "ElevenLabs", "replacementWord": null, "isReplacement": false },
+    { "word": "イレブンラブス", "replacementWord": "ElevenLabs", "isReplacement": true },
+
+    { "word": "Runway", "replacementWord": null, "isReplacement": false },
+    { "word": "ランウェイ", "replacementWord": "Runway", "isReplacement": true },
+
+    { "word": "Pika", "replacementWord": null, "isReplacement": false },
+    { "word": "Pika Labs", "replacementWord": null, "isReplacement": false },
+
+    { "word": "Suno", "replacementWord": null, "isReplacement": false },
+    { "word": "スーノ", "replacementWord": "Suno", "isReplacement": true },
+
+    { "word": "Udio", "replacementWord": null, "isReplacement": false },
+    { "word": "ユーディオ", "replacementWord": "Udio", "isReplacement": true },
+
+    { "word": "Character.AI", "replacementWord": null, "isReplacement": false },
+    { "word": "AI21 Labs", "replacementWord": null, "isReplacement": false },
+    { "word": "Inflection AI", "replacementWord": null, "isReplacement": false },
+
+    { "word": "NVIDIA", "replacementWord": null, "isReplacement": false },
+    { "word": "エヌビディア", "replacementWord": "NVIDIA", "isReplacement": true },
+    { "word": "AMD", "replacementWord": null, "isReplacement": false },
+    { "word": "エーエムディー", "replacementWord": "AMD", "isReplacement": true },
+    { "word": "Intel", "replacementWord": null, "isReplacement": false },
+    { "word": "インテル", "replacementWord": "Intel", "isReplacement": true },
+
+    { "word": "Apple Intelligence", "replacementWord": null, "isReplacement": false },
+    { "word": "アップルインテリジェンス", "replacementWord": "Apple Intelligence", "isReplacement": true },
+
+    { "word": "ByteDance", "replacementWord": null, "isReplacement": false },
+    { "word": "バイトダンス", "replacementWord": "ByteDance", "isReplacement": true },
+    { "word": "Baidu", "replacementWord": null, "isReplacement": false },
+    { "word": "バイドゥ", "replacementWord": "Baidu", "isReplacement": true },
+    { "word": "Alibaba", "replacementWord": null, "isReplacement": false },
+    { "word": "アリババ", "replacementWord": "Alibaba", "isReplacement": true },
+    { "word": "Tencent", "replacementWord": null, "isReplacement": false },
+    { "word": "テンセント", "replacementWord": "Tencent", "isReplacement": true },
+
+    { "word": "Snowflake", "replacementWord": null, "isReplacement": false },
+    { "word": "スノーフレーク", "replacementWord": "Snowflake", "isReplacement": true },
+    { "word": "Databricks", "replacementWord": null, "isReplacement": false },
+    { "word": "データブリックス", "replacementWord": "Databricks", "isReplacement": true },
+
+    { "word": "IBM", "replacementWord": null, "isReplacement": false },
+    { "word": "アイビーエム", "replacementWord": "IBM", "isReplacement": true },
+    { "word": "Watson", "replacementWord": null, "isReplacement": false },
+
+    { "word": "Sakana AI", "replacementWord": null, "isReplacement": false },
+    { "word": "サカナエーアイ", "replacementWord": "Sakana AI", "isReplacement": true },
+    { "word": "Preferred Networks", "replacementWord": null, "isReplacement": false },
+    { "word": "プリファードネットワークス", "replacementWord": "Preferred Networks", "isReplacement": true },
+    { "word": "PFN", "replacementWord": null, "isReplacement": false },
+    { "word": "Rinna", "replacementWord": null, "isReplacement": false },
+    { "word": "リンナ", "replacementWord": "Rinna", "isReplacement": true },
+
+    { "word": "Together AI", "replacementWord": null, "isReplacement": false },
+    { "word": "Fireworks AI", "replacementWord": null, "isReplacement": false },
+    { "word": "Replicate", "replacementWord": null, "isReplacement": false },
+    { "word": "レプリケート", "replacementWord": "Replicate", "isReplacement": true },
+    { "word": "Modal", "replacementWord": null, "isReplacement": false },
+    { "word": "Modal Labs", "replacementWord": null, "isReplacement": false },
+
+    { "word": "Pinecone", "replacementWord": null, "isReplacement": false },
+    { "word": "パインコーン", "replacementWord": "Pinecone", "isReplacement": true },
+    { "word": "Weaviate", "replacementWord": null, "isReplacement": false },
+    { "word": "Chroma", "replacementWord": null, "isReplacement": false },
+    { "word": "クロマ", "replacementWord": "Chroma", "isReplacement": true },
+    { "word": "Qdrant", "replacementWord": null, "isReplacement": false },
+
+    { "word": "Salesforce", "replacementWord": null, "isReplacement": false },
+    { "word": "セールスフォース", "replacementWord": "Salesforce", "isReplacement": true },
+    { "word": "Einstein", "replacementWord": null, "isReplacement": false }
+  ]
+}

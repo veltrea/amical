@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "dictionaries": [
+    {
+      "id": "services",
+      "name": "Online Services",
+      "name_ja": "オンラインサービス",
+      "description": "Twitter, Notion, Slack, Spotify and other consumer services.",
+      "description_ja": "Twitter, Notion, Slack, Spotify など、よく使うサービス名。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["service", "social", "saas"],
+      "entryCount": 100,
+      "file": "services.json"
+    },
+    {
+      "id": "ai-companies",
+      "name": "AI Companies",
+      "name_ja": "AI 企業",
+      "description": "OpenAI, Anthropic, DeepSeek and other AI vendors.",
+      "description_ja": "OpenAI, Anthropic, DeepSeek など主要な AI 企業名。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["ai", "company", "vendor"],
+      "entryCount": 76,
+      "file": "ai-companies.json"
+    },
+    {
+      "id": "software",
+      "name": "Software & Tools",
+      "name_ja": "ソフトウェア / ツール",
+      "description": "VS Code, Photoshop, Figma and other day-to-day software.",
+      "description_ja": "VS Code, Photoshop, Figma など日常的に使うソフト名。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["software", "tool", "app"],
+      "entryCount": 133,
+      "file": "software.json"
+    },
+    {
+      "id": "programming",
+      "name": "Programming",
+      "name_ja": "プログラミング",
+      "description": "Languages, frameworks and dev terms (Python, React, Kubernetes).",
+      "description_ja": "プログラミング言語・フレームワーク・開発用語 (Python, React, Kubernetes 等)。",
+      "category": "developer",
+      "language": "ja",
+      "tags": ["programming", "framework", "devops"],
+      "entryCount": 198,
+      "file": "programming.json"
+    }
+  ]
+}
