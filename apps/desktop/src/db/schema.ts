@@ -47,6 +47,12 @@ export const vocabulary = sqliteTable("vocabulary", {
     .notNull()
     .default(sql`(unixepoch())`),
   usageCount: integer("usage_count").default(0), // How many times this word appeared in transcriptions
+  // Origin tag for the row. NULL = user-authored. "library:<id>" = imported
+  // from a bundled dictionary (see SPEC-dictionary-library.md §2.2).
+  source: text("source"),
+  // Whether this row is fed into the ASR / LLM hint pipeline. Inactive rows
+  // are kept in DB but excluded from getActiveVocabulary().
+  isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
