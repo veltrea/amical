@@ -1,7 +1,7 @@
 # SPEC: Amical MCP サーバー
 
 **ステータス:** 設計のみ (未実装)
-**派生元:** `feat/mlx-proofreading` (HEAD = `a3f2400` 時点)
+**派生元:** `develop` (旧 `feat/mlx-proofreading`、SPEC 着手時点 HEAD = `a3f2400`)
 **着手:** 別セッションで並行開発予定
 **並行する別 SPEC:** `SPEC-dictionary-library.md`
 
@@ -309,7 +309,7 @@ output:
 
 ### 6.3 misrecognition_candidates 系 (v1 既存実装用)
 
-> 注: feat/mlx-proofreading に v1 の検出器実装は残っている (本家由来)。それを操作する tool。
+> 注: `develop` に v1 の検出器実装は残っている (本家由来)。それを操作する tool。
 
 #### `misrec_candidates_list`
 

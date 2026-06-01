@@ -1,7 +1,7 @@
 # SPEC: 辞書ライブラリ (Dictionary Library)
 
 **ステータス:** 設計のみ (未実装)
-**派生元:** `feat/mlx-proofreading` (HEAD = `a3f2400` 時点)
+**派生元:** `develop` (旧 `feat/mlx-proofreading`、SPEC 着手時点 HEAD = `a3f2400`)
 **着手:** 別セッションで並行開発予定
 **並行する別 SPEC:** `SPEC-mcp-server.md`
 
