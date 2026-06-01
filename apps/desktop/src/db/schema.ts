@@ -312,6 +312,11 @@ export interface AppSettingsData {
     token: string; // bearer token (URL-safe base64)
     bindAddress: "127.0.0.1"; // reserved for future, always loopback today
   };
+  // IDs of bundled dictionaries (assets/dictionaries/index.json) the user
+  // has activated. Dictionary contents are NOT stored in the vocabulary
+  // table — the ASR pipeline reads them from the JSON assets and unions them
+  // with manual vocabulary at load time. See SPEC-dictionary-library.md.
+  activeDictionaries?: string[];
 }
 
 // Notes table
