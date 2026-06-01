@@ -838,13 +838,19 @@
       "addButton": "Add Word",
       "loading": "Loading vocabulary...",
       "empty": "No vocabulary words found. Add your first word to get started.",
+      "exportButton": "Export",
+      "importButton": "Import",
       "toast": {
         "added": "Word added to vocabulary",
         "addFailed": "Failed to add word: {{message}}",
         "updated": "Vocabulary updated",
         "updateFailed": "Failed to update word: {{message}}",
         "deleted": "Word deleted from vocabulary",
-        "deleteFailed": "Failed to delete word: {{message}}"
+        "deleteFailed": "Failed to delete word: {{message}}",
+        "exportSuccess": "Exported {{count}} entries.",
+        "exportFailed": "Export failed: {{message}}",
+        "importFailed": "Import failed: {{message}}",
+        "invalidJson": "Invalid JSON: {{message}}"
       },
       "dialog": {
         "addTitle": "Add to vocabulary",
@@ -857,6 +863,22 @@
         "saving": "Saving...",
         "addWord": "Add word",
         "saveChanges": "Save changes"
+      },
+      "importDialog": {
+        "title": "Import vocabulary",
+        "modeLabel": "Duplicate handling",
+        "modeSkip": "Skip (keep existing entries, add new only)",
+        "modeOverwrite": "Overwrite (update replacement info on existing entries)",
+        "fileLabel": "Select JSON file",
+        "pendingCount": "{{count}} entries loaded",
+        "cancel": "Cancel",
+        "submit": "Start import"
+      },
+      "importResult": {
+        "title": "Import result",
+        "summary": "Added {{inserted}} / Updated {{updated}} / Skipped {{skipped}}",
+        "downloadSkipped": "Download skipped {{count}} entries as JSON",
+        "close": "Close"
       },
       "delete": {
         "title": "Delete vocabulary item",
