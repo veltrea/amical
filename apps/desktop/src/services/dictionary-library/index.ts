@@ -1,7 +1,6 @@
 export {
   readBundledIndex,
   readBundledDictionaryFile,
-  librarySourceTag,
 } from "./catalog";
 export type {
   BundledDictionary,
@@ -11,12 +10,8 @@ export type {
 } from "./catalog";
 export {
   listBundledDictionariesWithState,
-  applyBundledDictionary,
-  removeBundledDictionary,
-  setBundledDictionaryActive,
+  activateDictionary,
+  deactivateDictionary,
+  getActiveDictionaryEntries,
 } from "./operations";
-export type {
-  DictionaryInstallState,
-  DictionaryWithState,
-  DictionaryApplyResult,
-} from "./operations";
+export type { DictionaryState, DictionaryWithState } from "./operations";

@@ -1172,7 +1172,7 @@
     },
     "dictionaryLibrary": {
       "title": "Dictionary Library",
-      "description": "Bundled, topic-based vocabulary sets. Click a card to apply it; the words become available to dictation immediately. Toggle off to pause without losing the data.",
+      "description": "Bundled, topic-based vocabulary sets. Turn one on and its words become available to dictation immediately. Turn it off to pause it — your manually added words are never touched.",
       "loading": "Loading dictionaries...",
       "empty": "No dictionaries are bundled with this build.",
       "filter": {
@@ -1184,34 +1184,19 @@
       },
       "card": {
         "entryCount": "{{count}} entries",
-        "activeEntries": "{{active}} / {{total}} active",
         "state": {
-          "notInstalled": "Not installed",
-          "active": "Active",
-          "inactive": "Inactive",
-          "mixed": "Partially active"
+          "active": "On",
+          "inactive": "Off"
         },
         "action": {
-          "activate": "Activate",
-          "enable": "Turn on",
-          "disable": "Turn off",
-          "delete": "Remove"
+          "activate": "Turn on",
+          "deactivate": "Turn off"
         }
       },
       "toast": {
-        "applied": "Applied {{name}} ({{inserted}} new, {{skipped}} skipped).",
-        "removed": "Removed {{name}} ({{deleted}} entries).",
-        "activated": "Turned on {{name}} ({{count}} entries).",
-        "deactivated": "Turned off {{name}} ({{count}} entries).",
-        "applyFailed": "Failed to apply: {{message}}",
-        "removeFailed": "Failed to remove: {{message}}",
-        "setActiveFailed": "Failed to update: {{message}}"
-      },
-      "confirmDelete": {
-        "title": "Remove {{name}}?",
-        "message": "This will delete {{count}} bundled entries from this dictionary. User-authored entries are not affected.",
-        "cancel": "Cancel",
-        "confirm": "Remove"
+        "activated": "Turned on {{name}}.",
+        "deactivated": "Turned off {{name}}.",
+        "failed": "Failed: {{message}}"
       }
     },
     "mcpServer": {

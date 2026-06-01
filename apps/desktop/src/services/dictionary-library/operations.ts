@@ -1,131 +1,92 @@
 import {
-  deleteVocabularyBySource,
-  getVocabularySourceSummaries,
-  importVocabularyEntries,
-  setVocabularySourceActive,
-  type VocabularySourceSummary,
-} from "../../db/vocabulary";
+  getSettingsSection,
+  updateSettingsSection,
+} from "../../db/app-settings";
 import {
-  librarySourceTag,
-  readBundledDictionaryFile,
   readBundledIndex,
+  readBundledDictionaryFile,
   type BundledDictionary,
+  type DictionaryEntry,
 } from "./catalog";
 
 /**
- * The installation state of a bundled dictionary as observed in the DB:
- *
- *   - "not-installed": no vocabulary row has source = library:<id>
- *   - "active":        at least one row exists and every row is isActive=true
- *   - "inactive":      at least one row exists and every row is isActive=false
- *   - "mixed":         rows exist but isActive is heterogeneous (rare;
- *                      happens if a user manually toggled individual rows
- *                      via the regular vocabulary UI)
- *
- * UI treats "mixed" the same as "active" but surfaces a hint that some rows
- * differ; see SPEC-dictionary-library.md §7.3.
+ * Model B: a bundled dictionary is either activated or not. Its words are
+ * never written to the vocabulary table; the only persisted state is the
+ * list of activated dictionary IDs in app_settings.activeDictionaries.
  */
-export type DictionaryInstallState =
-  | "not-installed"
-  | "active"
-  | "inactive"
-  | "mixed";
+export type DictionaryState = "active" | "inactive";
 
 export interface DictionaryWithState extends BundledDictionary {
-  state: DictionaryInstallState;
-  installedEntries: number;
-  activeEntries: number;
+  state: DictionaryState;
 }
 
-export interface DictionaryApplyResult {
-  inserted: number;
-  updated: number;
-  skipped: number;
+/** Read the activated-dictionary ID list from app settings (never null). */
+async function getActiveDictionaryIds(): Promise<string[]> {
+  const ids = await getSettingsSection("activeDictionaries");
+  return Array.isArray(ids) ? ids : [];
+}
+
+async function setActiveDictionaryIds(ids: string[]): Promise<void> {
+  // De-dup + stable order so the persisted list stays clean.
+  await updateSettingsSection("activeDictionaries", [...new Set(ids)]);
 }
 
 /**
- * Enumerate every bundled dictionary along with its current installation
- * state. The state is computed from a single grouped query against the
- * vocabulary table (`getVocabularySourceSummaries`) so we don't pay a
- * round-trip per dictionary.
+ * Enumerate every bundled dictionary along with whether it is currently
+ * activated. State is derived purely from app_settings — no DB query against
+ * the vocabulary table.
  */
 export async function listBundledDictionariesWithState(): Promise<
   DictionaryWithState[]
 > {
-  const [index, summaries] = await Promise.all([
+  const [index, active] = await Promise.all([
     readBundledIndex(),
-    getVocabularySourceSummaries(),
+    getActiveDictionaryIds(),
   ]);
-  const bySource = new Map<string, VocabularySourceSummary>();
-  for (const s of summaries) {
-    bySource.set(s.source, s);
+  const activeSet = new Set(active);
+  return index.dictionaries.map((meta) => ({
+    ...meta,
+    state: activeSet.has(meta.id) ? "active" : "inactive",
+  }));
+}
+
+/**
+ * Activate a bundled dictionary by adding its ID to app_settings. Validates
+ * that the ID exists in index.json first so we never persist a dangling ID.
+ */
+export async function activateDictionary(id: string): Promise<void> {
+  const index = await readBundledIndex();
+  if (!index.dictionaries.some((d) => d.id === id)) {
+    throw new Error(`unknown dictionary id: ${id}`);
   }
+  const active = await getActiveDictionaryIds();
+  if (active.includes(id)) return;
+  await setActiveDictionaryIds([...active, id]);
+}
 
-  return index.dictionaries.map((meta) => {
-    const summary = bySource.get(librarySourceTag(meta.id));
-    if (!summary) {
-      return {
-        ...meta,
-        state: "not-installed",
-        installedEntries: 0,
-        activeEntries: 0,
-      };
+/** Deactivate a bundled dictionary by removing its ID from app_settings. */
+export async function deactivateDictionary(id: string): Promise<void> {
+  const active = await getActiveDictionaryIds();
+  if (!active.includes(id)) return;
+  await setActiveDictionaryIds(active.filter((x) => x !== id));
+}
+
+/**
+ * Expand the entries of every activated dictionary. The ASR pipeline unions
+ * these with manual vocabulary at load time. A dictionary ID that no longer
+ * resolves to a file (e.g. removed from the bundle in a later build) is
+ * skipped rather than throwing, so a stale persisted ID can't break dictation.
+ */
+export async function getActiveDictionaryEntries(): Promise<DictionaryEntry[]> {
+  const active = await getActiveDictionaryIds();
+  const out: DictionaryEntry[] = [];
+  for (const id of active) {
+    try {
+      const { file } = await readBundledDictionaryFile(id);
+      out.push(...file.entries);
+    } catch {
+      // stale / unreadable dictionary id — skip silently
     }
-    let state: DictionaryInstallState;
-    if (summary.activeCount === summary.totalCount) {
-      state = "active";
-    } else if (summary.activeCount === 0) {
-      state = "inactive";
-    } else {
-      state = "mixed";
-    }
-    return {
-      ...meta,
-      state,
-      installedEntries: summary.totalCount,
-      activeEntries: summary.activeCount,
-    };
-  });
-}
-
-/**
- * Insert the rows of a bundled dictionary into the vocabulary table, tagged
- * with `library:<id>`. Uses the existing `importVocabularyEntries` path in
- * "skip" mode so user-authored rows with the same word are preserved.
- *
- * The returned `skipped` count is the number of duplicates that already
- * existed (including any from a previously-installed dictionary).
- */
-export async function applyBundledDictionary(
-  id: string,
-): Promise<DictionaryApplyResult> {
-  const { file } = await readBundledDictionaryFile(id);
-  const source = librarySourceTag(id);
-  const result = await importVocabularyEntries(file.entries, "skip", source);
-  return {
-    inserted: result.inserted,
-    updated: result.updated,
-    skipped: result.skipped.length,
-  };
-}
-
-/**
- * Delete every vocabulary row tagged with `library:<id>`. User-authored
- * rows are not touched (they have source = NULL).
- */
-export async function removeBundledDictionary(
-  id: string,
-): Promise<{ deleted: number }> {
-  return await deleteVocabularyBySource(librarySourceTag(id));
-}
-
-/**
- * Toggle isActive for every row of a bundled dictionary. Rows stay in the
- * table so the user can re-enable them without re-installing.
- */
-export async function setBundledDictionaryActive(
-  id: string,
-  isActive: boolean,
-): Promise<{ updated: number }> {
-  return await setVocabularySourceActive(librarySourceTag(id), isActive);
+  }
+  return out;
 }

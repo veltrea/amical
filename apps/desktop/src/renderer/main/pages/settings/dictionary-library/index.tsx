@@ -1,25 +1,14 @@
 import { useMemo, useState } from "react";
-import { Check, Loader2, Power, Trash2 } from "lucide-react";
+import { Loader2, Power } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
-// Categories we surface as filter tabs. SPEC §3.2 enumerates the known
-// values; anything else (e.g. "professional" once we ship it) is grouped
+// Categories we surface as filter tabs. Anything not listed is grouped
 // under "all". Keep the order stable for muscle memory.
 const FILTER_CATEGORIES = [
   "all",
@@ -31,93 +20,58 @@ const FILTER_CATEGORIES = [
 
 type FilterCategory = (typeof FILTER_CATEGORIES)[number];
 
-interface PendingDelete {
-  id: string;
-  name: string;
-  count: number;
-}
-
 export default function DictionaryLibrarySettingsPage() {
   const { t, i18n } = useTranslation();
   const utils = api.useUtils();
 
   const [filter, setFilter] = useState<FilterCategory>("all");
-  // Per-card busy state. We key by id so spamming clicks across two cards
-  // shows independent spinners.
+  // Per-card busy state keyed by id, so clicks on two cards show
+  // independent spinners.
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(
-    null,
-  );
 
   const listQuery = api.dictionaryLibrary.list.useQuery();
 
+  // Activating/deactivating only flips an id in app_settings; the dictionary
+  // contents are unioned into the ASR pipeline at dictation time. Nothing is
+  // written to the vocabulary table, so only the library list needs refresh.
   const invalidate = () => {
     utils.dictionaryLibrary.list.invalidate();
-    // The vocabulary table is the source of truth for both this list and
-    // the regular vocabulary settings page; invalidate that one too so the
-    // user sees the new rows immediately if they navigate.
-    utils.vocabulary.getVocabulary.invalidate();
   };
 
-  const applyMutation = api.dictionaryLibrary.applyDictionary.useMutation({
-    onSuccess: (res, vars) => {
-      const meta = listQuery.data?.find((d) => d.id === vars.id);
-      const name = meta ? localizedName(meta, i18n.language) : vars.id;
-      toast.success(
-        t("settings.dictionaryLibrary.toast.applied", {
-          name,
-          inserted: res.inserted,
-          skipped: res.skipped,
-        }),
-      );
-      invalidate();
+  const activateMutation = api.dictionaryLibrary.activateDictionary.useMutation(
+    {
+      onSuccess: (_res, vars) => {
+        const meta = listQuery.data?.find((d) => d.id === vars.id);
+        const name = meta ? localizedName(meta, i18n.language) : vars.id;
+        toast.success(
+          t("settings.dictionaryLibrary.toast.activated", { name }),
+        );
+        invalidate();
+      },
+      onError: (e) =>
+        toast.error(
+          t("settings.dictionaryLibrary.toast.failed", { message: e.message }),
+        ),
+      onSettled: () => setBusyId(null),
     },
-    onError: (e) =>
-      toast.error(
-        t("settings.dictionaryLibrary.toast.applyFailed", { message: e.message }),
-      ),
-    onSettled: () => setBusyId(null),
-  });
+  );
 
-  const removeMutation = api.dictionaryLibrary.remove.useMutation({
-    onSuccess: (res, vars) => {
-      const meta = listQuery.data?.find((d) => d.id === vars.id);
-      const name = meta ? localizedName(meta, i18n.language) : vars.id;
-      toast.success(
-        t("settings.dictionaryLibrary.toast.removed", {
-          name,
-          deleted: res.deleted,
-        }),
-      );
-      invalidate();
-    },
-    onError: (e) =>
-      toast.error(
-        t("settings.dictionaryLibrary.toast.removeFailed", {
-          message: e.message,
-        }),
-      ),
-    onSettled: () => setBusyId(null),
-  });
-
-  const setActiveMutation = api.dictionaryLibrary.setActive.useMutation({
-    onSuccess: (res, vars) => {
-      const meta = listQuery.data?.find((d) => d.id === vars.id);
-      const name = meta ? localizedName(meta, i18n.language) : vars.id;
-      const key = vars.isActive
-        ? "settings.dictionaryLibrary.toast.activated"
-        : "settings.dictionaryLibrary.toast.deactivated";
-      toast.success(t(key, { name, count: res.updated }));
-      invalidate();
-    },
-    onError: (e) =>
-      toast.error(
-        t("settings.dictionaryLibrary.toast.setActiveFailed", {
-          message: e.message,
-        }),
-      ),
-    onSettled: () => setBusyId(null),
-  });
+  const deactivateMutation =
+    api.dictionaryLibrary.deactivateDictionary.useMutation({
+      onSuccess: (_res, vars) => {
+        const meta = listQuery.data?.find((d) => d.id === vars.id);
+        const name = meta ? localizedName(meta, i18n.language) : vars.id;
+        toast.success(
+          t("settings.dictionaryLibrary.toast.deactivated", { name }),
+        );
+        invalidate();
+      },
+      onError: (e) =>
+        toast.error(
+          t("settings.dictionaryLibrary.toast.failed", { message: e.message }),
+        ),
+      onSettled: () => setBusyId(null),
+    });
 
   const filtered = useMemo(() => {
     const all = listQuery.data ?? [];
@@ -125,26 +79,13 @@ export default function DictionaryLibrarySettingsPage() {
     return all.filter((d) => d.category === filter);
   }, [listQuery.data, filter]);
 
-  const handleApply = (id: string) => {
+  const handleToggle = (id: string, currentlyActive: boolean) => {
     setBusyId(id);
-    applyMutation.mutate({ id });
-  };
-
-  const handleToggleActive = (id: string, nextActive: boolean) => {
-    setBusyId(id);
-    setActiveMutation.mutate({ id, isActive: nextActive });
-  };
-
-  const handleRequestRemove = (id: string, name: string, count: number) => {
-    setPendingDelete({ id, name, count });
-  };
-
-  const handleConfirmRemove = () => {
-    if (!pendingDelete) return;
-    const id = pendingDelete.id;
-    setPendingDelete(null);
-    setBusyId(id);
-    removeMutation.mutate({ id });
+    if (currentlyActive) {
+      deactivateMutation.mutate({ id });
+    } else {
+      activateMutation.mutate({ id });
+    }
   };
 
   return (
@@ -186,17 +127,13 @@ export default function DictionaryLibrarySettingsPage() {
             const name = localizedName(d, i18n.language);
             const description = localizedDescription(d, i18n.language);
             const isBusy = busyId === d.id;
+            const isActive = d.state === "active";
 
-            // Active cards get a primary-tinted border + faint background.
-            // Inactive cards are dimmed so the difference is obvious at a
-            // glance without relying on the action button label.
+            // Active cards get a primary-tinted border + faint background;
+            // inactive cards are dimmed so the difference reads at a glance.
             const cardCls = cn(
               "p-4 flex flex-col gap-3 transition-colors",
-              d.state === "active" &&
-                "border-primary/60 bg-primary/5",
-              d.state === "mixed" &&
-                "border-primary/40 bg-primary/[0.03]",
-              d.state === "inactive" && "opacity-60",
+              isActive ? "border-primary/60 bg-primary/5" : "opacity-70",
             );
 
             return (
@@ -208,21 +145,18 @@ export default function DictionaryLibrarySettingsPage() {
                       {t("settings.dictionaryLibrary.card.entryCount", {
                         count: d.entryCount,
                       })}
-                      {d.state !== "not-installed" && (
-                        <>
-                          {" · "}
-                          {t(
-                            "settings.dictionaryLibrary.card.activeEntries",
-                            {
-                              active: d.activeEntries,
-                              total: d.installedEntries,
-                            },
-                          )}
-                        </>
-                      )}
                     </div>
                   </div>
-                  <StateBadge state={d.state} />
+                  <Badge
+                    variant={isActive ? "default" : "outline"}
+                    className="shrink-0"
+                  >
+                    {t(
+                      isActive
+                        ? "settings.dictionaryLibrary.card.state.active"
+                        : "settings.dictionaryLibrary.card.state.inactive",
+                    )}
+                  </Badge>
                 </div>
 
                 <p className="text-xs text-muted-foreground line-clamp-3">
@@ -237,97 +171,30 @@ export default function DictionaryLibrarySettingsPage() {
                   ))}
                 </div>
 
-                <div className="flex items-center justify-end gap-2 mt-auto pt-2">
-                  {d.state === "not-installed" ? (
-                    <Button
-                      size="sm"
-                      onClick={() => handleApply(d.id)}
-                      disabled={isBusy}
-                    >
-                      {isBusy ? (
-                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                      ) : (
-                        <Check className="w-4 h-4 mr-1" />
-                      )}
-                      {t("settings.dictionaryLibrary.card.action.activate")}
-                    </Button>
-                  ) : (
-                    <>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() =>
-                          handleRequestRemove(
-                            d.id,
-                            name,
-                            d.installedEntries,
-                          )
-                        }
-                        disabled={isBusy}
-                      >
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        {t("settings.dictionaryLibrary.card.action.delete")}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={
-                          d.state === "inactive" ? "default" : "secondary"
-                        }
-                        onClick={() =>
-                          handleToggleActive(
-                            d.id,
-                            d.state === "inactive",
-                          )
-                        }
-                        disabled={isBusy}
-                      >
-                        {isBusy ? (
-                          <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                        ) : (
-                          <Power className="w-4 h-4 mr-1" />
-                        )}
-                        {d.state === "inactive"
-                          ? t("settings.dictionaryLibrary.card.action.enable")
-                          : t("settings.dictionaryLibrary.card.action.disable")}
-                      </Button>
-                    </>
-                  )}
+                <div className="flex items-center justify-end mt-auto pt-2">
+                  <Button
+                    size="sm"
+                    variant={isActive ? "secondary" : "default"}
+                    onClick={() => handleToggle(d.id, isActive)}
+                    disabled={isBusy}
+                  >
+                    {isBusy ? (
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    ) : (
+                      <Power className="w-4 h-4 mr-1" />
+                    )}
+                    {t(
+                      isActive
+                        ? "settings.dictionaryLibrary.card.action.deactivate"
+                        : "settings.dictionaryLibrary.card.action.activate",
+                    )}
+                  </Button>
                 </div>
               </Card>
             );
           })}
         </div>
       )}
-
-      <AlertDialog
-        open={pendingDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingDelete(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t("settings.dictionaryLibrary.confirmDelete.title", {
-                name: pendingDelete?.name ?? "",
-              })}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("settings.dictionaryLibrary.confirmDelete.message", {
-                count: pendingDelete?.count ?? 0,
-              })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>
-              {t("settings.dictionaryLibrary.confirmDelete.cancel")}
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmRemove}>
-              {t("settings.dictionaryLibrary.confirmDelete.confirm")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
@@ -347,31 +214,4 @@ function localizedName(d: NameDescriptionRow, locale: string): string {
 function localizedDescription(d: NameDescriptionRow, locale: string): string {
   if (locale.startsWith("ja") && d.description_ja) return d.description_ja;
   return d.description;
-}
-
-interface StateBadgeProps {
-  state: "not-installed" | "active" | "inactive" | "mixed";
-}
-
-function StateBadge({ state }: StateBadgeProps) {
-  const { t } = useTranslation();
-  const variant: "default" | "secondary" | "outline" =
-    state === "active"
-      ? "default"
-      : state === "mixed"
-        ? "secondary"
-        : "outline";
-  const labelKey =
-    state === "not-installed"
-      ? "settings.dictionaryLibrary.card.state.notInstalled"
-      : state === "active"
-        ? "settings.dictionaryLibrary.card.state.active"
-        : state === "inactive"
-          ? "settings.dictionaryLibrary.card.state.inactive"
-          : "settings.dictionaryLibrary.card.state.mixed";
-  return (
-    <Badge variant={variant} className="shrink-0">
-      {t(labelKey)}
-    </Badge>
-  );
 }

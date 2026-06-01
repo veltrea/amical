@@ -134,11 +134,3 @@ function isBundledDictionaryIndex(
   }
   return true;
 }
-
-/**
- * Format the `source` tag for a bundled dictionary. Kept centralized so the
- * `library:` prefix is never inlined as a string literal elsewhere.
- */
-export function librarySourceTag(id: string): string {
-  return `library:${id}`;
-}

@@ -1150,7 +1150,7 @@
     },
     "dictionaryLibrary": {
       "title": "辞書ライブラリ",
-      "description": "分野別のプリセット辞書をまとめて有効化できます。カードをクリックすると、その分野の単語が即座にディクテーションで使えるようになります。オフにすればデータを残したまま無効化できます。",
+      "description": "分野別のプリセット辞書です。オンにするとその分野の単語が即座にディクテーションで使えるようになります。オフにすれば一時停止でき、手動で登録した単語には一切影響しません。",
       "loading": "辞書を読み込み中...",
       "empty": "このビルドには同梱辞書がありません。",
       "filter": {
@@ -1162,34 +1162,19 @@
       },
       "card": {
         "entryCount": "{{count}} 件",
-        "activeEntries": "{{active}} / {{total}} 件 有効",
         "state": {
-          "notInstalled": "未インストール",
-          "active": "有効",
-          "inactive": "無効",
-          "mixed": "一部のみ有効"
+          "active": "オン",
+          "inactive": "オフ"
         },
         "action": {
-          "activate": "有効化",
-          "enable": "オン",
-          "disable": "オフ",
-          "delete": "削除"
+          "activate": "オンにする",
+          "deactivate": "オフにする"
         }
       },
       "toast": {
-        "applied": "{{name}} を適用しました ({{inserted}} 件追加 / {{skipped}} 件スキップ)",
-        "removed": "{{name}} を削除しました ({{deleted}} 件)",
-        "activated": "{{name}} を有効化しました ({{count}} 件)",
-        "deactivated": "{{name}} を無効化しました ({{count}} 件)",
-        "applyFailed": "適用に失敗: {{message}}",
-        "removeFailed": "削除に失敗: {{message}}",
-        "setActiveFailed": "切り替えに失敗: {{message}}"
-      },
-      "confirmDelete": {
-        "title": "{{name}} を削除しますか?",
-        "message": "この辞書由来の {{count}} 件をすべて削除します。ユーザーが手動で登録した単語には影響しません。",
-        "cancel": "キャンセル",
-        "confirm": "削除"
+        "activated": "{{name}} をオンにしました",
+        "deactivated": "{{name}} をオフにしました",
+        "failed": "失敗: {{message}}"
       }
     },
     "mcpServer": {
