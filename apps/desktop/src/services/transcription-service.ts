@@ -25,7 +25,7 @@ import {
 } from "../db/transcriptions";
 import { deleteAudioFile } from "../utils/audio-file-cleanup";
 import { incrementDailyStats } from "../db/daily-stats";
-import { getAllVocabulary } from "../db/vocabulary";
+import { getActiveVocabulary } from "../db/vocabulary";
 import { getAllSnippets } from "../db/snippets";
 import { logger } from "../main/logger";
 import { v4 as uuid } from "uuid";
@@ -767,9 +767,10 @@ export class TranscriptionService {
         ? undefined
         : languages;
 
-    // Load vocabulary — every entry the user has authored should participate
-    // in replacement; caps belong on the create path, not here.
-    const vocabEntries = await getAllVocabulary();
+    // Load vocabulary — only rows with isActive=true. Inactive rows (e.g. a
+    // bundled dictionary toggled off in settings) stay in the DB but are
+    // skipped here. See SPEC-dictionary-library.md §5.
+    const vocabEntries = await getActiveVocabulary();
     for (const entry of vocabEntries) {
       if (entry.isReplacement) {
         context.sharedData.replacements.set(

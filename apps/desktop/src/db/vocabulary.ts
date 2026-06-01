@@ -20,12 +20,26 @@ export async function createVocabularyWord(
 }
 
 /**
- * Load every vocabulary row. Used by the transcription pipeline so that every
- * entry the user has authored participates in expansion / hints — no silent
- * cap. The settings UI uses `getVocabulary` which is capped/sortable/searchable.
+ * Load every vocabulary row, including inactive ones. Used by the export
+ * feature and the settings UI list. The transcription pipeline now uses
+ * `getActiveVocabulary` so that rows toggled off in the dictionary library
+ * UI are silently skipped without being deleted.
  */
 export async function getAllVocabulary(): Promise<Vocabulary[]> {
   return await db.select().from(vocabulary);
+}
+
+/**
+ * Load only vocabulary rows with isActive=true. This is the entry point used
+ * by the ASR / LLM hint pipeline (`transcription-service.ts`). Inactive rows
+ * (e.g. a bundled dictionary the user has temporarily turned off) are kept
+ * in the DB but excluded from replacement and from hint selection.
+ *
+ * Returning every active row is intentional — caps belong on the hint
+ * selection step, not on storage. See SPEC-dictionary-library.md §5.
+ */
+export async function getActiveVocabulary(): Promise<Vocabulary[]> {
+  return await db.select().from(vocabulary).where(eq(vocabulary.isActive, true));
 }
 
 // Get all vocabulary words with pagination and sorting
