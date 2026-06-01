@@ -1,10 +1,19 @@
-import { useState } from "react";
-import { Plus, Edit, Trash2, Info, MoveRight } from "lucide-react";
+import { useRef, useState } from "react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Info,
+  MoveRight,
+  Upload,
+  Download,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +25,37 @@ import {
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+
+type ImportMode = "skip" | "overwrite";
+
+interface ExportEntry {
+  word: string;
+  replacementWord?: string | null;
+  isReplacement?: boolean;
+}
+
+interface ImportResult {
+  inserted: number;
+  updated: number;
+  skipped: ExportEntry[];
+}
+
+const EXPORT_VERSION = 1;
+
+function downloadJsonBlob(data: unknown, filename: string) {
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function todayStamp(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 type VocabularyItem = {
   id: number;
@@ -210,6 +250,13 @@ export default function VocabularySettingsPage() {
     replacementWord: "",
     isReplacement: false,
   });
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [importMode, setImportMode] = useState<ImportMode>("skip");
+  const [pendingEntries, setPendingEntries] = useState<ExportEntry[] | null>(
+    null,
+  );
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const vocabularyQuery = api.vocabulary.getVocabulary.useQuery({
     limit: 200,
@@ -261,6 +308,84 @@ export default function VocabularySettingsPage() {
       );
     },
   });
+
+  const importMutation = api.vocabulary.importJson.useMutation({
+    onSuccess: (res) => {
+      utils.vocabulary.getVocabulary.invalidate();
+      setImportResult(res);
+      setPendingEntries(null);
+    },
+    onError: (error) => {
+      toast.error(
+        t("settings.vocabulary.toast.importFailed", {
+          message: error.message,
+        }),
+      );
+    },
+  });
+
+  const handleExport = async () => {
+    try {
+      const data = await utils.vocabulary.exportAll.fetch();
+      downloadJsonBlob(data, `amical-vocabulary-${todayStamp()}.json`);
+      toast.success(
+        t("settings.vocabulary.toast.exportSuccess", {
+          count: data.entries.length,
+        }),
+      );
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      toast.error(t("settings.vocabulary.toast.exportFailed", { message }));
+    }
+  };
+
+  const handleFileSelected = async (file: File | null) => {
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text) as {
+        version?: number;
+        entries?: ExportEntry[];
+      };
+      if (!parsed.entries || !Array.isArray(parsed.entries)) {
+        throw new Error("entries[] missing");
+      }
+      setPendingEntries(parsed.entries);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      toast.error(
+        t("settings.vocabulary.toast.invalidJson", { message }),
+      );
+      setPendingEntries(null);
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleImportSubmit = () => {
+    if (!pendingEntries || pendingEntries.length === 0) return;
+    importMutation.mutate({ entries: pendingEntries, mode: importMode });
+  };
+
+  const handleDownloadSkipped = () => {
+    if (!importResult || importResult.skipped.length === 0) return;
+    downloadJsonBlob(
+      {
+        version: EXPORT_VERSION,
+        exportedAt: new Date().toISOString(),
+        entries: importResult.skipped,
+      },
+      `amical-vocabulary-skipped-${todayStamp()}.json`,
+    );
+  };
+
+  const closeImportFlow = () => {
+    setIsImportDialogOpen(false);
+    setPendingEntries(null);
+    setImportResult(null);
+    setImportMode("skip");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleAddWord = async () => {
     try {
@@ -350,17 +475,35 @@ export default function VocabularySettingsPage() {
           </p>
         </div>
 
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button
-              onClick={() => resetForm()}
-              className="flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              {t("settings.vocabulary.addButton")}
-            </Button>
-          </DialogTrigger>
-        </Dialog>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleExport}
+            className="flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            {t("settings.vocabulary.exportButton")}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setIsImportDialogOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Upload className="w-4 h-4" />
+            {t("settings.vocabulary.importButton")}
+          </Button>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                onClick={() => resetForm()}
+                className="flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                {t("settings.vocabulary.addButton")}
+              </Button>
+            </DialogTrigger>
+          </Dialog>
+        </div>
       </div>
 
       {/* Vocabulary List */}
@@ -448,6 +591,132 @@ export default function VocabularySettingsPage() {
         onConfirm={handleDeleteWord}
         isLoading={deleteVocabularyMutation.isPending}
       />
+
+      <Dialog
+        open={isImportDialogOpen && !importResult}
+        onOpenChange={(open) => {
+          if (!open) closeImportFlow();
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {t("settings.vocabulary.importDialog.title")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm">
+                {t("settings.vocabulary.importDialog.modeLabel")}
+              </Label>
+              <RadioGroup
+                value={importMode}
+                onValueChange={(v) => setImportMode(v as ImportMode)}
+                className="mt-2 space-y-2"
+              >
+                <div className="flex items-start gap-2">
+                  <RadioGroupItem value="skip" id="import-mode-skip" />
+                  <Label
+                    htmlFor="import-mode-skip"
+                    className="text-sm font-normal cursor-pointer leading-tight"
+                  >
+                    {t("settings.vocabulary.importDialog.modeSkip")}
+                  </Label>
+                </div>
+                <div className="flex items-start gap-2">
+                  <RadioGroupItem value="overwrite" id="import-mode-overwrite" />
+                  <Label
+                    htmlFor="import-mode-overwrite"
+                    className="text-sm font-normal cursor-pointer leading-tight"
+                  >
+                    {t("settings.vocabulary.importDialog.modeOverwrite")}
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+            <div>
+              <Label htmlFor="vocabulary-import-file" className="text-sm">
+                {t("settings.vocabulary.importDialog.fileLabel")}
+              </Label>
+              <Input
+                ref={fileInputRef}
+                id="vocabulary-import-file"
+                type="file"
+                accept="application/json,.json"
+                onChange={(e) =>
+                  handleFileSelected(e.target.files?.[0] ?? null)
+                }
+                className="mt-2"
+              />
+              {pendingEntries ? (
+                <p className="text-xs text-muted-foreground mt-2">
+                  {t("settings.vocabulary.importDialog.pendingCount", {
+                    count: pendingEntries.length,
+                  })}
+                </p>
+              ) : null}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeImportFlow}>
+              {t("settings.vocabulary.importDialog.cancel")}
+            </Button>
+            <Button
+              onClick={handleImportSubmit}
+              disabled={
+                !pendingEntries ||
+                pendingEntries.length === 0 ||
+                importMutation.isPending
+              }
+            >
+              {t("settings.vocabulary.importDialog.submit")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!importResult}
+        onOpenChange={(open) => {
+          if (!open) closeImportFlow();
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {t("settings.vocabulary.importResult.title")}
+            </DialogTitle>
+          </DialogHeader>
+          {importResult ? (
+            <div className="space-y-3">
+              <p className="text-sm">
+                {t("settings.vocabulary.importResult.summary", {
+                  inserted: importResult.inserted,
+                  updated: importResult.updated,
+                  skipped: importResult.skipped.length,
+                })}
+              </p>
+              {importResult.skipped.length > 0 ? (
+                <Button
+                  variant="outline"
+                  onClick={handleDownloadSkipped}
+                  className="flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  {t("settings.vocabulary.importResult.downloadSkipped", {
+                    count: importResult.skipped.length,
+                  })}
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
+          <DialogFooter>
+            <Button onClick={closeImportFlow}>
+              {t("settings.vocabulary.importResult.close")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

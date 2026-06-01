@@ -816,13 +816,19 @@
       "addButton": "単語を追加",
       "loading": "カスタム辞書を読み込み中...",
       "empty": "カスタム辞書が見つかりません。最初の単語を追加して始めましょう。",
+      "exportButton": "エクスポート",
+      "importButton": "インポート",
       "toast": {
         "added": "単語をカスタム辞書に追加しました",
         "addFailed": "単語の追加に失敗しました: {{message}}",
         "updated": "カスタム辞書を更新しました",
         "updateFailed": "単語の更新に失敗しました: {{message}}",
         "deleted": "単語をカスタム辞書から削除しました",
-        "deleteFailed": "単語の削除に失敗しました: {{message}}"
+        "deleteFailed": "単語の削除に失敗しました: {{message}}",
+        "exportSuccess": "{{count}} 件をエクスポートしました",
+        "exportFailed": "エクスポートに失敗しました: {{message}}",
+        "importFailed": "インポートに失敗しました: {{message}}",
+        "invalidJson": "JSON フォーマットが不正です: {{message}}"
       },
       "dialog": {
         "addTitle": "カスタム辞書に追加",
@@ -835,6 +841,22 @@
         "saving": "保存中...",
         "addWord": "単語を追加",
         "saveChanges": "変更を保存"
+      },
+      "importDialog": {
+        "title": "カスタム辞書をインポート",
+        "modeLabel": "重複時の挙動",
+        "modeSkip": "スキップ (既存の単語はそのまま、新規だけ追加)",
+        "modeOverwrite": "上書き (既存の単語の置換情報を更新)",
+        "fileLabel": "JSON ファイルを選択",
+        "pendingCount": "{{count}} 件読み込み済み",
+        "cancel": "キャンセル",
+        "submit": "インポート開始"
+      },
+      "importResult": {
+        "title": "インポート結果",
+        "summary": "追加 {{inserted}} 件 / 更新 {{updated}} 件 / スキップ {{skipped}} 件",
+        "downloadSkipped": "スキップされた {{count}} 件を JSON でダウンロード",
+        "close": "閉じる"
       },
       "delete": {
         "title": "カスタム辞書を削除",
