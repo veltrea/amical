@@ -48,6 +48,9 @@ export default defineConfig({
         "@libsql/win32-x64-msvc",
         "libsql",
         "onnxruntime-node",
+        // MCP SDK is ESM-only and resolves subpath exports at runtime; keep
+        // it external so Vite doesn't try to bundle its package tree.
+        /^@modelcontextprotocol\/sdk(\/.*)?$/,
         /^node:/,
         /^electron$/,
       ],

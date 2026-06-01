@@ -386,6 +386,10 @@
       "dictionaryLibrary": {
         "title": "Dictionary Library",
         "description": "Activate bundled vocabulary by topic with one click."
+      },
+      "mcpServer": {
+        "title": "MCP Server",
+        "description": "Let Claude read and write Amical's vocabulary and history via the Model Context Protocol."
       }
     },
     "sidebar": {
@@ -1208,6 +1212,41 @@
         "message": "This will delete {{count}} bundled entries from this dictionary. User-authored entries are not affected.",
         "cancel": "Cancel",
         "confirm": "Remove"
+      }
+    },
+    "mcpServer": {
+      "title": "MCP Server",
+      "description": "Expose Amical's vocabulary, dictation history, and misrecognition pool to Claude over a local HTTP MCP endpoint.",
+      "warningTitle": "Heads up",
+      "warning": "When enabled, any client that has the bearer token below (e.g. Claude Code) can read and write your vocabulary, browse your dictation history, and modify the misrecognition pool. Dictation history can include very personal text. Only enable this if you understand what gets shared.",
+      "enable": "Enable MCP server",
+      "status": {
+        "enabled": "Running",
+        "starting": "Starting…",
+        "disabled": "Stopped",
+        "error": "Error"
+      },
+      "connection": {
+        "heading": "Connection info",
+        "url": "URL",
+        "token": "Token",
+        "showToken": "Show token",
+        "hideToken": "Hide token",
+        "copyToken": "Copy token"
+      },
+      "action": {
+        "regenerateToken": "Regenerate token",
+        "regenerateTokenDescription": "Invalidates the current token immediately — clients will need the new value to reconnect.",
+        "changePort": "Listening port",
+        "changePortDescription": "Default 7878. Change this if another local process already uses the port.",
+        "apply": "Apply"
+      },
+      "claudeCodeExample": "Claude Code setup snippet",
+      "claudeCodeExampleLoading": "Loading…",
+      "toast": {
+        "tokenRegenerated": "Token regenerated.",
+        "copied": "Copied {{what}}.",
+        "startFailed": "MCP server start failed: {{message}}"
       }
     }
   }

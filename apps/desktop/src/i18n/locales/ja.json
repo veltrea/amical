@@ -386,6 +386,10 @@
       "dictionaryLibrary": {
         "title": "辞書ライブラリ",
         "description": "分野別の同梱辞書を 1 click で有効化できます。"
+      },
+      "mcpServer": {
+        "title": "MCP サーバー",
+        "description": "Model Context Protocol 経由で Claude などの外部 LLM から Amical の辞書・履歴を読み書きできます。"
       }
     },
     "sidebar": {
@@ -1186,6 +1190,41 @@
         "message": "この辞書由来の {{count}} 件をすべて削除します。ユーザーが手動で登録した単語には影響しません。",
         "cancel": "キャンセル",
         "confirm": "削除"
+      }
+    },
+    "mcpServer": {
+      "title": "MCP サーバー",
+      "description": "ローカル HTTP MCP エンドポイント経由で、Claude に Amical の辞書・発話履歴・誤認識候補プールを読み書きさせます。",
+      "warningTitle": "重要",
+      "warning": "有効化すると、以下のトークンを持つクライアント (Claude Code など) が辞書・発話履歴・誤認識候補プールを読み書きできるようになります。発話履歴には極めて個人的な内容が含まれる場合があります。内容を理解した上で有効化してください。",
+      "enable": "MCP サーバーを有効化",
+      "status": {
+        "enabled": "動作中",
+        "starting": "起動中…",
+        "disabled": "停止中",
+        "error": "エラー"
+      },
+      "connection": {
+        "heading": "接続情報",
+        "url": "URL",
+        "token": "トークン",
+        "showToken": "トークンを表示",
+        "hideToken": "トークンを隠す",
+        "copyToken": "トークンをコピー"
+      },
+      "action": {
+        "regenerateToken": "トークン再生成",
+        "regenerateTokenDescription": "現在のトークンを即座に無効化します。再接続には新しい値が必要です。",
+        "changePort": "待ち受けポート",
+        "changePortDescription": "デフォルトは 7878。既に他のローカルプロセスが使っている場合は変更してください。",
+        "apply": "適用"
+      },
+      "claudeCodeExample": "Claude Code 設定スニペット",
+      "claudeCodeExampleLoading": "読み込み中…",
+      "toast": {
+        "tokenRegenerated": "トークンを再生成しました",
+        "copied": "{{what}} をコピーしました",
+        "startFailed": "MCP サーバー起動失敗: {{message}}"
       }
     }
   }

@@ -44,12 +44,49 @@ The build **ad-hoc signs** the app automatically when no Developer ID is set. Fo
 
 Qwen3-ASR uses [soniqo/speech-swift](https://github.com/soniqo/speech-swift) (MLX). Models download from Hugging Face on first use and cache to `~/Library/Caches/qwen3-speech/`.
 
+## MCP server (Claude Code integration)
+
+Amical can expose its vocabulary, dictation history, and misrecognition candidates to Claude Code (or any HTTP-MCP client) over a local Streamable-HTTP endpoint.
+
+It is **off by default**. To turn it on:
+
+1. **Settings → MCP Server** in Amical → flip the toggle to **Enable**.
+2. Copy the URL (`http://127.0.0.1:7878/mcp`) and the bearer token.
+3. Register it with Claude Code:
+
+   ```bash
+   claude mcp add amical \
+     --transport http \
+     --url http://127.0.0.1:7878/mcp \
+     --header "Authorization: Bearer <token>"
+   ```
+
+The server binds **loopback-only**; it is not reachable from the LAN. Once enabled, Claude gets the following tools:
+
+- `vocabulary_list`, `vocabulary_add`, `vocabulary_update`, `vocabulary_delete`, `vocabulary_bulk_add`, `vocabulary_search`
+- `transcriptions_recent`, `transcriptions_search`
+- `misrec_candidates_list`, `misrec_candidates_register`, `misrec_candidates_dismiss`
+
+**Privacy note.** `transcriptions_recent` exposes your dictation history to whichever LLM is on the other side. Dictation history often contains very personal text — only enable this if you understand what gets shared.
+
+You can sanity-check the wire protocol without launching Amical via the smoketest script:
+
+```bash
+pnpm exec tsx scripts/mcp-smoketest.ts
+# then in another shell:
+curl -s -X POST http://127.0.0.1:7878/mcp \
+  -H "Authorization: Bearer $MCP_TOKEN" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+```
+
 ## Roadmap (planned, not yet implemented)
 
 The directions this fork is exploring — all on-device / agent-integrated AI:
 
 - **Embedded AI formatting (MLX)** — run the AI formatting/cleanup LLM through MLX built into the app, so it works with no separate runtime (e.g. Ollama) to install.
-- **AI-driven dictionary editing (MCP/ACP)** — expose the custom dictionary over MCP/ACP so an AI agent can add domain-specific terminology automatically, instead of manual entry.
+- **AI-driven dictionary editing (MCP)** — done in this fork: see "MCP server" above. Claude Code can add / edit / dedupe vocabulary directly.
 - **Auto-learn from history** — have the AI analyze transcription history, detect mis-transcribed words, and register them to the dictionary automatically.
 
 ## Credit

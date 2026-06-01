@@ -42,6 +42,11 @@ export const EXTERNAL_DEPENDENCIES = [
   "libsql",
   "onnxruntime-node",
   "@amical/whisper-wrapper",
+  // The MCP SDK is ESM-only and pulls in a tree of pure-Node deps (hono,
+  // pkce-challenge, etc). Keeping it external avoids Vite's CJS bundler
+  // tripping on dynamic imports, and ensures the SDK runtime stays intact
+  // in the packaged app.
+  "@modelcontextprotocol/sdk",
   // Add any other native modules you need here
 ];
 

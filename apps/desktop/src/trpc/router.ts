@@ -15,6 +15,7 @@ import { telemetryRouter } from "./routers/telemetry";
 import { permissionsRouter } from "./routers/permissions";
 import { misrecognitionRouter } from "./routers/misrecognition";
 import { dictionaryLibraryRouter } from "./routers/dictionary-library";
+import { mcpServerRouter } from "./routers/mcp-server";
 import { createRouter, procedure } from "./trpc";
 
 export const router = createRouter({
@@ -87,8 +88,11 @@ export const router = createRouter({
   // Misrecognition candidates router
   misrecognition: misrecognitionRouter,
 
-  // Bundled dictionary library router (Commit 3 of SPEC-dictionary-library.md)
+  // Bundled dictionary library router (SPEC-dictionary-library.md)
   dictionaryLibrary: dictionaryLibraryRouter,
+
+  // MCP server router (SPEC-mcp-server.md)
+  mcpServer: mcpServerRouter,
 });
 
 export type AppRouter = typeof router;

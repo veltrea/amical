@@ -15,6 +15,8 @@ import { AuthService } from "../../services/auth-service";
 import { OnboardingService } from "../../services/onboarding-service";
 import { FeatureFlagService } from "../../services/feature-flag-service";
 import { HistoryCleanupService } from "../../services/history-cleanup-service";
+import { AmicalMcpServer } from "../../services/mcp-server/server";
+import { registerMcpTools } from "../../services/mcp-server/tools";
 
 /**
  * Service map for type-safe service access
@@ -34,6 +36,7 @@ export interface ServiceMap {
   shortcutManager: ShortcutManager;
   windowManager: WindowManager;
   onboardingService: OnboardingService;
+  mcpServer: AmicalMcpServer;
 }
 
 /**
@@ -59,6 +62,7 @@ export class ServiceManager {
   private recordingManager: RecordingManager | null = null;
   private shortcutManager: ShortcutManager | null = null;
   private windowManager: WindowManager | null = null;
+  private mcpServer: AmicalMcpServer | null = null;
 
   async initialize(): Promise<void> {
     if (this.isInitialized) {
@@ -82,6 +86,7 @@ export class ServiceManager {
     this.initializeRecordingManager();
     await this.initializeShortcutManager();
     await this.initializeAutoUpdater();
+    await this.initializeMcpServer();
 
     this.isInitialized = true;
     logger.main.info("Services initialized successfully");
@@ -242,6 +247,27 @@ export class ServiceManager {
     logger.main.info("Shortcut manager initialized");
   }
 
+  private async initializeMcpServer(): Promise<void> {
+    if (!this.settingsService) {
+      throw new Error("Settings service not initialized");
+    }
+    this.mcpServer = new AmicalMcpServer(this.settingsService, {
+      registerTools: registerMcpTools,
+    });
+    try {
+      const status = await this.mcpServer.startIfEnabled();
+      logger.main.info("MCP server lifecycle initialized", {
+        state: status.state,
+      });
+    } catch (error) {
+      this.telemetryService?.captureException(error, {
+        source: "service_manager",
+        stage: "initialize_mcp_server",
+      });
+      logger.main.error("Failed to start MCP server (non-fatal)", { error });
+    }
+  }
+
   private async initializeAutoUpdater(): Promise<void> {
     this.autoUpdaterService = new AutoUpdaterService();
     await this.autoUpdaterService.initialize(
@@ -276,12 +302,21 @@ export class ServiceManager {
       shortcutManager: this.shortcutManager!,
       windowManager: this.windowManager!,
       onboardingService: this.onboardingService!,
+      mcpServer: this.mcpServer!,
     };
 
     return services[serviceName];
   }
 
   async cleanup(): Promise<void> {
+    if (this.mcpServer) {
+      logger.main.info("Stopping MCP server...");
+      try {
+        await this.mcpServer.stop();
+      } catch (error) {
+        logger.main.warn("MCP server stop failed", { error });
+      }
+    }
     if (this.shortcutManager) {
       logger.main.info("Cleaning up shortcut manager...");
       this.shortcutManager.cleanup();
