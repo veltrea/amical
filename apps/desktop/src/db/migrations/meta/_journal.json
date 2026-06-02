@@ -57,6 +57,13 @@
       "when": 1780326290462,
       "tag": "0007_green_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1780363505208,
+      "tag": "0008_aromatic_cassandra_nova",
+      "breakpoints": true
     }
   ]
 }

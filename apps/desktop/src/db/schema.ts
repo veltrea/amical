@@ -61,58 +61,6 @@ export const vocabulary = sqliteTable("vocabulary", {
     .default(sql`(unixepoch())`),
 });
 
-// Misrecognition candidates pool — words auto-extracted from transcription
-// history that may be ASR misrecognitions. Users review this list and, when
-// they enter a correct word, the row is promoted into `vocabulary` as an
-// `isReplacement` entry. Nothing here affects the live dictation pipeline.
-export const misrecognitionCandidates = sqliteTable(
-  "misrecognition_candidates",
-  {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    word: text("word").notNull().unique(),
-    normalizedKey: text("normalized_key").notNull(),
-    occurrenceCount: integer("occurrence_count").notNull().default(1),
-    firstSeenAt: integer("first_seen_at", { mode: "timestamp" })
-      .notNull()
-      .default(sql`(unixepoch())`),
-    lastSeenAt: integer("last_seen_at", { mode: "timestamp" })
-      .notNull()
-      .default(sql`(unixepoch())`),
-    dismissed: integer("dismissed", { mode: "boolean" })
-      .notNull()
-      .default(false),
-    dismissedAt: integer("dismissed_at", { mode: "timestamp" }),
-    createdAt: integer("created_at", { mode: "timestamp" })
-      .notNull()
-      .default(sql`(unixepoch())`),
-    updatedAt: integer("updated_at", { mode: "timestamp" })
-      .notNull()
-      .default(sql`(unixepoch())`),
-  },
-  (table) => [
-    index("misrecognition_candidates_normalized_key_idx").on(
-      table.normalizedKey,
-    ),
-    index("misrecognition_candidates_dismissed_idx").on(table.dismissed),
-    index("misrecognition_candidates_occurrence_count_idx").on(
-      table.occurrenceCount,
-    ),
-  ],
-);
-
-// Single-row state table tracking the highest transcription id already
-// processed by the misrecognition scanner. Used for incremental scans.
-export const misrecognitionScanState = sqliteTable(
-  "misrecognition_scan_state",
-  {
-    id: integer("id").primaryKey(), // always 1
-    lastScannedTranscriptionId: integer("last_scanned_transcription_id")
-      .notNull()
-      .default(0),
-    lastScanAt: integer("last_scan_at", { mode: "timestamp" }),
-  },
-);
-
 // Snippets table — short trigger phrases that expand into longer text during dictation
 export const snippets = sqliteTable("snippets", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -382,9 +330,3 @@ export type YjsUpdate = typeof yjsUpdates.$inferSelect;
 export type NewYjsUpdate = typeof yjsUpdates.$inferInsert;
 export type DailyStat = typeof dailyStats.$inferSelect;
 export type NewDailyStat = typeof dailyStats.$inferInsert;
-export type MisrecognitionCandidate =
-  typeof misrecognitionCandidates.$inferSelect;
-export type NewMisrecognitionCandidate =
-  typeof misrecognitionCandidates.$inferInsert;
-export type MisrecognitionScanState =
-  typeof misrecognitionScanState.$inferSelect;
