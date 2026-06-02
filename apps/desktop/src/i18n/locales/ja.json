@@ -379,10 +379,6 @@
         "title": "Amicalについて",
         "description": "Amicalとバージョン情報"
       },
-      "misrecognition": {
-        "title": "誤認識候補",
-        "description": "履歴から抽出した誤認識候補に正解を入力して辞書に登録します。"
-      },
       "dictionaryLibrary": {
         "title": "辞書ライブラリ",
         "description": "分野別の同梱辞書を 1 click で有効化できます。"
@@ -1112,42 +1108,6 @@
         }
       }
     },
-    "misrecognition": {
-      "title": "誤認識候補",
-      "description": "ディクテーション履歴から自動抽出した「誤認識かも」な単語です。正解を入力すると辞書(置換)に登録されます。登録するまでリアルタイム動作には影響しません。",
-      "scan": "スキャン",
-      "scanAll": "全件再スキャン",
-      "groupByReading": "同読みでまとめる",
-      "selectAll": "全選択",
-      "selectedCount": "{{count}} 件選択中",
-      "lastScan": "最終スキャン: {{value}}",
-      "neverScanned": "未実行",
-      "loading": "読み込み中...",
-      "empty": "候補はありません。「スキャン」で履歴を解析します。",
-      "readingGroup": "同読み: {{key}} (×{{total}})",
-      "replacementPlaceholder": "正しい単語",
-      "register": "登録",
-      "dismiss": "削除",
-      "dismissSelected": "選択を削除",
-      "bulkRegister": "選択を同じ正解で一括登録",
-      "bulkDialog": {
-        "title": "選択した候補を辞書登録",
-        "description": "選択中の {{count}} 件をすべて同じ正解で辞書に登録します。",
-        "replacementLabel": "正しい単語",
-        "placeholder": "正しい単語を入力",
-        "cancel": "キャンセル",
-        "submit": "登録"
-      },
-      "toast": {
-        "scanComplete": "スキャン完了 (対象 {{scanned}} 件 / 新規 {{inserted}} / 更新 {{updated}})",
-        "scanFailed": "スキャン失敗: {{message}}",
-        "dismissFailed": "削除に失敗: {{message}}",
-        "registered": "辞書に登録しました",
-        "registerFailed": "登録失敗: {{message}}",
-        "bulkRegistered": "{{registered}} 件登録 / {{skipped}} 件スキップ",
-        "emptyReplacement": "正しい単語を入力してください"
-      }
-    },
     "dictionaryLibrary": {
       "title": "辞書ライブラリ",
       "description": "分野別のプリセット辞書です。オンにするとその分野の単語が即座にディクテーションで使えるようになります。オフにすれば一時停止でき、手動で登録した単語には一切影響しません。",
@@ -1179,9 +1139,9 @@
     },
     "mcpServer": {
       "title": "MCP サーバー",
-      "description": "ローカル HTTP MCP エンドポイント経由で、Claude に Amical の辞書・発話履歴・誤認識候補プールを読み書きさせます。",
+      "description": "ローカル HTTP MCP エンドポイント経由で、Claude に Amical の辞書・発話履歴を読み書きさせます。",
       "warningTitle": "重要",
-      "warning": "有効化すると、以下のトークンを持つクライアント (Claude Code など) が辞書・発話履歴・誤認識候補プールを読み書きできるようになります。発話履歴には極めて個人的な内容が含まれる場合があります。内容を理解した上で有効化してください。",
+      "warning": "有効化すると、以下のトークンを持つクライアント (Claude Code など) が辞書・発話履歴を読み書きできるようになります。発話履歴には極めて個人的な内容が含まれる場合があります。内容を理解した上で有効化してください。",
       "enable": "MCP サーバーを有効化",
       "status": {
         "enabled": "動作中",

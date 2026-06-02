@@ -379,10 +379,6 @@
         "title": "About",
         "description": "About Amical and version information"
       },
-      "misrecognition": {
-        "title": "Misrecognition Candidates",
-        "description": "Review auto-extracted words and register replacements."
-      },
       "dictionaryLibrary": {
         "title": "Dictionary Library",
         "description": "Activate bundled vocabulary by topic with one click."
@@ -1134,42 +1130,6 @@
         }
       }
     },
-    "misrecognition": {
-      "title": "Misrecognition Candidates",
-      "description": "Words auto-extracted from your dictation history that may be ASR misrecognitions. Enter the correct word to add a replacement to your vocabulary. Nothing here affects live dictation until you register it.",
-      "scan": "Scan",
-      "scanAll": "Full rescan",
-      "groupByReading": "Group by reading",
-      "selectAll": "Select all",
-      "selectedCount": "{{count}} selected",
-      "lastScan": "Last scan: {{value}}",
-      "neverScanned": "never",
-      "loading": "Loading candidates...",
-      "empty": "No candidates. Click Scan to analyze your transcription history.",
-      "readingGroup": "Same reading: {{key}} (×{{total}})",
-      "replacementPlaceholder": "Correct word",
-      "register": "Register",
-      "dismiss": "Dismiss",
-      "dismissSelected": "Dismiss selected",
-      "bulkRegister": "Register selected with one correct word",
-      "bulkDialog": {
-        "title": "Register selected candidates",
-        "description": "Register {{count}} selected candidate(s) to vocabulary, all mapped to the same correct word.",
-        "replacementLabel": "Correct word",
-        "placeholder": "Enter the correct word",
-        "cancel": "Cancel",
-        "submit": "Register"
-      },
-      "toast": {
-        "scanComplete": "Scan done. scanned {{scanned}}, +{{inserted}} new, {{updated}} updated.",
-        "scanFailed": "Scan failed: {{message}}",
-        "dismissFailed": "Failed to dismiss: {{message}}",
-        "registered": "Registered to vocabulary.",
-        "registerFailed": "Failed to register: {{message}}",
-        "bulkRegistered": "Registered {{registered}}, skipped {{skipped}}.",
-        "emptyReplacement": "Enter the correct word first."
-      }
-    },
     "dictionaryLibrary": {
       "title": "Dictionary Library",
       "description": "Bundled, topic-based vocabulary sets. Turn one on and its words become available to dictation immediately. Turn it off to pause it — your manually added words are never touched.",
@@ -1201,9 +1161,9 @@
     },
     "mcpServer": {
       "title": "MCP Server",
-      "description": "Expose Amical's vocabulary, dictation history, and misrecognition pool to Claude over a local HTTP MCP endpoint.",
+      "description": "Expose Amical's vocabulary and dictation history to Claude over a local HTTP MCP endpoint.",
       "warningTitle": "Heads up",
-      "warning": "When enabled, any client that has the bearer token below (e.g. Claude Code) can read and write your vocabulary, browse your dictation history, and modify the misrecognition pool. Dictation history can include very personal text. Only enable this if you understand what gets shared.",
+      "warning": "When enabled, any client that has the bearer token below (e.g. Claude Code) can read and write your vocabulary and browse your dictation history. Dictation history can include very personal text. Only enable this if you understand what gets shared.",
       "enable": "Enable MCP server",
       "status": {
         "enabled": "Running",
