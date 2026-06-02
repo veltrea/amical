@@ -19,7 +19,6 @@ import { Route as AppSettingsVocabularyRouteImport } from './routes/_app/setting
 import { Route as AppSettingsSnippetsRouteImport } from './routes/_app/settings/snippets'
 import { Route as AppSettingsShortcutsRouteImport } from './routes/_app/settings/shortcuts'
 import { Route as AppSettingsPreferencesRouteImport } from './routes/_app/settings/preferences'
-import { Route as AppSettingsMisrecognitionRouteImport } from './routes/_app/settings/misrecognition'
 import { Route as AppSettingsMcpServerRouteImport } from './routes/_app/settings/mcp-server'
 import { Route as AppSettingsDictionaryLibraryRouteImport } from './routes/_app/settings/dictionary-library'
 import { Route as AppSettingsDictationRouteImport } from './routes/_app/settings/dictation'
@@ -77,12 +76,6 @@ const AppSettingsPreferencesRoute = AppSettingsPreferencesRouteImport.update({
   path: '/settings/preferences',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppSettingsMisrecognitionRoute =
-  AppSettingsMisrecognitionRouteImport.update({
-    id: '/settings/misrecognition',
-    path: '/settings/misrecognition',
-    getParentRoute: () => AppRouteRoute,
-  } as any)
 const AppSettingsMcpServerRoute = AppSettingsMcpServerRouteImport.update({
   id: '/settings/mcp-server',
   path: '/settings/mcp-server',
@@ -131,7 +124,6 @@ export interface FileRoutesByFullPath {
   '/settings/dictation': typeof AppSettingsDictationRoute
   '/settings/dictionary-library': typeof AppSettingsDictionaryLibraryRoute
   '/settings/mcp-server': typeof AppSettingsMcpServerRoute
-  '/settings/misrecognition': typeof AppSettingsMisrecognitionRoute
   '/settings/preferences': typeof AppSettingsPreferencesRoute
   '/settings/shortcuts': typeof AppSettingsShortcutsRoute
   '/settings/snippets': typeof AppSettingsSnippetsRoute
@@ -149,7 +141,6 @@ export interface FileRoutesByTo {
   '/settings/dictation': typeof AppSettingsDictationRoute
   '/settings/dictionary-library': typeof AppSettingsDictionaryLibraryRoute
   '/settings/mcp-server': typeof AppSettingsMcpServerRoute
-  '/settings/misrecognition': typeof AppSettingsMisrecognitionRoute
   '/settings/preferences': typeof AppSettingsPreferencesRoute
   '/settings/shortcuts': typeof AppSettingsShortcutsRoute
   '/settings/snippets': typeof AppSettingsSnippetsRoute
@@ -170,7 +161,6 @@ export interface FileRoutesById {
   '/_app/settings/dictation': typeof AppSettingsDictationRoute
   '/_app/settings/dictionary-library': typeof AppSettingsDictionaryLibraryRoute
   '/_app/settings/mcp-server': typeof AppSettingsMcpServerRoute
-  '/_app/settings/misrecognition': typeof AppSettingsMisrecognitionRoute
   '/_app/settings/preferences': typeof AppSettingsPreferencesRoute
   '/_app/settings/shortcuts': typeof AppSettingsShortcutsRoute
   '/_app/settings/snippets': typeof AppSettingsSnippetsRoute
@@ -191,7 +181,6 @@ export interface FileRouteTypes {
     | '/settings/dictation'
     | '/settings/dictionary-library'
     | '/settings/mcp-server'
-    | '/settings/misrecognition'
     | '/settings/preferences'
     | '/settings/shortcuts'
     | '/settings/snippets'
@@ -209,7 +198,6 @@ export interface FileRouteTypes {
     | '/settings/dictation'
     | '/settings/dictionary-library'
     | '/settings/mcp-server'
-    | '/settings/misrecognition'
     | '/settings/preferences'
     | '/settings/shortcuts'
     | '/settings/snippets'
@@ -229,7 +217,6 @@ export interface FileRouteTypes {
     | '/_app/settings/dictation'
     | '/_app/settings/dictionary-library'
     | '/_app/settings/mcp-server'
-    | '/_app/settings/misrecognition'
     | '/_app/settings/preferences'
     | '/_app/settings/shortcuts'
     | '/_app/settings/snippets'
@@ -315,13 +302,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsPreferencesRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/_app/settings/misrecognition': {
-      id: '/_app/settings/misrecognition'
-      path: '/settings/misrecognition'
-      fullPath: '/settings/misrecognition'
-      preLoaderRoute: typeof AppSettingsMisrecognitionRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/_app/settings/mcp-server': {
       id: '/_app/settings/mcp-server'
       path: '/settings/mcp-server'
@@ -397,7 +377,6 @@ interface AppRouteRouteChildren {
   AppSettingsDictationRoute: typeof AppSettingsDictationRoute
   AppSettingsDictionaryLibraryRoute: typeof AppSettingsDictionaryLibraryRoute
   AppSettingsMcpServerRoute: typeof AppSettingsMcpServerRoute
-  AppSettingsMisrecognitionRoute: typeof AppSettingsMisrecognitionRoute
   AppSettingsPreferencesRoute: typeof AppSettingsPreferencesRoute
   AppSettingsShortcutsRoute: typeof AppSettingsShortcutsRoute
   AppSettingsSnippetsRoute: typeof AppSettingsSnippetsRoute
@@ -414,7 +393,6 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppSettingsDictationRoute: AppSettingsDictationRoute,
   AppSettingsDictionaryLibraryRoute: AppSettingsDictionaryLibraryRoute,
   AppSettingsMcpServerRoute: AppSettingsMcpServerRoute,
-  AppSettingsMisrecognitionRoute: AppSettingsMisrecognitionRoute,
   AppSettingsPreferencesRoute: AppSettingsPreferencesRoute,
   AppSettingsShortcutsRoute: AppSettingsShortcutsRoute,
   AppSettingsSnippetsRoute: AppSettingsSnippetsRoute,

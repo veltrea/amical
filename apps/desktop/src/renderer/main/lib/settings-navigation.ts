@@ -10,7 +10,6 @@ import {
   IconKeyboard,
   IconAdjustments,
   IconNotes,
-  IconSparkles,
   IconServerCog,
   type Icon,
 } from "@tabler/icons-react";
@@ -74,13 +73,6 @@ export const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
     url: "/settings/dictionary-library",
     descriptionKey: "settings.nav.dictionaryLibrary.description",
     icon: IconBooks,
-    type: "settings",
-  },
-  {
-    titleKey: "settings.nav.misrecognition.title",
-    url: "/settings/misrecognition",
-    descriptionKey: "settings.nav.misrecognition.description",
-    icon: IconSparkles,
     type: "settings",
   },
   {

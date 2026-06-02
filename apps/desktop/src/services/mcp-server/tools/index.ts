@@ -1,7 +1,6 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { registerVocabularyTools } from "./vocabulary";
 import { registerTranscriptionsTools } from "./transcriptions";
-import { registerMisrecCandidateTools } from "./misrec-candidates";
 
 /**
  * Aggregate registration entry point for every Amical MCP tool group.
@@ -12,5 +11,4 @@ import { registerMisrecCandidateTools } from "./misrec-candidates";
 export function registerMcpTools(mcp: McpServer): void {
   registerVocabularyTools(mcp);
   registerTranscriptionsTools(mcp);
-  registerMisrecCandidateTools(mcp);
 }

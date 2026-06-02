@@ -23,7 +23,7 @@ const MCP_ENDPOINT = "/mcp";
 /**
  * Manages the local HTTP MCP server lifecycle. Tool registration happens via
  * the optional `registerTools` callback so feature commits (vocabulary,
- * transcriptions, misrec_candidates) can attach their own tools without this
+ * transcriptions) can attach their own tools without this
  * module needing to know about them.
  */
 export class AmicalMcpServer {
