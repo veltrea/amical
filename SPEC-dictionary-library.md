@@ -31,7 +31,7 @@
 
 | 層 | 何を持つ | どこに |
 |---|---|---|
-| 手動 vocabulary | ユーザーが手で追加 / import / 誤認識候補から登録した単語 | `vocabulary` テーブル (既存) |
+| 手動 vocabulary | ユーザーが手で追加 / import した単語 | `vocabulary` テーブル (既存) |
 | 同梱辞書の中身 | 分野別の単語リスト (read-only) | `apps/desktop/assets/dictionaries/*.json` (DB に展開しない) |
 | 辞書の有効状態 | どの同梱辞書 id を有効にしたか **だけ** | `app_settings` の JSON カラム内 `activeDictionaries: string[]` |
 

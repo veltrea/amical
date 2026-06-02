@@ -13,6 +13,9 @@ If you want broad compatibility (Intel Macs included) and the general-purpose ex
 - **Download / progress / delete UI** — manage the on-device models like the bundled Whisper models, with live download progress.
 - **Warm by launch** — the model loads and pre-compiles its Metal kernels at startup, so the first transcription is as fast as the rest.
 - **Isolated inference process** — MLX runs in a dedicated Swift helper (`stt-helper`), separate from the real-time keyboard/accessibility helper, so heavy inference never blocks input handling.
+- **On-device proofreading (MLX LLM)** — a local LLM cleans up the transcript (punctuation, casing, filler, your own rules) in the same helper, fully offline. See below.
+- **Dictionary library** — bundled domain dictionaries (anime, games, programming, cooking, …) you switch on per-bundle so niche terms get recognised. See below.
+- **MCP server** — expose your vocabulary and dictation history to Claude Code over local HTTP. See below.
 
 Whisper (local) and Amical Cloud remain available, exactly as upstream.
 
@@ -44,9 +47,34 @@ The build **ad-hoc signs** the app automatically when no Developer ID is set. Fo
 
 Qwen3-ASR uses [soniqo/speech-swift](https://github.com/soniqo/speech-swift) (MLX). Models download from Hugging Face on first use and cache to `~/Library/Caches/qwen3-speech/`.
 
+## On-device proofreading (MLX LLM)
+
+After Qwen3-ASR transcribes, an on-device LLM cleans the text up — punctuation, capitalisation, filler removal — in the same MLX helper process, fully offline. No cloud, and no separate runtime (Ollama etc.) to install.
+
+- **Language-aware recommended models** — pick a small local LLM per language: **ja** `LFM2.5-1.2B-JP` (~1.3 GB) or `Llama-3.1-Swallow-8B`; **en** `Phi-4-mini` or `Llama-3.2-3B`; **zh** `Qwen2.5-3B`. Any Hugging Face MLX repo can be pasted in as a custom model.
+- **Your own rules** — a free-form textarea layers your rules on top of the built-in formatter (e.g. "always use です/ます", "keep technical terms in English"). The built-in safety rules (no rewriting, no translation, preserve content) always take precedence.
+- **Memory strategy** (balanced / fast / low) — choose how aggressively the LLM stays resident between dictations, so it can coexist with other local LLMs like LM Studio.
+
+Enable it in **Settings → Dictation → Formatting**. Models download from Hugging Face on first use.
+
+## Dictionary library
+
+Bundled, domain-specific dictionaries you switch on per-bundle. When active, their entries are merged into the vocabulary Qwen3-ASR sees, so niche terms in that domain are transcribed correctly. Whole bundles are toggled as a unit — they are **not** flattened into your word list, so your hand-added vocabulary is never touched.
+
+Nine bundles ship in-app (749 entries total):
+
+| Bundles | Category |
+|---|---|
+| Online Services · AI Companies · Software & Tools | general |
+| Programming | developer |
+| Anime & Manga · Light Novels · Video Games | creator |
+| Cooking · Fishing | general |
+
+Turn bundles on/off in **Settings → Dictionary Library**. Toggling is instant — no thousand-row import, and disabling a bundle leaves your manual entries intact.
+
 ## MCP server (Claude Code integration)
 
-Amical can expose its vocabulary, dictation history, and misrecognition candidates to Claude Code (or any HTTP-MCP client) over a local Streamable-HTTP endpoint.
+Amical can expose its vocabulary and dictation history to Claude Code (or any HTTP-MCP client) over a local Streamable-HTTP endpoint.
 
 It is **off by default**. To turn it on:
 
@@ -65,7 +93,6 @@ The server binds **loopback-only**; it is not reachable from the LAN. Once enabl
 
 - `vocabulary_list`, `vocabulary_add`, `vocabulary_update`, `vocabulary_delete`, `vocabulary_bulk_add`, `vocabulary_search`
 - `transcriptions_recent`, `transcriptions_search`
-- `misrec_candidates_list`, `misrec_candidates_register`, `misrec_candidates_dismiss`
 
 **Privacy note.** `transcriptions_recent` exposes your dictation history to whichever LLM is on the other side. Dictation history often contains very personal text — only enable this if you understand what gets shared.
 
@@ -83,10 +110,8 @@ curl -s -X POST http://127.0.0.1:7878/mcp \
 
 ## Roadmap (planned, not yet implemented)
 
-The directions this fork is exploring — all on-device / agent-integrated AI:
+The directions this fork is still exploring — all on-device / agent-integrated AI:
 
-- **Embedded AI formatting (MLX)** — run the AI formatting/cleanup LLM through MLX built into the app, so it works with no separate runtime (e.g. Ollama) to install.
-- **AI-driven dictionary editing (MCP)** — done in this fork: see "MCP server" above. Claude Code can add / edit / dedupe vocabulary directly.
 - **Auto-learn from history** — have the AI analyze transcription history, detect mis-transcribed words, and register them to the dictionary automatically.
 
 ## Credit

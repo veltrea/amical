@@ -69,7 +69,6 @@ Claude:
 │  │  McpServer             │  │
 │  │  - vocabulary_*        │  │
 │  │  - transcriptions_*    │  │
-│  │  - misrec_candidates_* │  │
 │  └────────┬───────────────┘  │
 │           │                  │
 │  ┌────────▼───────────────┐  │
@@ -307,43 +306,6 @@ output:
   rows: Array<Transcription>
 ```
 
-### 6.3 misrecognition_candidates 系 (v1 既存実装用)
-
-> 注: `develop` に v1 の検出器実装は残っている (本家由来)。それを操作する tool。
-
-#### `misrec_candidates_list`
-
-```yaml
-description: "List active misrecognition candidates from the pool."
-inputSchema:
-  limit: number?       # default 100
-  offset: number?
-  sortBy: "occurrenceCount" | "lastSeenAt" | "word"?
-output:
-  candidates: Array<{ id, word, normalizedKey, occurrenceCount, lastSeenAt }>
-```
-
-#### `misrec_candidates_register`
-
-```yaml
-description: "Register a misrecognition candidate as a vocabulary replacement and remove the candidate row."
-inputSchema:
-  id: number
-  replacementWord: string
-output:
-  registered: number
-```
-
-#### `misrec_candidates_dismiss`
-
-```yaml
-description: "Dismiss candidates so they don't resurface."
-inputSchema:
-  ids: number[]
-output:
-  dismissed: number
-```
-
 ---
 
 ## 7. 設定画面
@@ -438,7 +400,7 @@ migration 不要 (JSON カラムへの追加なので)。
 
 ---
 
-## 9. 実装ステップ (5〜6 commit)
+## 9. 実装ステップ (4〜5 commit)
 
 各 commit の後で **必ず `scripts/install-dev.sh` で .app build 検証**。
 
@@ -466,13 +428,7 @@ migration 不要 (JSON カラムへの追加なので)。
 - transcriptions_recent / search の 2 tool
 - 既存 `db/transcriptions.ts` のアクセサを使う (なければ新規追加)
 
-### Commit 4: misrec_candidates 系 tool
-
-- `tools/misrec-candidates.ts` 作成
-- list / register / dismiss の 3 tool
-- 既存 `db/misrecognition.ts` のアクセサを使う
-
-### Commit 5: 設定画面 UI
+### Commit 4: 設定画面 UI
 
 - `apps/desktop/src/renderer/main/pages/settings/mcp-server/index.tsx` 新規
 - ルート + navigation 追加
@@ -480,7 +436,7 @@ migration 不要 (JSON カラムへの追加なので)。
 - tRPC procedure (start/stop/regenerate/getConfig) を `apps/desktop/src/trpc/routers/mcp-server.ts` で公開
 - i18n キー (en + ja)
 
-### Commit 6 (optional): 統合テスト + ドキュメント
+### Commit 5 (optional): 統合テスト + ドキュメント
 
 - README に「MCP サーバーを使う」セクション追加
 - 簡単な動作確認スクリプト (`scripts/mcp-smoketest.ts`) — Amical 起動後に curl で各 tool を叩く
@@ -593,4 +549,3 @@ curl -i http://127.0.0.1:7878/mcp -X POST -d '{}'
 3. transcriptions_recent の `since` パラメータの粒度 (ISO timestamp で十分か、id ベースが要るか)
 4. tool 名は snake_case (`vocabulary_list`) と camelCase (`vocabularyList`) のどちらが MCP 慣習か (今回は snake_case で書いた)
 5. `vocabulary_bulk_add` で `source` 引数を受け取るが、library:* に予約 prefix を作って衝突避けるか
-6. v1 misrec_candidates 系 tool は「廃止予定の v1 実装」に依存するので、いずれ archive ブランチに同期して新検出器ができたら復活させる、で OK か (それまでは tool 群を一時保留する選択肢もあり)
