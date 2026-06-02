@@ -4,6 +4,12 @@
 
 このフォークの主な変更をここに記録します。このフォーク（[veltrea/amical](https://github.com/veltrea/amical)）は本家 [Amical](https://github.com/amicalhq/amical) に追従しつつ、Apple Silicon 上で完全オンデバイス・エージェント連携の AI を足していきます。フォーマットは [Keep a Changelog](https://keepachangelog.com/) に準拠します。
 
+## [1.7.1-fork.5] - 2026-06-03
+
+### Fixed（修正）
+
+- トレイメニューの「コンソールを開く」が、他のアプリが前面にあるとき Amical を前面に出せるようになった。以前は、別アプリ（Claude Desktop やブラウザなど）が前面のとき、設定ウィンドウはその裏に開いて、見た目何も起きていないように見えていた——macOS では accessory モード（`app.dock.hide()`）のとき `window.show()` + `window.focus()` だけでは前面化に不十分。既存ウィンドウのパスで `app.focus({ steal: true })` を追加で呼ぶように修正。
+
 ## [1.7.1-fork.4] - 2026-06-02
 
 「すべてオンデバイス」リリース。校正・辞書ライブラリ・Claude Code 連携の MCP サーバーが同時に着地します。（`1.7.1-fork.3` としてタグ付けした校正の作業は単体では公開せず、本リリースに含めます。）
@@ -58,6 +64,7 @@
 
 リリース: <https://github.com/veltrea/amical/releases>。汎用的で幅広く動くアプリ（Intel Mac 含む）は本家 [Amical](https://github.com/amicalhq/amical) をどうぞ。
 
+[1.7.1-fork.5]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.5
 [1.7.1-fork.4]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.4
 [1.7.1-fork.2]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.2
 [1.7.1-fork.1]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.1

@@ -4,6 +4,12 @@
 
 All notable changes to this fork are documented here. This fork ([veltrea/amical](https://github.com/veltrea/amical)) tracks upstream [Amical](https://github.com/amicalhq/amical) and adds on-device, agent-integrated AI on Apple Silicon. The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.7.1-fork.5] - 2026-06-03
+
+### Fixed
+
+- Tray menu's "Open Console" item now brings Amical to the front when another app was frontmost. Previously the main window opened behind the foreground app (e.g. Claude Desktop, a browser) and looked like nothing happened — `window.show()` + `window.focus()` is not enough on macOS when the app is in accessory mode (`app.dock.hide()`). Calls `app.focus({ steal: true })` on the existing-window path in addition to the per-window calls.
+
 ## [1.7.1-fork.4] - 2026-06-02
 
 The "everything on-device" release: proofreading, a dictionary library, and a Claude Code MCP server land together. (The proofreading work tagged `1.7.1-fork.3` was never shipped on its own — it is included here.)
@@ -58,6 +64,7 @@ The "everything on-device" release: proofreading, a dictionary library, and a Cl
 
 Releases: <https://github.com/veltrea/amical/releases>. For the general-purpose, broadly-compatible app (Intel Macs included), see upstream [Amical](https://github.com/amicalhq/amical).
 
+[1.7.1-fork.5]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.5
 [1.7.1-fork.4]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.4
 [1.7.1-fork.2]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.2
 [1.7.1-fork.1]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.1
