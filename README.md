@@ -16,6 +16,7 @@ If you want broad compatibility (Intel Macs included) and the general-purpose ex
 - **On-device proofreading (MLX LLM)** — a local LLM cleans up the transcript (punctuation, casing, filler, your own rules) in the same helper, fully offline. See below.
 - **Dictionary library** — bundled domain dictionaries (anime, games, programming, cooking, …) you switch on per-bundle so niche terms get recognised. See below.
 - **MCP server** — expose your vocabulary and dictation history to Claude Code over local HTTP. See below.
+- **Reliable foreground from the tray** — picking **Open Console** from the menu bar tray brings Amical to the front, even when another app (Claude Desktop, a browser, …) was frontmost. This matters when Amical is running without a Dock icon (`Show in Dock` off in Preferences) and the tray is your only way back into the main window.
 
 Whisper (local) and Amical Cloud remain available, exactly as upstream.
 
