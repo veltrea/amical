@@ -216,6 +216,12 @@ export class WindowManager {
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
       this.mainWindow.show();
       this.mainWindow.focus();
+      // macOS: when invoked from the tray while another app is frontmost
+      // (e.g. Claude Desktop), window.focus() alone does not bring Amical to
+      // the front — especially in accessory mode (app.dock.hide()). Force
+      // app-level activation so the main window does not get hidden behind
+      // the previous frontmost app.
+      app.focus({ steal: true });
       return;
     }
 
