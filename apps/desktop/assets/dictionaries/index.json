@@ -108,6 +108,54 @@
       "tags": ["fishing", "tackle", "outdoor"],
       "entryCount": 42,
       "file": "fishing.json"
+    },
+    {
+      "id": "medical",
+      "name": "Medical & Healthcare",
+      "name_ja": "医療・医学",
+      "description": "Diagnoses, drugs and clinical terms (asthma, sepsis, prescription).",
+      "description_ja": "喘息・敗血症・処方箋など、診断名・薬剤・臨床の専門用語。",
+      "category": "professional",
+      "language": "ja",
+      "tags": ["medical", "healthcare", "clinical"],
+      "entryCount": 114,
+      "file": "medical.json"
+    },
+    {
+      "id": "legal",
+      "name": "Law & Legal",
+      "name_ja": "法律・法務",
+      "description": "Statutes, litigation and contract terms (tort, lien, inheritance).",
+      "description_ja": "民法・訴訟・相続など、法令・判例・契約の専門用語。",
+      "category": "professional",
+      "language": "ja",
+      "tags": ["legal", "law", "litigation"],
+      "entryCount": 98,
+      "file": "legal.json"
+    },
+    {
+      "id": "accounting",
+      "name": "Accounting & Finance",
+      "name_ja": "会計・税務・金融",
+      "description": "Bookkeeping, tax and finance terms (depreciation, ROE, deferred tax).",
+      "description_ja": "減価償却・源泉徴収・貸借対照表など、会計・税務・金融の専門用語。",
+      "category": "professional",
+      "language": "ja",
+      "tags": ["accounting", "finance", "tax"],
+      "entryCount": 87,
+      "file": "accounting.json"
+    },
+    {
+      "id": "construction",
+      "name": "Construction & Real Estate",
+      "name_ja": "建築・不動産",
+      "description": "Building methods and real-estate terms (retaining wall, floor-area ratio).",
+      "description_ja": "擁壁・容積率・宅地建物取引士など、建築・不動産の専門用語。",
+      "category": "professional",
+      "language": "ja",
+      "tags": ["construction", "real-estate", "architecture"],
+      "entryCount": 92,
+      "file": "construction.json"
     }
   ]
 }
