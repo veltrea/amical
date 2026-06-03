@@ -14,7 +14,7 @@ If you want broad compatibility (Intel Macs included) and the general-purpose ex
 - **Warm by launch** — the model loads and pre-compiles its Metal kernels at startup, so the first transcription is as fast as the rest.
 - **Isolated inference process** — MLX runs in a dedicated Swift helper (`stt-helper`), separate from the real-time keyboard/accessibility helper, so heavy inference never blocks input handling.
 - **On-device proofreading (MLX LLM)** — a local LLM cleans up the transcript (punctuation, casing, filler, your own rules) in the same helper, fully offline. See below.
-- **Dictionary library** — bundled domain dictionaries (anime, games, programming, cooking, …) you switch on per-bundle so niche terms get recognised. See below.
+- **Dictionary library** — bundled domain dictionaries (medical, legal, programming, anime, cooking, …) you switch on per-bundle so niche terms get recognised. See below.
 - **MCP server** — expose your vocabulary and dictation history to Claude Code over local HTTP. See below.
 - **Reliable foreground from the tray** — picking **Open Console** from the menu bar tray brings Amical to the front, even when another app (Claude Desktop, a browser, …) was frontmost. This matters when Amical is running without a Dock icon (`Show in Dock` off in Preferences) and the tray is your only way back into the main window.
 
@@ -62,7 +62,7 @@ Enable it in **Settings → Dictation → Formatting**. Models download from Hug
 
 Bundled, domain-specific dictionaries you switch on per-bundle. When active, their entries are merged into the vocabulary Qwen3-ASR sees, so niche terms in that domain are transcribed correctly. Whole bundles are toggled as a unit — they are **not** flattened into your word list, so your hand-added vocabulary is never touched.
 
-Nine bundles ship in-app (749 entries total):
+Thirteen bundles ship in-app (1,140 entries total):
 
 | Bundles | Category |
 |---|---|
@@ -70,6 +70,7 @@ Nine bundles ship in-app (749 entries total):
 | Programming | developer |
 | Anime & Manga · Light Novels · Video Games | creator |
 | Cooking · Fishing | general |
+| Medical & Healthcare · Law & Legal · Accounting & Finance · Construction & Real Estate | professional |
 
 Turn bundles on/off in **Settings → Dictionary Library**. Toggling is instant — no thousand-row import, and disabling a bundle leaves your manual entries intact.
 

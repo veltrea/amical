@@ -4,6 +4,12 @@
 
 このフォークの主な変更をここに記録します。このフォーク（[veltrea/amical](https://github.com/veltrea/amical)）は本家 [Amical](https://github.com/amicalhq/amical) に追従しつつ、Apple Silicon 上で完全オンデバイス・エージェント連携の AI を足していきます。フォーマットは [Keep a Changelog](https://keepachangelog.com/) に準拠します。
 
+## [1.7.1-fork.6] - 2026-06-03
+
+### Added（追加）
+
+- **辞書ライブラリに専門職辞書（4バンドル・391エントリ）。** 医療・医学（114）、法律・法務（98）、会計・税務・金融（87）、建築・不動産（92）——音声認識が日常的に誤変換する日本語の専門用語。新カテゴリ `professional` のもと、ライブラリは **13バンドル・1,140エントリ** になりました。読み仮名→漢字の置換は読みが一意なものだけ追加し、同音異義語と衝突する読み（例: こうそく・せこう・ないそう）は誤爆を避けるため表記の登録のみ、英略語（ROE・EBITDA）も表記の登録としています。
+
 ## [1.7.1-fork.5] - 2026-06-03
 
 ### Fixed（修正）
@@ -64,6 +70,7 @@
 
 リリース: <https://github.com/veltrea/amical/releases>。汎用的で幅広く動くアプリ（Intel Mac 含む）は本家 [Amical](https://github.com/amicalhq/amical) をどうぞ。
 
+[1.7.1-fork.6]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.6
 [1.7.1-fork.5]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.5
 [1.7.1-fork.4]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.4
 [1.7.1-fork.2]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.2

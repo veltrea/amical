@@ -4,6 +4,12 @@
 
 All notable changes to this fork are documented here. This fork ([veltrea/amical](https://github.com/veltrea/amical)) tracks upstream [Amical](https://github.com/amicalhq/amical) and adds on-device, agent-integrated AI on Apple Silicon. The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.7.1-fork.6] - 2026-06-03
+
+### Added
+
+- **Professional dictionaries for the dictionary library (4 bundles, 391 entries).** Medical & Healthcare (114), Law & Legal (98), Accounting & Finance (87), and Construction & Real Estate (92) — Japanese domain terms that ASR routinely mis-transcribes. The library now ships **13 bundles / 1,140 entries** under a new `professional` category. Reading-to-kanji replacements are added only where the reading is unambiguous; readings that collide with common homophones (e.g. こうそく, せこう, ないそう) ship as the written form only to avoid mis-replacement, and English acronyms (ROE, EBITDA) ship as written-form entries.
+
 ## [1.7.1-fork.5] - 2026-06-03
 
 ### Fixed
@@ -64,6 +70,7 @@ The "everything on-device" release: proofreading, a dictionary library, and a Cl
 
 Releases: <https://github.com/veltrea/amical/releases>. For the general-purpose, broadly-compatible app (Intel Macs included), see upstream [Amical](https://github.com/amicalhq/amical).
 
+[1.7.1-fork.6]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.6
 [1.7.1-fork.5]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.5
 [1.7.1-fork.4]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.4
 [1.7.1-fork.2]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.2
