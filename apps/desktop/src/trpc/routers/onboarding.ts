@@ -8,6 +8,7 @@ import {
   type OnboardingFeatureFlags,
 } from "../../types/onboarding";
 import { logger } from "../../main/logger";
+import { offerRepairIfSilentRevoke } from "../../main/silent-revoke-guard";
 
 export const onboardingRouter = createRouter({
   // --------------------------------------------------------------------------
@@ -418,6 +419,14 @@ export const onboardingRouter = createRouter({
       try {
         await shell.openExternal(input.url);
         logger.main.debug("Opened external URL:", input.url);
+        // If the user just opened the Accessibility pane from the onboarding
+        // permission step (the natural action when stuck), offer to repair a
+        // silent revoke as a follow-up. Fire-and-forget so this mutation returns
+        // immediately; the dialog manages its own timing/focus and no-ops unless
+        // we are actually in the silent-revoke state.
+        if (input.url.includes("Privacy_Accessibility")) {
+          void offerRepairIfSilentRevoke();
+        }
       } catch (error) {
         logger.main.error("Failed to open external URL:", error);
         throw error;

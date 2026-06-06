@@ -1,54 +1,59 @@
-import { systemPreferences } from "electron";
+import { shell, systemPreferences } from "electron";
 import { logger } from "./logger";
-import { ServiceManager } from "./managers/service-manager";
 
 /**
  * CLI arg the repair flow uses to signal "this instance was just relaunched
- * after a tccutil reset; pop fresh permission dialogs now". Stay in sync with
- * `apps/desktop/src/trpc/routers/permissions.ts`.
+ * after a tccutil reset; help the user re-grant now". Defined in the shared
+ * repair module; re-exported here for backwards compatibility.
  */
-export const PROMPT_PERMISSIONS_ARG = "--prompt-permissions";
+import { PROMPT_PERMISSIONS_ARG } from "./accessibility-repair";
+export { PROMPT_PERMISSIONS_ARG };
 
 /**
- * If this process was launched with PROMPT_PERMISSIONS_ARG, fire the OS-level
- * permission prompts for Accessibility (via SwiftHelper -> AXIsProcessTrusted
- * WithOptions(prompt:true)) and Microphone (via systemPreferences.askFor
- * MediaAccess). Both are no-ops if permissions are already granted.
+ * If this process was launched with PROMPT_PERMISSIONS_ARG (i.e. right after a
+ * permissions repair cleared the stale TCC entries), help the user re-grant.
  *
- * Why this lives in its own file instead of inline in `main.ts`: the prompts
- * MUST run AFTER `AppManager.initialize()` completes, because SwiftHelper is
- * spawned and reachable only by then. Mixing this into main.ts would push the
- * single-instance / deep-link / IPC bootstrap further away from the top.
+ * Accessibility: open System Settings → Accessibility DIRECTLY. We deliberately
+ * do NOT fire `AXIsProcessTrustedWithOptions(prompt:true)`: once the user has
+ * already chosen "Repair", the OS "Amical wants to control this computer
+ * [Open System Settings] [Deny]" prompt is a redundant extra screen. The app
+ * re-appears in the Accessibility list (toggled off) from the AX checks it makes
+ * on startup, so the user just flips the switch in the pane we opened.
+ *
+ * Microphone: re-prompt via the first-class Electron API (a no-op if mic access
+ * is still granted; otherwise the standard, non-intrusive mic prompt).
+ *
+ * Why this lives in its own file instead of inline in `main.ts`: it must run
+ * AFTER `AppManager.initialize()` completes (services up), which would otherwise
+ * push the single-instance / deep-link / IPC bootstrap further from the top.
  */
 export async function maybePromptForRevokedPermissions(): Promise<void> {
   if (process.platform !== "darwin") return;
   if (!process.argv.includes(PROMPT_PERMISSIONS_ARG)) return;
 
   logger.main.info(
-    "[permissions-bootstrap] PROMPT_PERMISSIONS_ARG detected, requesting fresh permissions",
+    "[permissions-bootstrap] PROMPT_PERMISSIONS_ARG detected, guiding re-grant",
   );
 
-  // Accessibility: dispatch via SwiftHelper since it is the process that
-  // actually needs AX access. NativeBridge sits inside ServiceManager and is
-  // already started by the time this hook fires.
+  // Accessibility: send the user straight to the System Settings pane instead
+  // of popping the OS "wants to control" dialog (redundant post-repair).
   try {
-    const nativeBridge = ServiceManager.getInstance().getService(
-      "nativeBridge",
+    await shell.openExternal(
+      "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
     );
-    const result = await nativeBridge.requestAccessibilityPermission();
     logger.main.info(
-      "[permissions-bootstrap] accessibility prompt dispatched",
-      { result },
+      "[permissions-bootstrap] opened System Settings → Accessibility",
     );
   } catch (err) {
-    logger.main.error("[permissions-bootstrap] accessibility prompt failed", {
-      error: err instanceof Error ? err.message : String(err),
-    });
+    logger.main.error(
+      "[permissions-bootstrap] failed to open Accessibility settings",
+      { error: err instanceof Error ? err.message : String(err) },
+    );
   }
 
   // Microphone: Electron has a first-class API for this; using it instead of
   // navigator.mediaDevices keeps the prompt in the main process (no renderer
-  // needs to be already alive).
+  // needs to be already alive). No-op if mic access is still granted.
   try {
     const granted = await systemPreferences.askForMediaAccess("microphone");
     logger.main.info("[permissions-bootstrap] microphone prompt dispatched", {

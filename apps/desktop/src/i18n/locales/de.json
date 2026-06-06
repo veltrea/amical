@@ -568,6 +568,15 @@
             "relaunching": "Berechtigungen werden zurückgesetzt und neu gestartet…",
             "failed": "Reparatur fehlgeschlagen: {{message}}"
           }
+        },
+        "silentRevoke": {
+          "title": "Bedienungshilfen-Berechtigung",
+          "message": "Die Bedienungshilfen-Berechtigung ist nicht mehr aktiv",
+          "detail": "In den Systemeinstellungen erscheint sie als „Erlaubt“, ist aber tatsächlich deaktiviert (das passiert oft nach einem App-Update). Klicke auf „Reparieren“, um die Berechtigung zurückzusetzen und dich erneut durch die Freigabe zu führen.",
+          "buttons": {
+            "repair": "Reparieren",
+            "later": "Später"
+          }
         }
       }
     },

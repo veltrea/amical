@@ -10,6 +10,7 @@ import { AppManager } from "./core/app-manager";
 import { isWindows } from "../utils/platform";
 import { ServiceManager } from "./managers/service-manager";
 import { maybePromptForRevokedPermissions } from "./permissions-bootstrap";
+import { trackAccessibilityGrantState } from "./silent-revoke-guard";
 
 // Trust the OS certificate store on top of Node's bundled CA list. Corporate
 // TLS-inspection proxies (e.g. Zscaler) re-sign HTTPS with a root that lives in
@@ -110,6 +111,12 @@ app.whenReady().then(async () => {
     // (--prompt-permissions arg), fire the fresh OS dialogs now that
     // SwiftHelper is up. No-op otherwise.
     await maybePromptForRevokedPermissions();
+
+    // Keep the accessibility-grant cdHash baseline current so a later silent
+    // revoke (toggle ON but dead after a cdHash change) is detectable. The
+    // repair dialog itself is offered from the onboarding "Open Settings"
+    // action (see onboarding.openExternal), not at startup.
+    trackAccessibilityGrantState();
 
     // Process any deep link that was received before initialization completed
     if (pendingDeepLink) {

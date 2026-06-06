@@ -585,6 +585,15 @@
             "relaunching": "Resetting permissions and relaunching…",
             "failed": "Repair failed: {{message}}"
           }
+        },
+        "silentRevoke": {
+          "title": "Accessibility permission",
+          "message": "Accessibility permission is no longer active",
+          "detail": "System Settings shows it as “Allowed,” but it has actually been disabled (this often happens after an app update). Click Repair to reset the permission and guide you through granting it again.",
+          "buttons": {
+            "repair": "Repair",
+            "later": "Later"
+          }
         }
       }
     },

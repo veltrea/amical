@@ -557,6 +557,15 @@
             "relaunching": "Restableciendo permisos y reiniciando…",
             "failed": "Fallo en la reparación: {{message}}"
           }
+        },
+        "silentRevoke": {
+          "title": "Permiso de accesibilidad",
+          "message": "El permiso de accesibilidad ya no está activo",
+          "detail": "Ajustes del Sistema lo muestra como «Permitido», pero en realidad está desactivado (suele ocurrir tras actualizar la app). Pulsa «Reparar» para restablecer el permiso y guiarte para concederlo de nuevo.",
+          "buttons": {
+            "repair": "Reparar",
+            "later": "Más tarde"
+          }
         }
       }
     },
