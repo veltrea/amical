@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "exportedAt": "2026-06-06T00:00:00.000Z",
+  "entries": [
+    { "word": "一次発酵", "replacementWord": null, "isReplacement": false },
+    { "word": "二次発酵", "replacementWord": null, "isReplacement": false },
+    { "word": "中種法", "replacementWord": null, "isReplacement": false },
+    { "word": "ストレート法", "replacementWord": null, "isReplacement": false },
+    { "word": "グルテン", "replacementWord": null, "isReplacement": false },
+    { "word": "イースト", "replacementWord": null, "isReplacement": false },
+    { "word": "天然酵母", "replacementWord": null, "isReplacement": false },
+    { "word": "サワードウ", "replacementWord": null, "isReplacement": false },
+    { "word": "ポーリッシュ", "replacementWord": null, "isReplacement": false },
+    { "word": "オートリーズ", "replacementWord": null, "isReplacement": false },
+    { "word": "成形", "replacementWord": null, "isReplacement": false },
+    { "word": "ベンチタイム", "replacementWord": null, "isReplacement": false },
+    { "word": "焼成", "replacementWord": null, "isReplacement": false },
+    { "word": "クープ", "replacementWord": null, "isReplacement": false },
+    { "word": "バゲット", "replacementWord": null, "isReplacement": false },
+    { "word": "カンパーニュ", "replacementWord": null, "isReplacement": false },
+    { "word": "リュスティック", "replacementWord": null, "isReplacement": false },
+    { "word": "ブリオッシュ", "replacementWord": null, "isReplacement": false },
+    { "word": "クロワッサン", "replacementWord": null, "isReplacement": false },
+    { "word": "強力粉", "replacementWord": null, "isReplacement": false },
+    { "word": "全粒粉", "replacementWord": null, "isReplacement": false },
+    { "word": "ホイロ", "replacementWord": null, "isReplacement": false },
+    { "word": "打ち粉", "replacementWord": null, "isReplacement": false },
+    { "word": "捏ね上げ温度", "replacementWord": null, "isReplacement": false },
+    { "word": "パンチ", "replacementWord": null, "isReplacement": false }
+  ]
+}

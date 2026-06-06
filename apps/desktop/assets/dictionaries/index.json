@@ -684,6 +684,54 @@
       "tags": ["boxing", "sports", "martial-arts"],
       "entryCount": 31,
       "file": "boxing.json"
+    },
+    {
+      "id": "fashion",
+      "name": "Fashion",
+      "name_ja": "ファッション",
+      "description": "Fashion brands and apparel terms (Chanel, Louis Vuitton, silhouette, tailored).",
+      "description_ja": "ファッションブランドと服飾用語 (Chanel, Louis Vuitton, シルエット 等)。ブランドは英語、用語はカタカナ。",
+      "category": "creator",
+      "language": "ja",
+      "tags": ["fashion", "brand", "apparel"],
+      "entryCount": 40,
+      "file": "fashion.json"
+    },
+    {
+      "id": "confectionery",
+      "name": "Confectionery",
+      "name_ja": "製菓",
+      "description": "Pastry and confectionery terms (patissier, ganache, meringue, tempering).",
+      "description_ja": "製菓・パティスリーの用語 (パティシエ, ガナッシュ, メレンゲ, テンパリング 等)。カタカナ表記。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["confectionery", "pastry", "cooking"],
+      "entryCount": 25,
+      "file": "confectionery.json"
+    },
+    {
+      "id": "bread-baking",
+      "name": "Bread Baking",
+      "name_ja": "パン作り",
+      "description": "Bread-baking terms (fermentation, sourdough, baguette, gluten).",
+      "description_ja": "パン作りの用語 (一次発酵, サワードウ, バゲット, グルテン 等)。カタカナ表記。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["bread", "baking", "cooking"],
+      "entryCount": 25,
+      "file": "bread-baking.json"
+    },
+    {
+      "id": "business-katakana",
+      "name": "Business Katakana",
+      "name_ja": "ビジネスカタカナ用語",
+      "description": "Katakana business jargon (agree, grip, vertical, consensus, assign).",
+      "description_ja": "カタカナのビジネス用語 (アグリー, グリップ, バーティカル, アサイン 等)。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["business", "katakana", "jargon"],
+      "entryCount": 37,
+      "file": "business-katakana.json"
     }
   ]
 }
