@@ -372,6 +372,66 @@
       "tags": ["dj", "turntablism", "music"],
       "entryCount": 29,
       "file": "dj.json"
+    },
+    {
+      "id": "culinary-people",
+      "name": "Chefs & Food Brands",
+      "name_ja": "料理人・調味料メーカー",
+      "description": "Chefs, food influencers and seasoning makers (Gordon Ramsay, Kikkoman, Ajinomoto).",
+      "description_ja": "料理人・料理系インフルエンサー・調味料メーカー (Gordon Ramsay, キッコーマン, 味の素 等)。素材・調味料は Cooking 辞書に分離。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["cooking", "chef", "brand"],
+      "entryCount": 44,
+      "file": "culinary-people.json"
+    },
+    {
+      "id": "sake",
+      "name": "Sake",
+      "name_ja": "日本酒",
+      "description": "Japanese sake brands and terms (Dassai, Juyondai, junmai daiginjo, kimoto).",
+      "description_ja": "日本酒の銘柄・用語 (獺祭, 十四代, 純米大吟醸, 生酛 等)。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["sake", "drink", "japan"],
+      "entryCount": 39,
+      "file": "sake.json"
+    },
+    {
+      "id": "cocktails",
+      "name": "Cocktails",
+      "name_ja": "カクテル",
+      "description": "Cocktail names in katakana (Martini, Mojito, Negroni, Margarita).",
+      "description_ja": "カクテル名 (マティーニ, モヒート, ネグローニ, マルガリータ 等)。カタカナ表記。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["cocktail", "drink", "bar"],
+      "entryCount": 28,
+      "file": "cocktails.json"
+    },
+    {
+      "id": "wine",
+      "name": "Wine",
+      "name_ja": "ワイン",
+      "description": "Wine grapes, labels and terms (Cabernet, Pinot Noir, Romanee-Conti, terroir).",
+      "description_ja": "ワインの品種・銘柄・用語 (カベルネ, ピノノワール, ロマネコンティ, テロワール 等)。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["wine", "drink", "grape"],
+      "entryCount": 36,
+      "file": "wine.json"
+    },
+    {
+      "id": "whisky",
+      "name": "Whisky",
+      "name_ja": "ウイスキー",
+      "description": "Whisky brands, Scotch/Japanese/Bourbon (Macallan, Yamazaki, Jack Daniel's).",
+      "description_ja": "ウイスキーの銘柄 (Macallan, 山崎, Jack Daniel's 等)。スコッチ・バーボンは英語、日本は日本語表記。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["whisky", "drink", "scotch"],
+      "entryCount": 42,
+      "file": "whisky.json"
     }
   ]
 }
