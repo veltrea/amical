@@ -7,6 +7,7 @@ interface WaveformProps {
   voiceDetected: boolean;
   baseHeight?: number;
   silentHeight?: number;
+  color?: string;
 }
 
 export function Waveform({
@@ -15,6 +16,7 @@ export function Waveform({
   voiceDetected,
   baseHeight = 20,
   silentHeight = 20,
+  color = "#FFFFFF",
 }: WaveformProps) {
   // Calculate animation values
   const minHeight = silentHeight;
@@ -22,13 +24,18 @@ export function Waveform({
   const midHeight = minHeight + (maxHeight - minHeight) * 0.6;
 
   if (!isRecording) {
-    return <div className="h-[15%] w-1 rounded-full bg-white" />;
+    return (
+      <div
+        className="h-[15%] w-1 rounded-full"
+        style={{ backgroundColor: color }}
+      />
+    );
   }
 
   return (
     <motion.div
-      className="w-1 rounded-full bg-white gap-0.5"
-      style={{ height: `${silentHeight}%` }}
+      className="w-1 rounded-full gap-0.5"
+      style={{ height: `${silentHeight}%`, backgroundColor: color }}
       animate={{
         height: voiceDetected
           ? [

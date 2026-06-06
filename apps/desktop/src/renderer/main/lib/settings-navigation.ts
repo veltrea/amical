@@ -11,6 +11,7 @@ import {
   IconAdjustments,
   IconNotes,
   IconServerCog,
+  IconPalette,
   type Icon,
 } from "@tabler/icons-react";
 
@@ -45,6 +46,13 @@ export const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
     url: "/settings/preferences",
     descriptionKey: "settings.nav.preferences.description",
     icon: IconSettings,
+    type: "settings",
+  },
+  {
+    titleKey: "settings.nav.widgetAppearance.title",
+    url: "/settings/widget-appearance",
+    descriptionKey: "settings.nav.widgetAppearance.description",
+    icon: IconPalette,
     type: "settings",
   },
   {

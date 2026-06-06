@@ -378,6 +378,10 @@
       "about": {
         "title": "關於",
         "description": "關於 Amical 和版本資訊"
+      },
+      "widgetAppearance": {
+        "title": "小工具顏色",
+        "description": "自訂錄音小工具（HUD）的背景、強調色與邊框顏色"
       }
     },
     "sidebar": {
@@ -1038,6 +1042,33 @@
           "downloadFailed": "下載發生錯誤：{{message}}",
           "loginSuccess": "順利完成登入！"
         }
+      }
+    },
+    "widgetAppearance": {
+      "title": "小工具顏色",
+      "description": "自訂錄音時顯示的浮動小工具（HUD）顏色。",
+      "preview": "預覽",
+      "presetsTitle": "預設組合",
+      "presetsDescription": "從預先準備的配色中選擇。",
+      "customTitle": "自訂顏色",
+      "customDescription": "使用顏色選擇器自由調整每個元素的顏色。",
+      "colors": {
+        "background": "背景",
+        "accent": "強調色（波形）",
+        "border": "邊框"
+      },
+      "presets": {
+        "classic": "經典",
+        "midnight": "午夜",
+        "graphite": "石墨",
+        "sunset": "日落",
+        "forest": "森林",
+        "grape": "葡萄"
+      },
+      "reset": "重設為預設值",
+      "toast": {
+        "updateFailed": "無法更新小工具顏色",
+        "reset": "小工具顏色已重設為預設值"
       }
     }
   }

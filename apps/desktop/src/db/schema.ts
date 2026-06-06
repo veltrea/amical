@@ -157,6 +157,14 @@ export interface AppSettingsData {
       widthRatio: number;
       heightRatio: number;
     };
+    // Floating recording widget ("HUD") colors. See
+    // constants/widget-appearance.ts. Colors are #RRGGBBAA hex strings.
+    widgetAppearance?: {
+      preset: string;
+      background: string;
+      accent: string;
+      border: string;
+    };
   };
   transcription?: {
     language: string;

@@ -386,6 +386,10 @@
       "mcpServer": {
         "title": "MCP Server",
         "description": "Let Claude read and write Amical's vocabulary and history via the Model Context Protocol."
+      },
+      "widgetAppearance": {
+        "title": "Widget Colors",
+        "description": "Customize the recording widget (HUD) background, accent, and border colors"
       }
     },
     "sidebar": {
@@ -1194,6 +1198,33 @@
         "tokenRegenerated": "Token regenerated.",
         "copied": "Copied {{what}}.",
         "startFailed": "MCP server start failed: {{message}}"
+      }
+    },
+    "widgetAppearance": {
+      "title": "Widget Colors",
+      "description": "Customize the colors of the floating widget (HUD) shown while recording.",
+      "preview": "Preview",
+      "presetsTitle": "Presets",
+      "presetsDescription": "Pick from a set of ready-made color schemes.",
+      "customTitle": "Custom colors",
+      "customDescription": "Fine-tune each element's color with the color picker.",
+      "colors": {
+        "background": "Background",
+        "accent": "Accent (waveform)",
+        "border": "Border"
+      },
+      "presets": {
+        "classic": "Classic",
+        "midnight": "Midnight",
+        "graphite": "Graphite",
+        "sunset": "Sunset",
+        "forest": "Forest",
+        "grape": "Grape"
+      },
+      "reset": "Reset to default",
+      "toast": {
+        "updateFailed": "Failed to update widget colors",
+        "reset": "Widget colors reset to default"
       }
     }
   }

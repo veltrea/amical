@@ -5,6 +5,7 @@ import { useRecording } from "@/hooks/useRecording";
 import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { api } from "@/trpc/react";
 import { NOTE_WINDOW_FEATURE_FLAG } from "@/utils/feature-flags";
+import { DEFAULT_WIDGET_APPEARANCE } from "@/constants/widget-appearance";
 import { useTranslation } from "react-i18next";
 
 const NUM_WAVEFORM_BARS = 6;
@@ -26,11 +27,20 @@ const StopButton: React.FC<{ onClick: (e: React.MouseEvent) => void }> = ({
 );
 
 // Separate component for the processing indicator
-const ProcessingIndicator: React.FC = () => (
+const ProcessingIndicator: React.FC<{ color: string }> = ({ color }) => (
   <div className="flex gap-[4px] items-center justify-center flex-1 h-6">
-    <div className="w-[4px] h-[4px] bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-    <div className="w-[4px] h-[4px] bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-    <div className="w-[4px] h-[4px] bg-blue-500 rounded-full animate-bounce" />
+    <div
+      className="w-[4px] h-[4px] rounded-full animate-bounce [animation-delay:-0.3s]"
+      style={{ backgroundColor: color }}
+    />
+    <div
+      className="w-[4px] h-[4px] rounded-full animate-bounce [animation-delay:-0.15s]"
+      style={{ backgroundColor: color }}
+    />
+    <div
+      className="w-[4px] h-[4px] rounded-full animate-bounce"
+      style={{ backgroundColor: color }}
+    />
   </div>
 );
 
@@ -38,7 +48,8 @@ const ProcessingIndicator: React.FC = () => (
 const WaveformVisualization: React.FC<{
   isRecording: boolean;
   voiceDetected: boolean;
-}> = ({ isRecording, voiceDetected }) => (
+  color: string;
+}> = ({ isRecording, voiceDetected, color }) => (
   <>
     {Array.from({ length: NUM_WAVEFORM_BARS }).map((_, index) => (
       <Waveform
@@ -48,6 +59,7 @@ const WaveformVisualization: React.FC<{
         voiceDetected={voiceDetected}
         baseHeight={60}
         silentHeight={20}
+        color={color}
       />
     ))}
   </>
@@ -55,6 +67,9 @@ const WaveformVisualization: React.FC<{
 
 export const FloatingButton: React.FC = () => {
   const { t } = useTranslation();
+  const utils = api.useUtils();
+  const appearanceQuery = api.settings.getWidgetAppearance.useQuery();
+  const appearance = appearanceQuery.data ?? DEFAULT_WIDGET_APPEARANCE;
   const [isHovered, setIsHovered] = useState(false);
   const leaveTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Ref for debounce timeout
   const clickTimeRef = useRef<number | null>(null); // Track when user clicked
@@ -91,6 +106,17 @@ export const FloatingButton: React.FC = () => {
       console.debug("FloatingButton component unmounting");
     };
   }, []);
+
+  // Repaint immediately when the user changes HUD colors in settings.
+  useEffect(() => {
+    const handler = () => {
+      utils.settings.getWidgetAppearance.invalidate();
+    };
+    window.electronAPI?.on?.("widget:appearance-changed", handler);
+    return () => {
+      window.electronAPI?.off?.("widget:appearance-changed", handler);
+    };
+  }, [utils]);
 
   const { recordingStatus, stopRecording, voiceDetected, startRecording } =
     useRecording();
@@ -252,7 +278,7 @@ export const FloatingButton: React.FC = () => {
 
     // Show processing indicator when stopping.
     if (isStopping) {
-      return <ProcessingIndicator />;
+      return <ProcessingIndicator color={appearance.accent} />;
     }
 
     // Show waveform with stop button when in hands-free mode and recording
@@ -263,6 +289,7 @@ export const FloatingButton: React.FC = () => {
             <WaveformVisualization
               isRecording={isRecording}
               voiceDetected={voiceDetected}
+              color={appearance.accent}
             />
           </div>
           <div className="h-full items-center flex mr-2">
@@ -283,6 +310,7 @@ export const FloatingButton: React.FC = () => {
           <WaveformVisualization
             isRecording={isRecording}
             voiceDetected={voiceDetected}
+            color={appearance.accent}
           />
         </button>
 
@@ -308,11 +336,15 @@ export const FloatingButton: React.FC = () => {
       className={`
         transition-all duration-200 ease-in-out
         ${sizeClass}
-        bg-black/70 rounded-[24px] backdrop-blur-md ring-[1px] ring-black/60 shadow-[0px_0px_15px_0px_rgba(0,0,0,0.40)]
+        rounded-[24px] backdrop-blur-md
         before:content-[''] before:absolute before:inset-[1px] before:rounded-[23px] before:outline before:outline-white/15 before:pointer-events-none
         mb-2 cursor-pointer select-none
       `}
-      style={{ pointerEvents: "auto" }}
+      style={{
+        pointerEvents: "auto",
+        background: appearance.background,
+        boxShadow: `0 0 0 1px ${appearance.border}, 0px 0px 15px 0px rgba(0,0,0,0.40)`,
+      }}
     >
       {isWidgetActive && (
         <div className="flex gap-[2px] h-full w-full justify-between">

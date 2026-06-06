@@ -378,6 +378,10 @@
       "about": {
         "title": "Über",
         "description": "Über Amical und Versionsinformationen"
+      },
+      "widgetAppearance": {
+        "title": "Widget-Farben",
+        "description": "Hintergrund-, Akzent- und Rahmenfarben des Aufnahme-Widgets (HUD) anpassen"
       }
     },
     "sidebar": {
@@ -1060,6 +1064,33 @@
           "downloadFailed": "Download fehlgeschlagen: {{message}}",
           "loginSuccess": "Anmeldung erfolgreich!"
         }
+      }
+    },
+    "widgetAppearance": {
+      "title": "Widget-Farben",
+      "description": "Passe die Farben des schwebenden Widgets (HUD) an, das während der Aufnahme angezeigt wird.",
+      "preview": "Vorschau",
+      "presetsTitle": "Voreinstellungen",
+      "presetsDescription": "Wähle aus vorgefertigten Farbschemata.",
+      "customTitle": "Eigene Farben",
+      "customDescription": "Stelle die Farbe jedes Elements mit dem Farbwähler ein.",
+      "colors": {
+        "background": "Hintergrund",
+        "accent": "Akzent (Wellenform)",
+        "border": "Rahmen"
+      },
+      "presets": {
+        "classic": "Klassisch",
+        "midnight": "Mitternacht",
+        "graphite": "Graphit",
+        "sunset": "Sonnenuntergang",
+        "forest": "Wald",
+        "grape": "Traube"
+      },
+      "reset": "Auf Standard zurücksetzen",
+      "toast": {
+        "updateFailed": "Widget-Farben konnten nicht aktualisiert werden",
+        "reset": "Widget-Farben auf Standard zurückgesetzt"
       }
     }
   }

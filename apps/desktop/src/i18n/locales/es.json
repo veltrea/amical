@@ -378,6 +378,10 @@
       "about": {
         "title": "Acerca de",
         "description": "Acerca de Amical e información de versión"
+      },
+      "widgetAppearance": {
+        "title": "Colores del widget",
+        "description": "Personaliza los colores de fondo, acento y borde del widget de grabación (HUD)"
       }
     },
     "sidebar": {
@@ -1038,6 +1042,33 @@
           "downloadFailed": "La descarga falló: {{message}}",
           "loginSuccess": "¡Inicio de sesión exitoso!"
         }
+      }
+    },
+    "widgetAppearance": {
+      "title": "Colores del widget",
+      "description": "Personaliza los colores del widget flotante (HUD) que se muestra durante la grabación.",
+      "preview": "Vista previa",
+      "presetsTitle": "Preajustes",
+      "presetsDescription": "Elige entre combinaciones de colores predefinidas.",
+      "customTitle": "Colores personalizados",
+      "customDescription": "Ajusta el color de cada elemento con el selector de color.",
+      "colors": {
+        "background": "Fondo",
+        "accent": "Acento (forma de onda)",
+        "border": "Borde"
+      },
+      "presets": {
+        "classic": "Clásico",
+        "midnight": "Medianoche",
+        "graphite": "Grafito",
+        "sunset": "Atardecer",
+        "forest": "Bosque",
+        "grape": "Uva"
+      },
+      "reset": "Restablecer valores predeterminados",
+      "toast": {
+        "updateFailed": "No se pudieron actualizar los colores del widget",
+        "reset": "Colores del widget restablecidos"
       }
     }
   }

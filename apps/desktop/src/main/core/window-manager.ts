@@ -393,6 +393,12 @@ export class WindowManager {
       this.widgetWindow.setAlwaysOnTop(true, "floating", 1);
       this.widgetWindow.setVisibleOnAllWorkspaces(true, {
         visibleOnFullScreen: true,
+        // Without this, setVisibleOnAllWorkspaces(true) runs TransformProcessType
+        // and forces the process back to "regular", which silently overrides
+        // app.dock.hide() and keeps the dock icon visible. Skipping it leaves
+        // dock state governed solely by app.dock.show()/hide() (the showInDock
+        // preference). See https://github.com/electron/electron/issues/25368
+        skipTransformProcessType: true,
       });
       this.widgetWindow.setHiddenInMissionControl(true);
     } else if (process.platform === "win32") {
@@ -700,6 +706,17 @@ export class WindowManager {
         mainWindow.webContents.send("navigate", route);
       }
     }
+  }
+
+  /**
+   * Tell the floating widget to re-fetch its appearance and repaint. Called
+   * after the user changes HUD colors in settings so the change is live.
+   */
+  notifyWidgetAppearanceChanged(): void {
+    if (!this.widgetWindow || this.widgetWindow.isDestroyed()) {
+      return;
+    }
+    this.widgetWindow.webContents.send("widget:appearance-changed");
   }
 
   getMainWindow(): BrowserWindow | null {

@@ -16,6 +16,11 @@ import {
   DEFAULT_HISTORY_RETENTION_PERIOD,
   DEFAULT_DELETE_AUDIO_AFTER_TRANSCRIPTION,
 } from "../constants/history-retention";
+import { resolveDockIntent } from "../utils/dock-visibility";
+import {
+  DEFAULT_WIDGET_APPEARANCE,
+  type WidgetAppearance,
+} from "../constants/widget-appearance";
 
 /**
  * Database-backed settings service with typed configuration
@@ -102,6 +107,30 @@ export class SettingsService extends EventEmitter {
 
     // AppManager handles window updates when the theme changes.
     this.emit("theme-changed", { theme: uiSettings.theme });
+  }
+
+  /**
+   * Get the floating widget (HUD) appearance, merged with defaults so callers
+   * always receive a complete color set even on first run.
+   */
+  async getWidgetAppearance(): Promise<WidgetAppearance> {
+    const ui = await getSettingsSection("ui");
+    return { ...DEFAULT_WIDGET_APPEARANCE, ...ui?.widgetAppearance };
+  }
+
+  /**
+   * Update the floating widget (HUD) appearance. Persists into the `ui` section
+   * (which is replaced as a whole) and notifies listeners so the live widget
+   * can repaint immediately.
+   */
+  async setWidgetAppearance(appearance: WidgetAppearance): Promise<void> {
+    const currentUI = await this.getUISettings();
+    await updateSettingsSection("ui", {
+      ...currentUI,
+      widgetAppearance: appearance,
+    });
+
+    this.emit("widget-appearance-changed", appearance);
   }
 
   /**
@@ -433,16 +462,21 @@ export class SettingsService extends EventEmitter {
    */
   syncDockVisibility(): void {
     // Only applicable on macOS where app.dock exists
-    if (!app.dock) {
+    const dock = app.dock;
+    if (!dock) {
       return;
     }
 
     // Get the current preference asynchronously and apply it
     this.getPreferences().then((preferences) => {
-      if (preferences.showInDock) {
-        app.dock?.show();
-      } else {
-        app.dock?.hide();
+      // Guard against redundant show()/hide() calls: repeatedly toggling the
+      // dock can leave a duplicated/stranded icon (electron#21810), so only act
+      // when the dock is not already in the desired state.
+      const intent = resolveDockIntent(preferences.showInDock, dock.isVisible());
+      if (intent === "show") {
+        dock.show();
+      } else if (intent === "hide") {
+        dock.hide();
       }
     });
   }

@@ -251,6 +251,11 @@ export class AppManager {
       await this.windowManager.updateAllWindowThemes();
     });
 
+    // Handle widget (HUD) appearance changes — repaint the live widget
+    settingsService.on("widget-appearance-changed", () => {
+      this.windowManager.notifyWidgetAppearanceChanged();
+    });
+
     logger.main.info("Settings event listeners set up");
   }
 

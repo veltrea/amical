@@ -386,6 +386,10 @@
       "mcpServer": {
         "title": "MCP サーバー",
         "description": "Model Context Protocol 経由で Claude などの外部 LLM から Amical の辞書・履歴を読み書きできます。"
+      },
+      "widgetAppearance": {
+        "title": "ウィジェットの配色",
+        "description": "録音ウィジェット（HUD）の背景・アクセント・枠線の色をカスタマイズ"
       }
     },
     "sidebar": {
@@ -1172,6 +1176,33 @@
         "tokenRegenerated": "トークンを再生成しました",
         "copied": "{{what}} をコピーしました",
         "startFailed": "MCP サーバー起動失敗: {{message}}"
+      }
+    },
+    "widgetAppearance": {
+      "title": "ウィジェットの配色",
+      "description": "録音中に表示されるフローティングウィジェット（HUD）の色をカスタマイズします。",
+      "preview": "プレビュー",
+      "presetsTitle": "プリセット",
+      "presetsDescription": "あらかじめ用意した配色から選べます。",
+      "customTitle": "カスタムカラー",
+      "customDescription": "各要素の色をカラーピッカーで自由に調整できます。",
+      "colors": {
+        "background": "背景",
+        "accent": "アクセント（波形）",
+        "border": "枠線"
+      },
+      "presets": {
+        "classic": "クラシック",
+        "midnight": "ミッドナイト",
+        "graphite": "グラファイト",
+        "sunset": "サンセット",
+        "forest": "フォレスト",
+        "grape": "グレープ"
+      },
+      "reset": "デフォルトに戻す",
+      "toast": {
+        "updateFailed": "配色の更新に失敗しました",
+        "reset": "配色をデフォルトに戻しました"
       }
     }
   }

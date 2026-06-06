@@ -13,6 +13,10 @@ import {
   DELETE_AUDIO_AFTER_TRANSCRIPTION_MODES,
   DEFAULT_DELETE_AUDIO_AFTER_TRANSCRIPTION,
 } from "../../constants/history-retention";
+import {
+  HEX_COLOR_PATTERN,
+  DEFAULT_WIDGET_APPEARANCE,
+} from "../../constants/widget-appearance";
 
 // FormatterConfig schema
 const FormatterConfigSchema = z.object({
@@ -87,6 +91,17 @@ const HistorySettingsSchema = z.object({
 
 const UIThemeSchema = z.object({
   theme: z.enum(["light", "dark", "system"]),
+});
+
+const hexColorSchema = z.string().regex(HEX_COLOR_PATTERN, {
+  message: "Must be a hex color like #RRGGBB or #RRGGBBAA",
+});
+
+const WidgetAppearanceSchema = z.object({
+  preset: z.string().min(1),
+  background: hexColorSchema,
+  accent: hexColorSchema,
+  border: hexColorSchema,
 });
 
 const UILocaleSchema = z.object({
@@ -740,6 +755,38 @@ export const settingsRouter = createRouter({
       }
     },
   ),
+
+  // Get widget (HUD) appearance
+  getWidgetAppearance: procedure.query(async ({ ctx }) => {
+    try {
+      const settingsService = ctx.serviceManager.getService("settingsService");
+      if (!settingsService) {
+        throw new Error("SettingsService not available");
+      }
+      return await settingsService.getWidgetAppearance();
+    } catch (error) {
+      const logger = ctx.serviceManager.getLogger();
+      logger?.main.error("Error getting widget appearance:", error);
+      return DEFAULT_WIDGET_APPEARANCE;
+    }
+  }),
+
+  // Update widget (HUD) appearance
+  updateWidgetAppearance: procedure
+    .input(WidgetAppearanceSchema)
+    .mutation(async ({ input, ctx }) => {
+      const settingsService = ctx.serviceManager.getService("settingsService");
+      if (!settingsService) {
+        throw new Error("SettingsService not available");
+      }
+
+      await settingsService.setWidgetAppearance(input);
+
+      const logger = ctx.serviceManager.getLogger();
+      logger?.main.info("Widget appearance updated", { preset: input.preset });
+
+      return true;
+    }),
 
   // Update UI locale (restart required to take effect everywhere)
   updateUILocale: procedure
