@@ -1135,6 +1135,8 @@
       "description": "Bundled, topic-based vocabulary sets. Turn one on and its words become available to dictation immediately. Turn it off to pause it — your manually added words are never touched.",
       "loading": "Loading dictionaries...",
       "empty": "No dictionaries are bundled with this build.",
+      "searchPlaceholder": "Search by name or tag…",
+      "noResults": "No dictionaries match your search.",
       "filter": {
         "all": "All",
         "general": "General",

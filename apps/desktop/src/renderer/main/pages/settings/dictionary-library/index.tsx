@@ -3,6 +3,7 @@ import { Loader2, Power } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
@@ -25,6 +26,7 @@ export default function DictionaryLibrarySettingsPage() {
   const utils = api.useUtils();
 
   const [filter, setFilter] = useState<FilterCategory>("all");
+  const [search, setSearch] = useState("");
   // Per-card busy state keyed by id, so clicks on two cards show
   // independent spinners.
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -74,10 +76,19 @@ export default function DictionaryLibrarySettingsPage() {
     });
 
   const filtered = useMemo(() => {
-    const all = listQuery.data ?? [];
-    if (filter === "all") return all;
-    return all.filter((d) => d.category === filter);
-  }, [listQuery.data, filter]);
+    let all = listQuery.data ?? [];
+    if (filter !== "all") all = all.filter((d) => d.category === filter);
+    const q = search.trim().toLowerCase();
+    if (q) {
+      all = all.filter(
+        (d) =>
+          localizedName(d, i18n.language).toLowerCase().includes(q) ||
+          d.name.toLowerCase().includes(q) ||
+          d.tags.some((t) => t.toLowerCase().includes(q)),
+      );
+    }
+    return all;
+  }, [listQuery.data, filter, search, i18n.language]);
 
   const handleToggle = (id: string, currentlyActive: boolean) => {
     setBusyId(id);
@@ -97,6 +108,15 @@ export default function DictionaryLibrarySettingsPage() {
         <p className="text-muted-foreground mt-1 text-sm">
           {t("settings.dictionaryLibrary.description")}
         </p>
+      </div>
+
+      <div className="mb-4">
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={t("settings.dictionaryLibrary.searchPlaceholder")}
+          className="max-w-sm"
+        />
       </div>
 
       <div className="flex flex-wrap items-center gap-2 mb-6">
@@ -119,7 +139,11 @@ export default function DictionaryLibrarySettingsPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-muted-foreground text-sm">
-          {t("settings.dictionaryLibrary.empty")}
+          {t(
+            search.trim()
+              ? "settings.dictionaryLibrary.noResults"
+              : "settings.dictionaryLibrary.empty",
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
