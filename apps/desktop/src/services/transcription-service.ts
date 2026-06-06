@@ -499,6 +499,22 @@ export class TranscriptionService {
         session.recordingStartedAt = recordingStartedAt;
       }
 
+      // Fill audio duration (wall-clock recording length) so the RTF telemetry
+      // and the saved transcription's `duration` stop being always-undefined.
+      // Includes silence, which is fine for the saved record; the per-helper
+      // RTF used for degradation detection is measured separately in
+      // Qwen3HelperClient over real inference sample counts.
+      const audioMeta = session.context.sharedData.audioMetadata;
+      if (
+        audioMeta &&
+        audioMeta.duration == null &&
+        session.recordingStartedAt &&
+        session.recordingStoppedAt
+      ) {
+        audioMeta.duration =
+          (session.recordingStoppedAt - session.recordingStartedAt) / 1000;
+      }
+
       const formatterConfig = await this.settingsService.getFormatterConfig();
       const shouldUseCloudFormatting =
         formatterConfig?.enabled &&
@@ -692,6 +708,42 @@ export class TranscriptionService {
         vad_enabled: !!this.vadService,
         languages: session.context.sharedData.userPreferences?.languages ?? [],
         vocabulary_size: session.context.sharedData.vocabulary?.length || 0,
+      });
+
+      // Degradation observation (no behavior change): one line per dictation so
+      // we can see whether the MLX helper's RTF drifts up over its lifetime and
+      // whether the generate-based recycle ever fires (it won't while formatting
+      // is off). Non-qwen3 engines show alive=false / zero counts — filter by
+      // `engine` when reading the logs.
+      const helperHealth = this.qwen3Client.getHealthSnapshot();
+      const mem = process.memoryUsage();
+      logger.transcription.info("STT degradation sample", {
+        sessionId,
+        engine: speechModelId,
+        helperAlive: helperHealth.alive,
+        helperPid: helperHealth.pid,
+        helperUptimeMin:
+          helperHealth.uptimeMs != null
+            ? +(helperHealth.uptimeMs / 60000).toFixed(1)
+            : null,
+        transcribeCount: helperHealth.transcribeCount,
+        generateCountTotal: helperHealth.generateCountTotal,
+        lastTranscribeRtf:
+          helperHealth.lastTranscribeRtf != null
+            ? +helperHealth.lastTranscribeRtf.toFixed(3)
+            : null,
+        avgTranscribeRtf:
+          helperHealth.avgTranscribeRtf != null
+            ? +helperHealth.avgTranscribeRtf.toFixed(3)
+            : null,
+        recordingDurationSec:
+          recordingDuration != null
+            ? +(recordingDuration / 1000).toFixed(1)
+            : null,
+        processingDurationMs:
+          processingDuration != null ? Math.round(processingDuration) : null,
+        mainRssMB: +(mem.rss / 1048576).toFixed(1),
+        mainHeapUsedMB: +(mem.heapUsed / 1048576).toFixed(1),
       });
 
       this.streamingSessions.delete(sessionId);
@@ -1390,14 +1442,11 @@ export class TranscriptionService {
         wasSuccessful,
       });
     } catch (error) {
-      logger.transcription.warn(
-        "Failed to delete audio after transcription",
-        {
-          transcriptionId,
-          audioFilePath,
-          error,
-        },
-      );
+      logger.transcription.warn("Failed to delete audio after transcription", {
+        transcriptionId,
+        audioFilePath,
+        error,
+      });
     }
   }
 

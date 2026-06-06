@@ -59,6 +59,15 @@ export class Qwen3HelperClient {
   // respawns) — this just gets ahead of the slow degradation.
   private llmGenerateCount = 0;
   private static readonly RECYCLE_AFTER_GENERATES = 100;
+  // --- Health metrics for degradation observation (read-only; no behavior
+  // change). Reset on each (re)spawn so they describe the CURRENT process's
+  // lifetime — that lifetime is exactly what we suspect degrades. ---
+  private spawnedAt: number | null = null;
+  private transcribeCount = 0;
+  private generateCountTotal = 0;
+  private totalTranscribeWallMs = 0;
+  private totalTranscribeSamples = 0;
+  private lastTranscribeRtf: number | null = null;
   private logger = createScopedLogger("qwen3-helper");
   private helperPath: string;
   // Set during a prepare() call to surface the helper's "[DL] NN% status" lines.
@@ -80,8 +89,28 @@ export class Qwen3HelperClient {
     // explanation. Keep the two helper resolvers in sync.
     const appPath = app.getAppPath();
     const candidates = [
-      path.join(appPath, "..", "..", "packages", "native-helpers", "stt-helper", "bin", binaryName),
-      path.join(appPath, "..", "..", "..", "..", "packages", "native-helpers", "stt-helper", "bin", binaryName),
+      path.join(
+        appPath,
+        "..",
+        "..",
+        "packages",
+        "native-helpers",
+        "stt-helper",
+        "bin",
+        binaryName,
+      ),
+      path.join(
+        appPath,
+        "..",
+        "..",
+        "..",
+        "..",
+        "packages",
+        "native-helpers",
+        "stt-helper",
+        "bin",
+        binaryName,
+      ),
     ];
     return candidates.find((p) => fs.existsSync(p)) ?? candidates[0];
   }
@@ -151,6 +180,14 @@ export class Qwen3HelperClient {
     this.logger.info("Spawning stt-helper", { helperPath: this.helperPath });
     this.proc = spawn(this.helperPath, [], { stdio: ["pipe", "pipe", "pipe"] });
 
+    // Reset health metrics: they describe THIS process instance's lifetime.
+    this.spawnedAt = performance.now();
+    this.transcribeCount = 0;
+    this.generateCountTotal = 0;
+    this.totalTranscribeWallMs = 0;
+    this.totalTranscribeSamples = 0;
+    this.lastTranscribeRtf = null;
+
     this.proc.stdout.pipe(split2()).on("data", (line: string) => {
       if (!line.trim()) return;
       let message: RpcResponse;
@@ -198,6 +235,7 @@ export class Qwen3HelperClient {
       this.logger.error("stt-helper process error", { error: err });
       this.rejectAll(err);
       this.proc = null;
+      this.spawnedAt = null;
     });
 
     this.proc.on("close", (code, signal) => {
@@ -206,6 +244,7 @@ export class Qwen3HelperClient {
         new Error(`stt-helper exited (code: ${code}, signal: ${signal})`),
       );
       this.proc = null;
+      this.spawnedAt = null;
     });
   }
 
@@ -232,7 +271,9 @@ export class Qwen3HelperClient {
     return new Promise<RpcResultPayload>((resolve, reject) => {
       const timeoutHandle = setTimeout(() => {
         this.pending.delete(id);
-        reject(new Error(`stt-helper "${method}" timed out after ${timeoutMs}ms`));
+        reject(
+          new Error(`stt-helper "${method}" timed out after ${timeoutMs}ms`),
+        );
       }, timeoutMs);
 
       this.pending.set(id, { method, resolve, reject, timeoutHandle });
@@ -276,10 +317,16 @@ export class Qwen3HelperClient {
       pcm.byteOffset,
       pcm.byteLength,
     ).toString("base64");
+    const startedAt = performance.now();
     const result = await this.call(
       "transcribe",
       { pcmBase64, sampleRate, language, modelId },
       TRANSCRIBE_TIMEOUT_MS,
+    );
+    this.recordTranscribeMetrics(
+      performance.now() - startedAt,
+      pcm.length,
+      sampleRate,
     );
     return result.text ?? "";
   }
@@ -342,7 +389,54 @@ export class Qwen3HelperClient {
       GENERATE_TIMEOUT_MS,
     );
     this.llmGenerateCount++;
+    this.generateCountTotal++;
     return result.text ?? "";
+  }
+
+  private recordTranscribeMetrics(
+    wallMs: number,
+    samples: number,
+    sampleRate: number,
+  ): void {
+    this.transcribeCount++;
+    this.totalTranscribeWallMs += wallMs;
+    this.totalTranscribeSamples += samples;
+    const audioMs = sampleRate > 0 ? (samples / sampleRate) * 1000 : 0;
+    this.lastTranscribeRtf = audioMs > 0 ? wallMs / audioMs : null;
+  }
+
+  /** Child pid of the running helper, or undefined when not spawned. */
+  getPid(): number | undefined {
+    return this.proc?.pid;
+  }
+
+  /**
+   * Read-only health snapshot for degradation observation. Never spawns or
+   * mutates. RTF = wall-clock ms / audio ms (>1 = slower than real time); a
+   * single helper process's RTF drifting up over its lifetime is the signal we
+   * are looking for. avgTranscribeRtf assumes 16kHz (the only rate used).
+   */
+  getHealthSnapshot(): {
+    alive: boolean;
+    pid: number | undefined;
+    uptimeMs: number | null;
+    transcribeCount: number;
+    generateCountTotal: number;
+    lastTranscribeRtf: number | null;
+    avgTranscribeRtf: number | null;
+  } {
+    const audioMs = (this.totalTranscribeSamples / 16000) * 1000;
+    return {
+      alive: this.proc !== null,
+      pid: this.proc?.pid,
+      uptimeMs:
+        this.spawnedAt !== null ? performance.now() - this.spawnedAt : null,
+      transcribeCount: this.transcribeCount,
+      generateCountTotal: this.generateCountTotal,
+      lastTranscribeRtf: this.lastTranscribeRtf,
+      avgTranscribeRtf:
+        audioMs > 0 ? this.totalTranscribeWallMs / audioMs : null,
+    };
   }
 
   dispose(): void {
