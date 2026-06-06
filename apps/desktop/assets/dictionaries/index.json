@@ -324,6 +324,54 @@
       "tags": ["guitar", "technique", "music"],
       "entryCount": 42,
       "file": "guitar-technique.json"
+    },
+    {
+      "id": "synths",
+      "name": "Synthesizers",
+      "name_ja": "シンセサイザー機種",
+      "description": "Synthesizer and drum-machine models (Minimoog, Prophet, Jupiter-8, TB-303, DX7). Models in English.",
+      "description_ja": "シンセサイザー・リズムマシンの機種 (Minimoog, Prophet, Jupiter-8, TB-303, DX7 等)。機種名は英語表記。",
+      "category": "creator",
+      "language": "ja",
+      "tags": ["synth", "music", "gear"],
+      "entryCount": 57,
+      "file": "synths.json"
+    },
+    {
+      "id": "synth-editing",
+      "name": "Synth Sound Design",
+      "name_ja": "シンセ音色エディット",
+      "description": "Synth sound-design terms in katakana (oscillator, filter, cutoff, resonance, ADSR, LFO).",
+      "description_ja": "シンセ音色エディットの用語 (オシレーター, フィルター, カットオフ, レゾナンス, ADSR, LFO 等)。カタカナ表記。",
+      "category": "creator",
+      "language": "ja",
+      "tags": ["synth", "sound-design", "music"],
+      "entryCount": 46,
+      "file": "synth-editing.json"
+    },
+    {
+      "id": "samplers-dj-gear",
+      "name": "Samplers & DJ Gear",
+      "name_ja": "サンプラー・DJ機材",
+      "description": "Samplers and DJ gear (Technics, Pioneer DJ, Serato, Akai MPC) plus consumables.",
+      "description_ja": "サンプラー・DJ機材 (Technics, Pioneer DJ, Serato, Akai MPC 等)と消耗品。製品名は英語表記。",
+      "category": "creator",
+      "language": "ja",
+      "tags": ["dj", "sampler", "gear"],
+      "entryCount": 38,
+      "file": "samplers-dj-gear.json"
+    },
+    {
+      "id": "dj",
+      "name": "DJ Terms",
+      "name_ja": "DJ用語",
+      "description": "DJ and turntablism terms in katakana (scratch, beatmatching, breakbeats).",
+      "description_ja": "DJ・ターンテーブリズムの用語 (スクラッチ, ビートマッチング, ブレイクビーツ 等)。カタカナ表記。",
+      "category": "creator",
+      "language": "ja",
+      "tags": ["dj", "turntablism", "music"],
+      "entryCount": 29,
+      "file": "dj.json"
     }
   ]
 }
