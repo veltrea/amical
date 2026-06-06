@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "exportedAt": "2026-06-06T00:00:00.000Z",
+  "entries": [
+    { "word": "三笘薫", "replacementWord": null, "isReplacement": false },
+    { "word": "みとまかおる", "replacementWord": "三笘薫", "isReplacement": true },
+    { "word": "久保建英", "replacementWord": null, "isReplacement": false },
+    { "word": "くぼたけふさ", "replacementWord": "久保建英", "isReplacement": true },
+    { "word": "遠藤航", "replacementWord": null, "isReplacement": false },
+    { "word": "えんどうわたる", "replacementWord": "遠藤航", "isReplacement": true },
+    { "word": "南野拓実", "replacementWord": null, "isReplacement": false },
+    { "word": "みなみのたくみ", "replacementWord": "南野拓実", "isReplacement": true },
+    { "word": "冨安健洋", "replacementWord": null, "isReplacement": false },
+    { "word": "とみやすたけひろ", "replacementWord": "冨安健洋", "isReplacement": true },
+    { "word": "鎌田大地", "replacementWord": null, "isReplacement": false },
+    { "word": "かまだだいち", "replacementWord": "鎌田大地", "isReplacement": true },
+    { "word": "本田圭佑", "replacementWord": null, "isReplacement": false },
+    { "word": "ほんだけいすけ", "replacementWord": "本田圭佑", "isReplacement": true },
+    { "word": "香川真司", "replacementWord": null, "isReplacement": false },
+    { "word": "かがわしんじ", "replacementWord": "香川真司", "isReplacement": true },
+    { "word": "長友佑都", "replacementWord": null, "isReplacement": false },
+    { "word": "ながともゆうと", "replacementWord": "長友佑都", "isReplacement": true },
+    { "word": "中田英寿", "replacementWord": null, "isReplacement": false },
+    { "word": "なかたひでとし", "replacementWord": "中田英寿", "isReplacement": true },
+    { "word": "吉田麻也", "replacementWord": null, "isReplacement": false },
+    { "word": "よしだまや", "replacementWord": "吉田麻也", "isReplacement": true },
+    { "word": "堂安律", "replacementWord": null, "isReplacement": false },
+    { "word": "どうあんりつ", "replacementWord": "堂安律", "isReplacement": true },
+    { "word": "伊東純也", "replacementWord": null, "isReplacement": false },
+    { "word": "岡崎慎司", "replacementWord": null, "isReplacement": false }
+  ]
+}

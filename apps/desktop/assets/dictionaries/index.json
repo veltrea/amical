@@ -480,6 +480,54 @@
       "tags": ["youtube", "creator", "influencer"],
       "entryCount": 16,
       "file": "youtubers.json"
+    },
+    {
+      "id": "baseball-jp",
+      "name": "Baseball (Japan)",
+      "name_ja": "野球選手（日本）",
+      "description": "Japanese baseball players (Ohtani, Ichiro, Darvish, Matsui).",
+      "description_ja": "日本人野球選手 (大谷翔平, イチロー, ダルビッシュ有, 松井秀喜 等)。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["baseball", "sports", "japan"],
+      "entryCount": 30,
+      "file": "baseball-jp.json"
+    },
+    {
+      "id": "baseball-us",
+      "name": "Baseball (MLB)",
+      "name_ja": "野球選手（MLB）",
+      "description": "MLB players (Babe Ruth, Mike Trout, Derek Jeter, Barry Bonds).",
+      "description_ja": "MLB選手 (Babe Ruth, Mike Trout, Derek Jeter 等)。英語表記。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["baseball", "sports", "mlb"],
+      "entryCount": 32,
+      "file": "baseball-us.json"
+    },
+    {
+      "id": "soccer-jp",
+      "name": "Soccer (Japan)",
+      "name_ja": "サッカー選手（日本）",
+      "description": "Japanese soccer players (Mitoma, Kubo, Endo, Honda).",
+      "description_ja": "日本人サッカー選手 (三笘薫, 久保建英, 遠藤航, 本田圭佑 等)。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["soccer", "sports", "japan"],
+      "entryCount": 26,
+      "file": "soccer-jp.json"
+    },
+    {
+      "id": "soccer-world",
+      "name": "Soccer (World)",
+      "name_ja": "サッカー選手（海外）",
+      "description": "World soccer players (Messi, Ronaldo, Mbappe, Haaland).",
+      "description_ja": "海外サッカー選手 (Messi, Ronaldo, Mbappe, Haaland 等)。英語表記。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["soccer", "sports", "world"],
+      "entryCount": 38,
+      "file": "soccer-world.json"
     }
   ]
 }
