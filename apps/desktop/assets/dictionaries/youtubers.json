@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "exportedAt": "2026-06-06T00:00:00.000Z",
+  "entries": [
+    { "word": "HIKAKIN", "replacementWord": null, "isReplacement": false },
+    { "word": "ヒカキン", "replacementWord": "HIKAKIN", "isReplacement": true },
+    { "word": "はじめしゃちょー", "replacementWord": null, "isReplacement": false },
+    { "word": "東海オンエア", "replacementWord": null, "isReplacement": false },
+    { "word": "フィッシャーズ", "replacementWord": null, "isReplacement": false },
+    { "word": "水溜りボンド", "replacementWord": null, "isReplacement": false },
+    { "word": "コムドット", "replacementWord": null, "isReplacement": false },
+    { "word": "スカイピース", "replacementWord": null, "isReplacement": false },
+    { "word": "中田敦彦", "replacementWord": null, "isReplacement": false },
+    { "word": "なかたあつひこ", "replacementWord": "中田敦彦", "isReplacement": true },
+    { "word": "MrBeast", "replacementWord": null, "isReplacement": false },
+    { "word": "ミスタービースト", "replacementWord": "MrBeast", "isReplacement": true },
+    { "word": "PewDiePie", "replacementWord": null, "isReplacement": false },
+    { "word": "ピューディパイ", "replacementWord": "PewDiePie", "isReplacement": true },
+    { "word": "Mark Rober", "replacementWord": null, "isReplacement": false },
+    { "word": "Markiplier", "replacementWord": null, "isReplacement": false }
+  ]
+}

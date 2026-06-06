@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "exportedAt": "2026-06-06T00:00:00.000Z",
+  "entries": [
+    { "word": "半沢直樹", "replacementWord": null, "isReplacement": false },
+    { "word": "はんざわなおき", "replacementWord": "半沢直樹", "isReplacement": true },
+    { "word": "古畑任三郎", "replacementWord": null, "isReplacement": false },
+    { "word": "ふるはたにんざぶろう", "replacementWord": "古畑任三郎", "isReplacement": true },
+    { "word": "踊る大捜査線", "replacementWord": null, "isReplacement": false },
+    { "word": "白い巨塔", "replacementWord": null, "isReplacement": false },
+    { "word": "家政婦のミタ", "replacementWord": null, "isReplacement": false },
+    { "word": "あまちゃん", "replacementWord": null, "isReplacement": false },
+    { "word": "逃げ恥", "replacementWord": null, "isReplacement": false },
+    { "word": "真田丸", "replacementWord": null, "isReplacement": false },
+    { "word": "孤独のグルメ", "replacementWord": null, "isReplacement": false },
+    { "word": "深夜食堂", "replacementWord": null, "isReplacement": false },
+    { "word": "相棒", "replacementWord": null, "isReplacement": false },
+    { "word": "ドクターX", "replacementWord": null, "isReplacement": false },
+    { "word": "アンナチュラル", "replacementWord": null, "isReplacement": false },
+    { "word": "カルテット", "replacementWord": null, "isReplacement": false },
+    { "word": "VIVANT", "replacementWord": null, "isReplacement": false },
+    { "word": "大豆田とわ子", "replacementWord": null, "isReplacement": false },
+    { "word": "半分青い", "replacementWord": null, "isReplacement": false }
+  ]
+}

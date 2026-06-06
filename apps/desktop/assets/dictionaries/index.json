@@ -432,6 +432,54 @@
       "tags": ["whisky", "drink", "scotch"],
       "entryCount": 42,
       "file": "whisky.json"
+    },
+    {
+      "id": "movie-people",
+      "name": "Film People",
+      "name_ja": "映画人",
+      "description": "Film directors, actors and studios (Spielberg, Nolan, DiCaprio, Kurosawa, Toho).",
+      "description_ja": "映画監督・俳優・配給 (Spielberg, Nolan, DiCaprio, 黒澤明, 東宝 等)。海外は英語、日本は日本語表記。",
+      "category": "creator",
+      "language": "ja",
+      "tags": ["movie", "director", "actor"],
+      "entryCount": 67,
+      "file": "movie-people.json"
+    },
+    {
+      "id": "movie-titles",
+      "name": "Movie Titles",
+      "name_ja": "映画タイトル",
+      "description": "Movie titles in katakana/Japanese (Godfather, Matrix, Spirited Away).",
+      "description_ja": "映画タイトル (ゴッドファーザー, マトリックス, 千と千尋の神隠し 等)。",
+      "category": "creator",
+      "language": "ja",
+      "tags": ["movie", "title", "film"],
+      "entryCount": 25,
+      "file": "movie-titles.json"
+    },
+    {
+      "id": "jp-tv-drama",
+      "name": "Japanese TV Dramas",
+      "name_ja": "日本のテレビドラマ",
+      "description": "Japanese TV drama titles (Hanzawa Naoki, Hero, Kodoku no Gurume).",
+      "description_ja": "日本のテレビドラマ (半沢直樹, HERO, 孤独のグルメ 等)。",
+      "category": "creator",
+      "language": "ja",
+      "tags": ["drama", "tv", "japan"],
+      "entryCount": 19,
+      "file": "jp-tv-drama.json"
+    },
+    {
+      "id": "youtubers",
+      "name": "YouTubers",
+      "name_ja": "YouTuber",
+      "description": "YouTubers, Japanese and global (HIKAKIN, MrBeast, PewDiePie).",
+      "description_ja": "YouTuber、日本・海外 (HIKAKIN, MrBeast, PewDiePie 等)。",
+      "category": "creator",
+      "language": "ja",
+      "tags": ["youtube", "creator", "influencer"],
+      "entryCount": 16,
+      "file": "youtubers.json"
     }
   ]
 }
