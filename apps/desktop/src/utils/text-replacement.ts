@@ -34,10 +34,27 @@ export function applyTextReplacements(
     // interpreted as backreferences by String.prototype.replace.
     const literalReplacement = replacement.replace(/\$/g, "$$$$");
     const hasCJK = cjkPattern.test(word);
+    // Katakana run, incl. the prolonged-sound mark ー (U+30FC, Script=Common)
+    // and small kana, which are all part of katakana words.
+    const katakanaClass = "\\p{Script=Katakana}\\u30FC";
+    const isAllKatakana = new RegExp(`^[${katakanaClass}]+$`, "u").test(word);
 
-    if (hasCJK) {
-      // CJK: Simple case-insensitive replacement (no word boundaries)
-      // Japanese/Chinese/Korean text has no spaces between words
+    if (isAllKatakana) {
+      // All-katakana trigger: replace only when it stands as its own katakana
+      // run, not glued inside a longer katakana word. CJK has no spaces, so we
+      // use same-script adjacency as the word boundary. Without this, a short
+      // trigger eats a substring of an unrelated word that is not itself a
+      // dictionary entry (so longest-first sorting can't shield it): e.g.
+      // "プル"→pull breaking アップル/シンプル, "メイン"→main breaking ドメイン,
+      // "マージ"→merge breaking マージン, "ヘッド"→HEAD breaking ヘッドホン.
+      const regex = new RegExp(
+        `(?<![${katakanaClass}])${escapedWord}(?![${katakanaClass}])`,
+        "giu",
+      );
+      result = result.replace(regex, literalReplacement);
+    } else if (hasCJK) {
+      // Other CJK (kanji / hiragana / mixed): simple substring replacement.
+      // Japanese/Chinese/Korean text has no spaces between words.
       const regex = new RegExp(escapedWord, "giu");
       result = result.replace(regex, literalReplacement);
     } else {

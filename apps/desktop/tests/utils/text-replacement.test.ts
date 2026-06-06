@@ -194,6 +194,55 @@ describe("applyTextReplacements", () => {
     });
   });
 
+  describe("Katakana run boundary (CJK has no spaces)", () => {
+    it("does not fire a short katakana trigger glued inside a longer katakana word", () => {
+      // The container words (アップル/ドメイン/マージン/…) are not dictionary
+      // entries, so longest-first sorting cannot shield them — only the
+      // katakana-run boundary does. This pins the "アップル"→"アッpull" fix.
+      expect(
+        applyTextReplacements("アップル", new Map([["プル", "pull"]])),
+      ).toBe("アップル");
+      expect(
+        applyTextReplacements("シンプル", new Map([["プル", "pull"]])),
+      ).toBe("シンプル");
+      expect(
+        applyTextReplacements("ドメイン", new Map([["メイン", "main"]])),
+      ).toBe("ドメイン");
+      expect(
+        applyTextReplacements("マージン", new Map([["マージ", "merge"]])),
+      ).toBe("マージン");
+      expect(
+        applyTextReplacements("ヘッドホン", new Map([["ヘッド", "HEAD"]])),
+      ).toBe("ヘッドホン");
+    });
+
+    it("still fires a katakana trigger that stands as its own run", () => {
+      expect(applyTextReplacements("プル", new Map([["プル", "pull"]]))).toBe(
+        "pull",
+      );
+      // bounded by hiragana / kanji / string edges → fires
+      expect(
+        applyTextReplacements("プルする", new Map([["プル", "pull"]])),
+      ).toBe("pullする");
+      expect(
+        applyTextReplacements("プル機能", new Map([["プル", "pull"]])),
+      ).toBe("pull機能");
+      expect(
+        applyTextReplacements("メイン", new Map([["メイン", "main"]])),
+      ).toBe("main");
+    });
+
+    it("longest-first consumes the longer katakana entry, then the short one fires standalone", () => {
+      const replacements = new Map([
+        ["アップルミュージック", "Apple Music"],
+        ["プル", "pull"],
+      ]);
+      expect(
+        applyTextReplacements("アップルミュージックとプル", replacements),
+      ).toBe("Apple Musicとpull");
+    });
+  });
+
   describe("Literal `$` in replacement (no backreference interpretation)", () => {
     it("treats $& as literal, not the matched substring", () => {
       const replacements = new Map([["sig", "Sent via $& - signed"]]);
