@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "exportedAt": "2026-06-06T00:00:00.000Z",
+  "entries": [
+    { "word": "武尊", "replacementWord": null, "isReplacement": false },
+    { "word": "那須川天心", "replacementWord": null, "isReplacement": false },
+    { "word": "なすかわてんしん", "replacementWord": "那須川天心", "isReplacement": true },
+    { "word": "魔裟斗", "replacementWord": null, "isReplacement": false },
+    { "word": "まさと", "replacementWord": "魔裟斗", "isReplacement": true },
+    { "word": "城戸康裕", "replacementWord": null, "isReplacement": false },
+    { "word": "きどやすひろ", "replacementWord": "城戸康裕", "isReplacement": true },
+    { "word": "山崎秀晃", "replacementWord": null, "isReplacement": false },
+    { "word": "Buakaw", "replacementWord": null, "isReplacement": false },
+    { "word": "ブアカーオ", "replacementWord": "Buakaw", "isReplacement": true },
+    { "word": "Ernesto Hoost", "replacementWord": null, "isReplacement": false },
+    { "word": "アーネストホースト", "replacementWord": "Ernesto Hoost", "isReplacement": true },
+    { "word": "Peter Aerts", "replacementWord": null, "isReplacement": false },
+    { "word": "ピーターアーツ", "replacementWord": "Peter Aerts", "isReplacement": true },
+    { "word": "Giorgio Petrosyan", "replacementWord": null, "isReplacement": false },
+    { "word": "ジョルジオペトロシアン", "replacementWord": "Giorgio Petrosyan", "isReplacement": true },
+    { "word": "Semmy Schilt", "replacementWord": null, "isReplacement": false },
+    { "word": "セームシュルト", "replacementWord": "Semmy Schilt", "isReplacement": true },
+    { "word": "Badr Hari", "replacementWord": null, "isReplacement": false },
+    { "word": "バダルハリ", "replacementWord": "Badr Hari", "isReplacement": true },
+    { "word": "K-1", "replacementWord": null, "isReplacement": false },
+    { "word": "RISE", "replacementWord": null, "isReplacement": false },
+    { "word": "Glory", "replacementWord": null, "isReplacement": false }
+  ]
+}

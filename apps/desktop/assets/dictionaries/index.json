@@ -636,6 +636,54 @@
       "tags": ["radio", "personality", "japan"],
       "entryCount": 18,
       "file": "radio-personalities.json"
+    },
+    {
+      "id": "mma-ufc",
+      "name": "MMA (UFC)",
+      "name_ja": "MMA・UFC（海外）",
+      "description": "UFC/MMA fighters (McGregor, Khabib, Jon Jones, Adesanya).",
+      "description_ja": "UFC・海外MMA選手 (McGregor, Khabib, Jon Jones 等)。英語表記。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["mma", "ufc", "sports"],
+      "entryCount": 34,
+      "file": "mma-ufc.json"
+    },
+    {
+      "id": "mma-jp",
+      "name": "MMA (Japan)",
+      "name_ja": "MMA（日本）",
+      "description": "Japanese MMA fighters (Asakura, Horiguchi, Aoki).",
+      "description_ja": "日本人MMA選手 (朝倉未来, 堀口恭司, 青木真也 等)。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["mma", "sports", "japan"],
+      "entryCount": 17,
+      "file": "mma-jp.json"
+    },
+    {
+      "id": "kickboxing",
+      "name": "Kickboxing",
+      "name_ja": "キックボクシング",
+      "description": "Kickboxers, Japanese and world (Takeru, Tenshin, Buakaw, Hoost).",
+      "description_ja": "キックボクシング選手 (武尊, 那須川天心, Buakaw 等)。日本は日本語、海外は英語表記。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["kickboxing", "martial-arts", "sports"],
+      "entryCount": 23,
+      "file": "kickboxing.json"
+    },
+    {
+      "id": "boxing",
+      "name": "Boxing",
+      "name_ja": "ボクシング",
+      "description": "Boxers, Japanese and world (Ali, Tyson, Mayweather, Inoue Naoya).",
+      "description_ja": "ボクシング選手 (Ali, Tyson, 井上尚弥 等)。日本は日本語、海外は英語表記。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["boxing", "sports", "martial-arts"],
+      "entryCount": 31,
+      "file": "boxing.json"
     }
   ]
 }

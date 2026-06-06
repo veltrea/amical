@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "exportedAt": "2026-06-06T00:00:00.000Z",
+  "entries": [
+    { "word": "朝倉未来", "replacementWord": null, "isReplacement": false },
+    { "word": "あさくらみくる", "replacementWord": "朝倉未来", "isReplacement": true },
+    { "word": "朝倉海", "replacementWord": null, "isReplacement": false },
+    { "word": "あさくらかい", "replacementWord": "朝倉海", "isReplacement": true },
+    { "word": "堀口恭司", "replacementWord": null, "isReplacement": false },
+    { "word": "ほりぐちきょうじ", "replacementWord": "堀口恭司", "isReplacement": true },
+    { "word": "青木真也", "replacementWord": null, "isReplacement": false },
+    { "word": "あおきしんや", "replacementWord": "青木真也", "isReplacement": true },
+    { "word": "五味隆典", "replacementWord": null, "isReplacement": false },
+    { "word": "ごみたかのり", "replacementWord": "五味隆典", "isReplacement": true },
+    { "word": "桜庭和志", "replacementWord": null, "isReplacement": false },
+    { "word": "さくらばかずし", "replacementWord": "桜庭和志", "isReplacement": true },
+    { "word": "山本KID", "replacementWord": null, "isReplacement": false },
+    { "word": "平本蓮", "replacementWord": null, "isReplacement": false },
+    { "word": "ひらもとれん", "replacementWord": "平本蓮", "isReplacement": true },
+    { "word": "斎藤裕", "replacementWord": null, "isReplacement": false },
+    { "word": "牛久絢太郎", "replacementWord": null, "isReplacement": false }
+  ]
+}
