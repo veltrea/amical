@@ -528,6 +528,78 @@
       "tags": ["soccer", "sports", "world"],
       "entryCount": 38,
       "file": "soccer-world.json"
+    },
+    {
+      "id": "oop-terms",
+      "name": "OOP Concepts",
+      "name_ja": "オブジェクト指向用語",
+      "description": "OOP concepts and design patterns (SOLID, dependency injection, singleton).",
+      "description_ja": "オブジェクト指向の概念・デザインパターン (SOLID, 依存性注入, シングルトン 等)。Programming 辞書と重複しない専門用語。",
+      "category": "developer",
+      "language": "ja",
+      "tags": ["oop", "programming", "design"],
+      "entryCount": 39,
+      "file": "oop-terms.json"
+    },
+    {
+      "id": "python-keywords",
+      "name": "Python Keywords",
+      "name_ja": "Python 予約語",
+      "description": "Python keywords and builtins (def, lambda, yield, async, decorator).",
+      "description_ja": "Python の予約語・組み込み (def, lambda, yield, async, decorator 等)。",
+      "category": "developer",
+      "language": "ja",
+      "tags": ["python", "keywords", "programming"],
+      "entryCount": 38,
+      "file": "python-keywords.json"
+    },
+    {
+      "id": "rust-keywords",
+      "name": "Rust Keywords",
+      "name_ja": "Rust 予約語",
+      "description": "Rust keywords (fn, impl, trait, match, unsafe, ownership, lifetime).",
+      "description_ja": "Rust の予約語 (fn, impl, trait, match, ownership, lifetime 等)。",
+      "category": "developer",
+      "language": "ja",
+      "tags": ["rust", "keywords", "programming"],
+      "entryCount": 34,
+      "file": "rust-keywords.json"
+    },
+    {
+      "id": "go-keywords",
+      "name": "Go Keywords",
+      "name_ja": "Go 予約語",
+      "description": "Go keywords (func, chan, defer, goroutine, select, interface).",
+      "description_ja": "Go の予約語 (func, chan, defer, goroutine, select 等)。",
+      "category": "developer",
+      "language": "ja",
+      "tags": ["go", "keywords", "programming"],
+      "entryCount": 25,
+      "file": "go-keywords.json"
+    },
+    {
+      "id": "c-keywords",
+      "name": "C Keywords",
+      "name_ja": "C 予約語",
+      "description": "C keywords (int, void, struct, typedef, malloc, sizeof).",
+      "description_ja": "C の予約語 (int, void, struct, typedef, malloc 等)。",
+      "category": "developer",
+      "language": "ja",
+      "tags": ["c", "keywords", "programming"],
+      "entryCount": 25,
+      "file": "c-keywords.json"
+    },
+    {
+      "id": "cpp-keywords",
+      "name": "C++ Keywords",
+      "name_ja": "C++ 予約語",
+      "description": "C++ keywords (template, namespace, virtual, constexpr, nullptr).",
+      "description_ja": "C++ の予約語 (template, namespace, virtual, constexpr 等)。",
+      "category": "developer",
+      "language": "ja",
+      "tags": ["cpp", "keywords", "programming"],
+      "entryCount": 29,
+      "file": "cpp-keywords.json"
     }
   ]
 }

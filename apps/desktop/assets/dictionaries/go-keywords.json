@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "exportedAt": "2026-06-06T00:00:00.000Z",
+  "entries": [
+    { "word": "func", "replacementWord": null, "isReplacement": false },
+    { "word": "package", "replacementWord": null, "isReplacement": false },
+    { "word": "var", "replacementWord": null, "isReplacement": false },
+    { "word": "chan", "replacementWord": null, "isReplacement": false },
+    { "word": "defer", "replacementWord": null, "isReplacement": false },
+    { "word": "select", "replacementWord": null, "isReplacement": false },
+    { "word": "fallthrough", "replacementWord": null, "isReplacement": false },
+    { "word": "range", "replacementWord": null, "isReplacement": false },
+    { "word": "nil", "replacementWord": null, "isReplacement": false },
+    { "word": "make", "replacementWord": null, "isReplacement": false },
+    { "word": "append", "replacementWord": null, "isReplacement": false },
+    { "word": "cap", "replacementWord": null, "isReplacement": false },
+    { "word": "panic", "replacementWord": null, "isReplacement": false },
+    { "word": "recover", "replacementWord": null, "isReplacement": false },
+    { "word": "goroutine", "replacementWord": null, "isReplacement": false },
+    { "word": "ゴルーチン", "replacementWord": "goroutine", "isReplacement": true },
+    { "word": "channel", "replacementWord": null, "isReplacement": false },
+    { "word": "slice", "replacementWord": null, "isReplacement": false },
+    { "word": "スライス", "replacementWord": "slice", "isReplacement": true },
+    { "word": "interface", "replacementWord": null, "isReplacement": false },
+    { "word": "struct", "replacementWord": null, "isReplacement": false },
+    { "word": "map", "replacementWord": null, "isReplacement": false },
+    { "word": "gofmt", "replacementWord": null, "isReplacement": false },
+    { "word": "GOPATH", "replacementWord": null, "isReplacement": false },
+    { "word": "go mod", "replacementWord": null, "isReplacement": false }
+  ]
+}

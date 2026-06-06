@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "exportedAt": "2026-06-06T00:00:00.000Z",
+  "entries": [
+    { "word": "int", "replacementWord": null, "isReplacement": false },
+    { "word": "char", "replacementWord": null, "isReplacement": false },
+    { "word": "void", "replacementWord": null, "isReplacement": false },
+    { "word": "unsigned", "replacementWord": null, "isReplacement": false },
+    { "word": "signed", "replacementWord": null, "isReplacement": false },
+    { "word": "struct", "replacementWord": null, "isReplacement": false },
+    { "word": "union", "replacementWord": null, "isReplacement": false },
+    { "word": "enum", "replacementWord": null, "isReplacement": false },
+    { "word": "typedef", "replacementWord": null, "isReplacement": false },
+    { "word": "static", "replacementWord": null, "isReplacement": false },
+    { "word": "extern", "replacementWord": null, "isReplacement": false },
+    { "word": "register", "replacementWord": null, "isReplacement": false },
+    { "word": "volatile", "replacementWord": null, "isReplacement": false },
+    { "word": "sizeof", "replacementWord": null, "isReplacement": false },
+    { "word": "goto", "replacementWord": null, "isReplacement": false },
+    { "word": "NULL", "replacementWord": null, "isReplacement": false },
+    { "word": "malloc", "replacementWord": null, "isReplacement": false },
+    { "word": "free", "replacementWord": null, "isReplacement": false },
+    { "word": "printf", "replacementWord": null, "isReplacement": false },
+    { "word": "scanf", "replacementWord": null, "isReplacement": false },
+    { "word": "pointer", "replacementWord": null, "isReplacement": false },
+    { "word": "ポインタ", "replacementWord": null, "isReplacement": false },
+    { "word": "セグフォ", "replacementWord": null, "isReplacement": false },
+    { "word": "ヘッダファイル", "replacementWord": null, "isReplacement": false },
+    { "word": "プリプロセッサ", "replacementWord": null, "isReplacement": false }
+  ]
+}
