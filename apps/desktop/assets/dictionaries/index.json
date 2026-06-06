@@ -600,6 +600,42 @@
       "tags": ["cpp", "keywords", "programming"],
       "entryCount": 29,
       "file": "cpp-keywords.json"
+    },
+    {
+      "id": "philosophers",
+      "name": "Philosophers",
+      "name_ja": "哲学者・思想家",
+      "description": "Philosophers and thinkers (Socrates, Kant, Nietzsche, Nishida).",
+      "description_ja": "哲学者・思想家 (Socrates, Kant, Nietzsche, 西田幾多郎 等)。海外は英語、日本は日本語表記。",
+      "category": "general",
+      "language": "ja",
+      "tags": ["philosophy", "thinker", "history"],
+      "entryCount": 49,
+      "file": "philosophers.json"
+    },
+    {
+      "id": "comedians",
+      "name": "Comedians",
+      "name_ja": "お笑い芸人",
+      "description": "Japanese comedians (Downtown, Sanma, Sandwichman).",
+      "description_ja": "お笑い芸人 (ダウンタウン, 明石家さんま, サンドウィッチマン 等)。",
+      "category": "creator",
+      "language": "ja",
+      "tags": ["comedy", "entertainer", "japan"],
+      "entryCount": 26,
+      "file": "comedians.json"
+    },
+    {
+      "id": "radio-personalities",
+      "name": "Radio Personalities",
+      "name_ja": "ラジオパーソナリティ",
+      "description": "Japanese radio personalities (Ijuin Hikaru, Bakusho Mondai, Hoshino Gen).",
+      "description_ja": "ラジオパーソナリティ (伊集院光, 爆笑問題, 星野源 等)。",
+      "category": "creator",
+      "language": "ja",
+      "tags": ["radio", "personality", "japan"],
+      "entryCount": 18,
+      "file": "radio-personalities.json"
     }
   ]
 }

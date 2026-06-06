@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "exportedAt": "2026-06-06T00:00:00.000Z",
+  "entries": [
+    { "word": "ダウンタウン", "replacementWord": null, "isReplacement": false },
+    { "word": "松本人志", "replacementWord": null, "isReplacement": false },
+    { "word": "まつもとひとし", "replacementWord": "松本人志", "isReplacement": true },
+    { "word": "浜田雅功", "replacementWord": null, "isReplacement": false },
+    { "word": "はまだまさとし", "replacementWord": "浜田雅功", "isReplacement": true },
+    { "word": "明石家さんま", "replacementWord": null, "isReplacement": false },
+    { "word": "ビートたけし", "replacementWord": null, "isReplacement": false },
+    { "word": "タモリ", "replacementWord": null, "isReplacement": false },
+    { "word": "とんねるず", "replacementWord": null, "isReplacement": false },
+    { "word": "ナインティナイン", "replacementWord": null, "isReplacement": false },
+    { "word": "岡村隆史", "replacementWord": null, "isReplacement": false },
+    { "word": "千鳥", "replacementWord": null, "isReplacement": false },
+    { "word": "かまいたち", "replacementWord": null, "isReplacement": false },
+    { "word": "霜降り明星", "replacementWord": null, "isReplacement": false },
+    { "word": "粗品", "replacementWord": null, "isReplacement": false },
+    { "word": "サンドウィッチマン", "replacementWord": null, "isReplacement": false },
+    { "word": "オードリー", "replacementWord": null, "isReplacement": false },
+    { "word": "若林正恭", "replacementWord": null, "isReplacement": false },
+    { "word": "わかばやしまさやす", "replacementWord": "若林正恭", "isReplacement": true },
+    { "word": "春日俊彰", "replacementWord": null, "isReplacement": false },
+    { "word": "南海キャンディーズ", "replacementWord": null, "isReplacement": false },
+    { "word": "山里亮太", "replacementWord": null, "isReplacement": false },
+    { "word": "バナナマン", "replacementWord": null, "isReplacement": false },
+    { "word": "麒麟", "replacementWord": null, "isReplacement": false },
+    { "word": "川島明", "replacementWord": null, "isReplacement": false },
+    { "word": "ナイツ", "replacementWord": null, "isReplacement": false }
+  ]
+}

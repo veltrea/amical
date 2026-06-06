@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "exportedAt": "2026-06-06T00:00:00.000Z",
+  "entries": [
+    { "word": "伊集院光", "replacementWord": null, "isReplacement": false },
+    { "word": "いじゅういんひかる", "replacementWord": "伊集院光", "isReplacement": true },
+    { "word": "爆笑問題", "replacementWord": null, "isReplacement": false },
+    { "word": "太田光", "replacementWord": null, "isReplacement": false },
+    { "word": "田中裕二", "replacementWord": null, "isReplacement": false },
+    { "word": "星野源", "replacementWord": null, "isReplacement": false },
+    { "word": "ほしのげん", "replacementWord": "星野源", "isReplacement": true },
+    { "word": "佐久間宣行", "replacementWord": null, "isReplacement": false },
+    { "word": "さくまのぶゆき", "replacementWord": "佐久間宣行", "isReplacement": true },
+    { "word": "宇多丸", "replacementWord": null, "isReplacement": false },
+    { "word": "うたまる", "replacementWord": "宇多丸", "isReplacement": true },
+    { "word": "ジェーンスー", "replacementWord": null, "isReplacement": false },
+    { "word": "赤江珠緒", "replacementWord": null, "isReplacement": false },
+    { "word": "あかえたまお", "replacementWord": "赤江珠緒", "isReplacement": true },
+    { "word": "安住紳一郎", "replacementWord": null, "isReplacement": false },
+    { "word": "あずみしんいちろう", "replacementWord": "安住紳一郎", "isReplacement": true },
+    { "word": "アルコアンドピース", "replacementWord": null, "isReplacement": false },
+    { "word": "吉田尚記", "replacementWord": null, "isReplacement": false }
+  ]
+}
