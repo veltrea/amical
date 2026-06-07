@@ -27,6 +27,8 @@ import { Route as AppSettingsAiModelsRouteImport } from './routes/_app/settings/
 import { Route as AppSettingsAdvancedRouteImport } from './routes/_app/settings/advanced'
 import { Route as AppSettingsAboutRouteImport } from './routes/_app/settings/about'
 import { Route as AppNotesNoteIdRouteImport } from './routes/_app/notes.$noteId'
+import { Route as AppSettingsDictionaryLibraryIndexRouteImport } from './routes/_app/settings/dictionary-library.index'
+import { Route as AppSettingsDictionaryLibraryDictionaryIdRouteImport } from './routes/_app/settings/dictionary-library.$dictionaryId'
 
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/_app',
@@ -119,6 +121,18 @@ const AppNotesNoteIdRoute = AppNotesNoteIdRouteImport.update({
   path: '/$noteId',
   getParentRoute: () => AppNotesRoute,
 } as any)
+const AppSettingsDictionaryLibraryIndexRoute =
+  AppSettingsDictionaryLibraryIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AppSettingsDictionaryLibraryRoute,
+  } as any)
+const AppSettingsDictionaryLibraryDictionaryIdRoute =
+  AppSettingsDictionaryLibraryDictionaryIdRouteImport.update({
+    id: '/$dictionaryId',
+    path: '/$dictionaryId',
+    getParentRoute: () => AppSettingsDictionaryLibraryRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -129,7 +143,7 @@ export interface FileRoutesByFullPath {
   '/settings/advanced': typeof AppSettingsAdvancedRoute
   '/settings/ai-models': typeof AppSettingsAiModelsRoute
   '/settings/dictation': typeof AppSettingsDictationRoute
-  '/settings/dictionary-library': typeof AppSettingsDictionaryLibraryRoute
+  '/settings/dictionary-library': typeof AppSettingsDictionaryLibraryRouteWithChildren
   '/settings/mcp-server': typeof AppSettingsMcpServerRoute
   '/settings/preferences': typeof AppSettingsPreferencesRoute
   '/settings/shortcuts': typeof AppSettingsShortcutsRoute
@@ -138,6 +152,8 @@ export interface FileRoutesByFullPath {
   '/settings/widget-appearance': typeof AppSettingsWidgetAppearanceRoute
   '/notes/': typeof AppNotesIndexRoute
   '/settings': typeof AppSettingsIndexRoute
+  '/settings/dictionary-library/$dictionaryId': typeof AppSettingsDictionaryLibraryDictionaryIdRoute
+  '/settings/dictionary-library/': typeof AppSettingsDictionaryLibraryIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -147,7 +163,6 @@ export interface FileRoutesByTo {
   '/settings/advanced': typeof AppSettingsAdvancedRoute
   '/settings/ai-models': typeof AppSettingsAiModelsRoute
   '/settings/dictation': typeof AppSettingsDictationRoute
-  '/settings/dictionary-library': typeof AppSettingsDictionaryLibraryRoute
   '/settings/mcp-server': typeof AppSettingsMcpServerRoute
   '/settings/preferences': typeof AppSettingsPreferencesRoute
   '/settings/shortcuts': typeof AppSettingsShortcutsRoute
@@ -156,6 +171,8 @@ export interface FileRoutesByTo {
   '/settings/widget-appearance': typeof AppSettingsWidgetAppearanceRoute
   '/notes': typeof AppNotesIndexRoute
   '/settings': typeof AppSettingsIndexRoute
+  '/settings/dictionary-library/$dictionaryId': typeof AppSettingsDictionaryLibraryDictionaryIdRoute
+  '/settings/dictionary-library': typeof AppSettingsDictionaryLibraryIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -168,7 +185,7 @@ export interface FileRoutesById {
   '/_app/settings/advanced': typeof AppSettingsAdvancedRoute
   '/_app/settings/ai-models': typeof AppSettingsAiModelsRoute
   '/_app/settings/dictation': typeof AppSettingsDictationRoute
-  '/_app/settings/dictionary-library': typeof AppSettingsDictionaryLibraryRoute
+  '/_app/settings/dictionary-library': typeof AppSettingsDictionaryLibraryRouteWithChildren
   '/_app/settings/mcp-server': typeof AppSettingsMcpServerRoute
   '/_app/settings/preferences': typeof AppSettingsPreferencesRoute
   '/_app/settings/shortcuts': typeof AppSettingsShortcutsRoute
@@ -177,6 +194,8 @@ export interface FileRoutesById {
   '/_app/settings/widget-appearance': typeof AppSettingsWidgetAppearanceRoute
   '/_app/notes/': typeof AppNotesIndexRoute
   '/_app/settings/': typeof AppSettingsIndexRoute
+  '/_app/settings/dictionary-library/$dictionaryId': typeof AppSettingsDictionaryLibraryDictionaryIdRoute
+  '/_app/settings/dictionary-library/': typeof AppSettingsDictionaryLibraryIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -198,6 +217,8 @@ export interface FileRouteTypes {
     | '/settings/widget-appearance'
     | '/notes/'
     | '/settings'
+    | '/settings/dictionary-library/$dictionaryId'
+    | '/settings/dictionary-library/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -207,7 +228,6 @@ export interface FileRouteTypes {
     | '/settings/advanced'
     | '/settings/ai-models'
     | '/settings/dictation'
-    | '/settings/dictionary-library'
     | '/settings/mcp-server'
     | '/settings/preferences'
     | '/settings/shortcuts'
@@ -216,6 +236,8 @@ export interface FileRouteTypes {
     | '/settings/widget-appearance'
     | '/notes'
     | '/settings'
+    | '/settings/dictionary-library/$dictionaryId'
+    | '/settings/dictionary-library'
   id:
     | '__root__'
     | '/'
@@ -236,6 +258,8 @@ export interface FileRouteTypes {
     | '/_app/settings/widget-appearance'
     | '/_app/notes/'
     | '/_app/settings/'
+    | '/_app/settings/dictionary-library/$dictionaryId'
+    | '/_app/settings/dictionary-library/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -371,6 +395,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppNotesNoteIdRouteImport
       parentRoute: typeof AppNotesRoute
     }
+    '/_app/settings/dictionary-library/': {
+      id: '/_app/settings/dictionary-library/'
+      path: '/'
+      fullPath: '/settings/dictionary-library/'
+      preLoaderRoute: typeof AppSettingsDictionaryLibraryIndexRouteImport
+      parentRoute: typeof AppSettingsDictionaryLibraryRoute
+    }
+    '/_app/settings/dictionary-library/$dictionaryId': {
+      id: '/_app/settings/dictionary-library/$dictionaryId'
+      path: '/$dictionaryId'
+      fullPath: '/settings/dictionary-library/$dictionaryId'
+      preLoaderRoute: typeof AppSettingsDictionaryLibraryDictionaryIdRouteImport
+      parentRoute: typeof AppSettingsDictionaryLibraryRoute
+    }
   }
 }
 
@@ -388,6 +426,24 @@ const AppNotesRouteWithChildren = AppNotesRoute._addFileChildren(
   AppNotesRouteChildren,
 )
 
+interface AppSettingsDictionaryLibraryRouteChildren {
+  AppSettingsDictionaryLibraryDictionaryIdRoute: typeof AppSettingsDictionaryLibraryDictionaryIdRoute
+  AppSettingsDictionaryLibraryIndexRoute: typeof AppSettingsDictionaryLibraryIndexRoute
+}
+
+const AppSettingsDictionaryLibraryRouteChildren: AppSettingsDictionaryLibraryRouteChildren =
+  {
+    AppSettingsDictionaryLibraryDictionaryIdRoute:
+      AppSettingsDictionaryLibraryDictionaryIdRoute,
+    AppSettingsDictionaryLibraryIndexRoute:
+      AppSettingsDictionaryLibraryIndexRoute,
+  }
+
+const AppSettingsDictionaryLibraryRouteWithChildren =
+  AppSettingsDictionaryLibraryRoute._addFileChildren(
+    AppSettingsDictionaryLibraryRouteChildren,
+  )
+
 interface AppRouteRouteChildren {
   AppHistoryRoute: typeof AppHistoryRoute
   AppNotesRoute: typeof AppNotesRouteWithChildren
@@ -395,7 +451,7 @@ interface AppRouteRouteChildren {
   AppSettingsAdvancedRoute: typeof AppSettingsAdvancedRoute
   AppSettingsAiModelsRoute: typeof AppSettingsAiModelsRoute
   AppSettingsDictationRoute: typeof AppSettingsDictationRoute
-  AppSettingsDictionaryLibraryRoute: typeof AppSettingsDictionaryLibraryRoute
+  AppSettingsDictionaryLibraryRoute: typeof AppSettingsDictionaryLibraryRouteWithChildren
   AppSettingsMcpServerRoute: typeof AppSettingsMcpServerRoute
   AppSettingsPreferencesRoute: typeof AppSettingsPreferencesRoute
   AppSettingsShortcutsRoute: typeof AppSettingsShortcutsRoute
@@ -412,7 +468,8 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppSettingsAdvancedRoute: AppSettingsAdvancedRoute,
   AppSettingsAiModelsRoute: AppSettingsAiModelsRoute,
   AppSettingsDictationRoute: AppSettingsDictationRoute,
-  AppSettingsDictionaryLibraryRoute: AppSettingsDictionaryLibraryRoute,
+  AppSettingsDictionaryLibraryRoute:
+    AppSettingsDictionaryLibraryRouteWithChildren,
   AppSettingsMcpServerRoute: AppSettingsMcpServerRoute,
   AppSettingsPreferencesRoute: AppSettingsPreferencesRoute,
   AppSettingsShortcutsRoute: AppSettingsShortcutsRoute,

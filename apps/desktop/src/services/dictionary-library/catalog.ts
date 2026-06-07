@@ -85,10 +85,19 @@ export async function readBundledIndex(): Promise<BundledDictionaryIndex> {
   return parsed;
 }
 
+/**
+ * Drop the in-process index cache so the next read re-reads index.json from
+ * disk. Called after a dev-mode write (see authoring.ts) so edits to the
+ * bundled catalog are reflected immediately without an app restart.
+ */
+export function invalidateIndexCache(): void {
+  cachedIndex = null;
+}
+
 /** Read a single dictionary's JSON file by id, resolving its `file` field. */
 export async function readBundledDictionaryFile(
   id: string,
-): Promise<{ meta: BundledDictionary; file: DictionaryFile }> {
+): Promise<{ meta: BundledDictionary; file: DictionaryFile; raw: string }> {
   const index = await readBundledIndex();
   const meta = index.dictionaries.find((d) => d.id === id);
   if (!meta) {
@@ -106,7 +115,7 @@ export async function readBundledDictionaryFile(
       `Dictionary file ${meta.file} is malformed (missing entries array).`,
     );
   }
-  return { meta, file: parsed };
+  return { meta, file: parsed, raw };
 }
 
 function isBundledDictionaryIndex(

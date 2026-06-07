@@ -4,6 +4,32 @@
 
 All notable changes to this fork are documented here. This fork ([veltrea/amical](https://github.com/veltrea/amical)) tracks upstream [Amical](https://github.com/amicalhq/amical) and adds on-device, agent-integrated AI on Apple Silicon. The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.7.1-fork.9] - 2026-06-07
+
+### Added
+
+- **Dictionary library editor.** Browse every bundled dictionary's entries from **Settings → Dictionary Library** — click a card to open its detail page. In development builds the editor additionally supports per-entry CRUD, metadata editing, and creating/deleting bundles, writing straight back to `assets/dictionaries/*.json` so the changes ship in the next release. Packaged builds are read-only (the bundled assets ship read-only), so the editor is a viewer. Writes go through a formatting-preserving serializer that reproduces the hand-authored layout — one entry per line, single-line `tags`, and the blank-line group separators some dictionaries use — so a GUI edit stays a minimal git diff.
+
+## [1.7.1-fork.8] - 2026-06-07
+
+### Fixed
+
+- **Short katakana replacements no longer corrupt longer katakana words.** CJK replacements match as substrings, so a short all-katakana trigger fired inside an unrelated longer katakana word — `プル`→pull turned `アップル` into "アッpull", and likewise broke `シンプル` / `カップル`; `メイン`→main broke `ドメイン`, `マージ`→merge broke `マージン`, `ヘッド`→HEAD broke `ヘッドホン`. An all-katakana trigger now treats a katakana run as the word boundary and fires only when it is not glued to adjacent katakana (incl. ー and small kana). Standalone triggers still fire, and non-katakana CJK / alphabetic matching is unchanged.
+
+## [1.7.1-fork.7] - 2026-06-07
+
+### Added
+
+- **Dictionary library grows to 61 bundles.** 48 new domain dictionaries (13 → 61 bundles, ~3,200 entries): music (synths, sound design, samplers/DJ gear, DJ terms), food & drink (chefs/brands, sake, cocktails, wine, whisky), entertainment (film people, movie titles, JP TV dramas, YouTubers), sports (baseball JP/MLB, soccer JP/world), combat sports (UFC/MMA, JP MMA, kickboxing, boxing), programming languages (OOP, Python, Rust, Go, C, C++), people (philosophers, comedians, radio personalities), miscellaneous (fashion, confectionery, bread baking, business katakana), and 14 general voice-input bundles.
+- **Search box in the dictionary library.** Locale-aware filtering by localized name, raw name, and tags, above the category tabs.
+- **Customizable widget (HUD) colors.** Recolor the floating recording widget from 6 built-in presets, or set background, accent (waveform), and border individually with a color picker (react-colorful, hex/alpha); the HUD repaints live.
+- **Accessibility silent-revoke repair from onboarding.** Ad-hoc-signed builds lose their accessibility grant whenever the cdHash changes (rebuild/update) — System Settings shows the toggle ON but access is dead. The main process detects this (persisted cdHash mismatch, or a completed onboarding) and offers a one-click repair when you open Accessibility settings from onboarding.
+- **STT degradation observability.** Instrumentation for diagnosing the long-running transcription slowdown in the field: real audio duration fills in RTF telemetry, and each dictation emits a helper-health sample (RTF drift, generate-recycle counters, process memory). No behavior change.
+
+### Fixed
+
+- **Dock visibility.** Honor `showInDock` reliably — `skipTransformProcessType` on `setVisibleOnAllWorkspaces`, plus an idempotent show/hide guard (shipped alongside the widget colors).
+
 ## [1.7.1-fork.6] - 2026-06-03
 
 ### Added
@@ -70,6 +96,9 @@ The "everything on-device" release: proofreading, a dictionary library, and a Cl
 
 Releases: <https://github.com/veltrea/amical/releases>. For the general-purpose, broadly-compatible app (Intel Macs included), see upstream [Amical](https://github.com/amicalhq/amical).
 
+[1.7.1-fork.9]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.9
+[1.7.1-fork.8]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.8
+[1.7.1-fork.7]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.7
 [1.7.1-fork.6]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.6
 [1.7.1-fork.5]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.5
 [1.7.1-fork.4]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.4

@@ -15,3 +15,13 @@ export {
   getActiveDictionaryEntries,
 } from "./operations";
 export type { DictionaryState, DictionaryWithState } from "./operations";
+export {
+  assertEditable,
+  writeDictionaryEntries,
+  addDictionaryEntry,
+  updateDictionaryEntry,
+  removeDictionaryEntry,
+  createDictionary,
+  updateDictionaryMeta,
+  removeDictionary,
+} from "./authoring";

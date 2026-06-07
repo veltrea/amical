@@ -1172,6 +1172,53 @@
         "activated": "Turned on {{name}}.",
         "deactivated": "Turned off {{name}}.",
         "failed": "Failed: {{message}}"
+      },
+      "detail": {
+        "back": "Back to library",
+        "loading": "Loading…",
+        "searchPlaceholder": "Search words or readings…",
+        "empty": "This dictionary has no entries yet.",
+        "noResults": "No entries match your search.",
+        "registeredWord": "Word",
+        "readOnlyNote": "Dictionary editing is only available in development builds (view-only in the distributed app)."
+      },
+      "editor": {
+        "addEntry": "Add word",
+        "editMeta": "Edit info",
+        "deleteDictionary": "Delete dictionary",
+        "createDictionary": "New dictionary",
+        "addEntryTitle": "Add word",
+        "editEntryTitle": "Edit word",
+        "createDictionaryTitle": "New dictionary",
+        "editMetaTitle": "Edit dictionary info",
+        "deleteConfirmTitle": "Delete word",
+        "deleteConfirmBody": "Delete \"{{item}}\"?",
+        "deleteDictionaryTitle": "Delete dictionary",
+        "deleteDictionaryBody": "Permanently delete the \"{{name}}\" dictionary? This cannot be undone.",
+        "isReplacementLabel": "Replacement rule (reading → correct spelling)",
+        "wordPlaceholder": "Word or reading",
+        "replacementPlaceholder": "Correct spelling",
+        "fieldId": "ID (lowercase letters, digits, hyphens)",
+        "fieldName": "Name (English)",
+        "fieldNameJa": "Name (Japanese)",
+        "fieldDescription": "Description (English)",
+        "fieldDescriptionJa": "Description (Japanese)",
+        "fieldCategory": "Category",
+        "fieldTags": "Tags (comma-separated)",
+        "save": "Save",
+        "create": "Create",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "saving": "Saving…",
+        "toast": {
+          "entryAdded": "Word added.",
+          "entryUpdated": "Word updated.",
+          "entryDeleted": "Word deleted.",
+          "metaUpdated": "Dictionary info updated.",
+          "dictionaryCreated": "Created the \"{{name}}\" dictionary.",
+          "dictionaryDeleted": "Dictionary deleted.",
+          "failed": "Failed: {{message}}"
+        }
       }
     },
     "mcpServer": {

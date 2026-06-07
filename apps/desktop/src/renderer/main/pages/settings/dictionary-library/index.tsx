@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Loader2, Power } from "lucide-react";
+import { Loader2, Power, Plus } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,10 @@ import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import {
+  DictionaryMetaDialog,
+  type MetaFormData,
+} from "./components/dictionary-meta-dialog";
 
 // Categories we surface as filter tabs. Anything not listed is grouped
 // under "all". Keep the order stable for muscle memory.
@@ -21,17 +26,32 @@ const FILTER_CATEGORIES = [
 
 type FilterCategory = (typeof FILTER_CATEGORIES)[number];
 
+const EMPTY_META: MetaFormData = {
+  id: "",
+  name: "",
+  name_ja: "",
+  description: "",
+  description_ja: "",
+  category: "general",
+  tags: "",
+};
+
 export default function DictionaryLibrarySettingsPage() {
   const { t, i18n } = useTranslation();
   const utils = api.useUtils();
+  const navigate = useNavigate();
 
   const [filter, setFilter] = useState<FilterCategory>("all");
   const [search, setSearch] = useState("");
   // Per-card busy state keyed by id, so clicks on two cards show
   // independent spinners.
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createForm, setCreateForm] = useState<MetaFormData>(EMPTY_META);
 
   const listQuery = api.dictionaryLibrary.list.useQuery();
+  const editableQuery = api.dictionaryLibrary.editable.useQuery();
+  const editable = editableQuery.data === true;
 
   // Activating/deactivating only flips an id in app_settings; the dictionary
   // contents are unioned into the ASR pipeline at dictation time. Nothing is
@@ -75,6 +95,29 @@ export default function DictionaryLibrarySettingsPage() {
       onSettled: () => setBusyId(null),
     });
 
+  const createMutation = api.dictionaryLibrary.createDictionary.useMutation({
+    onSuccess: (meta) => {
+      utils.dictionaryLibrary.list.invalidate();
+      toast.success(
+        t("settings.dictionaryLibrary.editor.toast.dictionaryCreated", {
+          name: meta.name,
+        }),
+      );
+      setCreateOpen(false);
+      setCreateForm(EMPTY_META);
+      navigate({
+        to: "/settings/dictionary-library/$dictionaryId",
+        params: { dictionaryId: meta.id },
+      });
+    },
+    onError: (e) =>
+      toast.error(
+        t("settings.dictionaryLibrary.editor.toast.failed", {
+          message: e.message,
+        }),
+      ),
+  });
+
   const filtered = useMemo(() => {
     let all = listQuery.data ?? [];
     if (filter !== "all") all = all.filter((d) => d.category === filter);
@@ -84,7 +127,7 @@ export default function DictionaryLibrarySettingsPage() {
         (d) =>
           localizedName(d, i18n.language).toLowerCase().includes(q) ||
           d.name.toLowerCase().includes(q) ||
-          d.tags.some((t) => t.toLowerCase().includes(q)),
+          d.tags.some((tag) => tag.toLowerCase().includes(q)),
       );
     }
     return all;
@@ -99,15 +142,52 @@ export default function DictionaryLibrarySettingsPage() {
     }
   };
 
+  const openDetail = (id: string) => {
+    navigate({
+      to: "/settings/dictionary-library/$dictionaryId",
+      params: { dictionaryId: id },
+    });
+  };
+
+  const handleCreate = () => {
+    createMutation.mutate({
+      id: createForm.id.trim(),
+      name: createForm.name.trim(),
+      name_ja: createForm.name_ja.trim() || undefined,
+      description: createForm.description.trim(),
+      description_ja: createForm.description_ja.trim() || undefined,
+      category: createForm.category,
+      language: "ja",
+      tags: createForm.tags
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
+    });
+  };
+
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-xl font-bold">
-          {t("settings.dictionaryLibrary.title")}
-        </h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          {t("settings.dictionaryLibrary.description")}
-        </p>
+      <div className="mb-6 flex items-start justify-between gap-2">
+        <div>
+          <h1 className="text-xl font-bold">
+            {t("settings.dictionaryLibrary.title")}
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            {t("settings.dictionaryLibrary.description")}
+          </p>
+        </div>
+        {editable ? (
+          <Button
+            className="shrink-0"
+            onClick={() => {
+              setCreateForm(EMPTY_META);
+              setCreateOpen(true);
+            }}
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            {t("settings.dictionaryLibrary.editor.createDictionary")}
+          </Button>
+        ) : null}
       </div>
 
       <div className="mb-4">
@@ -155,13 +235,18 @@ export default function DictionaryLibrarySettingsPage() {
 
             // Active cards get a primary-tinted border + faint background;
             // inactive cards are dimmed so the difference reads at a glance.
+            // The whole card is clickable to open the detail/editor page.
             const cardCls = cn(
-              "p-4 flex flex-col gap-3 transition-colors",
+              "p-4 flex flex-col gap-3 transition-colors cursor-pointer hover:border-primary/40",
               isActive ? "border-primary/60 bg-primary/5" : "opacity-70",
             );
 
             return (
-              <Card key={d.id} className={cardCls}>
+              <Card
+                key={d.id}
+                className={cardCls}
+                onClick={() => openDetail(d.id)}
+              >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <div className="font-semibold truncate">{name}</div>
@@ -199,7 +284,10 @@ export default function DictionaryLibrarySettingsPage() {
                   <Button
                     size="sm"
                     variant={isActive ? "secondary" : "default"}
-                    onClick={() => handleToggle(d.id, isActive)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggle(d.id, isActive);
+                    }}
                     disabled={isBusy}
                   >
                     {isBusy ? (
@@ -219,6 +307,16 @@ export default function DictionaryLibrarySettingsPage() {
           })}
         </div>
       )}
+
+      <DictionaryMetaDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        mode="create"
+        formData={createForm}
+        onFormDataChange={setCreateForm}
+        onSubmit={handleCreate}
+        isLoading={createMutation.isPending}
+      />
     </div>
   );
 }

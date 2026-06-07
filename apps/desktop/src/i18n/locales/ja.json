@@ -1150,6 +1150,53 @@
         "activated": "{{name}} をオンにしました",
         "deactivated": "{{name}} をオフにしました",
         "failed": "失敗: {{message}}"
+      },
+      "detail": {
+        "back": "ライブラリに戻る",
+        "loading": "読み込み中…",
+        "searchPlaceholder": "語・読みで検索…",
+        "empty": "この辞書にはまだ語が登録されていません。",
+        "noResults": "一致する語がありません。",
+        "registeredWord": "登録語",
+        "readOnlyNote": "辞書の編集は開発ビルドでのみ可能です（配布版では閲覧のみ）。"
+      },
+      "editor": {
+        "addEntry": "語を追加",
+        "editMeta": "辞書情報を編集",
+        "deleteDictionary": "辞書を削除",
+        "createDictionary": "新規辞書を作成",
+        "addEntryTitle": "語を追加",
+        "editEntryTitle": "語を編集",
+        "createDictionaryTitle": "新規辞書を作成",
+        "editMetaTitle": "辞書情報を編集",
+        "deleteConfirmTitle": "語を削除",
+        "deleteConfirmBody": "「{{item}}」を削除しますか？",
+        "deleteDictionaryTitle": "辞書を削除",
+        "deleteDictionaryBody": "辞書「{{name}}」を完全に削除しますか？この操作は取り消せません。",
+        "isReplacementLabel": "置換ルール（読み → 正しい表記）",
+        "wordPlaceholder": "語・読み",
+        "replacementPlaceholder": "正しい表記",
+        "fieldId": "ID（英小文字・数字・ハイフン）",
+        "fieldName": "名前（英語）",
+        "fieldNameJa": "名前（日本語）",
+        "fieldDescription": "説明（英語）",
+        "fieldDescriptionJa": "説明（日本語）",
+        "fieldCategory": "カテゴリ",
+        "fieldTags": "タグ（カンマ区切り）",
+        "save": "保存",
+        "create": "作成",
+        "cancel": "キャンセル",
+        "delete": "削除",
+        "saving": "保存中…",
+        "toast": {
+          "entryAdded": "語を追加しました",
+          "entryUpdated": "語を更新しました",
+          "entryDeleted": "語を削除しました",
+          "metaUpdated": "辞書情報を更新しました",
+          "dictionaryCreated": "辞書「{{name}}」を作成しました",
+          "dictionaryDeleted": "辞書を削除しました",
+          "failed": "失敗: {{message}}"
+        }
       }
     },
     "mcpServer": {

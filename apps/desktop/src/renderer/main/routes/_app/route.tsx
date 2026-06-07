@@ -55,6 +55,10 @@ function AppLayoutContent() {
       return "History";
     }
 
+    if (pathname.startsWith("/settings/dictionary-library")) {
+      return "Dictionary Library";
+    }
+
     const routes: Record<string, string> = {
       "/settings/preferences": "Preferences",
       "/settings/dictation": "Dictation",

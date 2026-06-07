@@ -4,6 +4,32 @@
 
 このフォークの主な変更をここに記録します。このフォーク（[veltrea/amical](https://github.com/veltrea/amical)）は本家 [Amical](https://github.com/amicalhq/amical) に追従しつつ、Apple Silicon 上で完全オンデバイス・エージェント連携の AI を足していきます。フォーマットは [Keep a Changelog](https://keepachangelog.com/) に準拠します。
 
+## [1.7.1-fork.9] - 2026-06-07
+
+### Added（追加）
+
+- **辞書ライブラリのエディタ。** **設定 → 辞書ライブラリ** から各同梱辞書のエントリを閲覧できる——カードをクリックすると詳細ページが開く。開発ビルドではさらに、エントリ単位の CRUD・メタデータ編集・バンドルの新規作成/削除に対応し、`assets/dictionaries/*.json` に直接書き戻すので、変更は次のリリースに含まれる。配布ビルドは閲覧のみ（同梱アセットは read-only）。書き込みは整形維持シリアライザを通り、手書きのレイアウト——1エントリ1行・`tags` の1行表記・一部辞書のグループ区切りの空行——を再現するので、GUI 編集でも git の差分は最小限。
+
+## [1.7.1-fork.8] - 2026-06-07
+
+### Fixed（修正）
+
+- **短いカタカナの登録語が長いカタカナ語を壊さなくなった。** CJK の置換は部分一致のため、短い全角カナの登録語が無関係な長いカナ語の内部で発火していた——`プル`→pull が `アップル` を「アッpull」にし、同様に `シンプル` / `カップル` を、`メイン`→main が `ドメイン` を、`マージ`→merge が `マージン` を、`ヘッド`→HEAD が `ヘッドホン` を壊していた。全角カナの登録語はカナの連なりを語境界として扱い、前後が別のカナ（ー・小書きカナ含む）に接していなければ発火しないようにした。単独の登録語は従来どおり発火し、非カナの CJK・英字の照合は変更なし。
+
+## [1.7.1-fork.7] - 2026-06-07
+
+### Added（追加）
+
+- **辞書ライブラリが61バンドルに拡大。** 48の分野別辞書を追加（13→61バンドル、約3,200エントリ）: 音楽（シンセ、サウンドデザイン、サンプラー/DJ機材、DJ用語）、フード&ドリンク（シェフ/ブランド、日本酒、カクテル、ワイン、ウイスキー）、エンタメ（映画人、映画タイトル、国内ドラマ、YouTuber）、スポーツ（野球 JP/MLB、サッカー JP/世界）、格闘技（UFC/MMA、国内MMA、キックボクシング、ボクシング）、プログラミング言語（OOP、Python、Rust、Go、C、C++）、人物（哲学者、お笑い、ラジオ）、雑多（ファッション、製菓、パン、ビジネスカタカナ）、汎用の音声入力14バンドル。
+- **辞書ライブラリに検索ボックス。** カテゴリタブの上に、ローカライズ名・原名・タグでロケール対応の絞り込み。
+- **ウィジェット（HUD）の色をカスタマイズ。** フローティング録音ウィジェットを6つの組み込みプリセットで配色、または背景・アクセント（波形）・枠線をカラーピッカー（react-colorful、hex/alpha）で個別指定。HUD に即時反映。
+- **オンボーディングからアクセシビリティの silent-revoke を修復。** ad-hoc 署名ビルドは cdHash が変わる（再ビルド/更新）たびにアクセシビリティ権限を失う——システム設定はトグル ON のままだが実態は無効。メインプロセスがこれを検出（cdHash ベースライン不一致、またはオンボーディング完了）し、オンボーディングからアクセシビリティ設定を開いたときにワンクリック修復を提示。
+- **STT 劣化の可観測性。** 長時間稼働での文字起こし速度低下を実地で診断するための計装: 実際の録音長で RTF テレメトリを埋め、dictation ごとにヘルパー健全性のサンプル（RTF ドリフト、generate リサイクル回数、プロセスメモリ）を出力。挙動変更なし。
+
+### Fixed（修正）
+
+- **Dock 表示。** `showInDock` を確実に反映——`setVisibleOnAllWorkspaces` への `skipTransformProcessType` と、冪等な表示/非表示ガード（ウィジェット配色と同梱）。
+
 ## [1.7.1-fork.6] - 2026-06-03
 
 ### Added（追加）
@@ -70,6 +96,9 @@
 
 リリース: <https://github.com/veltrea/amical/releases>。汎用的で幅広く動くアプリ（Intel Mac 含む）は本家 [Amical](https://github.com/amicalhq/amical) をどうぞ。
 
+[1.7.1-fork.9]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.9
+[1.7.1-fork.8]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.8
+[1.7.1-fork.7]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.7
 [1.7.1-fork.6]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.6
 [1.7.1-fork.5]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.5
 [1.7.1-fork.4]: https://github.com/veltrea/amical/releases/tag/v1.7.1-fork.4
