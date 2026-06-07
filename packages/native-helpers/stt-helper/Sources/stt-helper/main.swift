@@ -36,6 +36,9 @@ struct RPCParams: Decodable {
     let pcmBase64: String?
     let sampleRate: Int?
     let language: String?
+    // ASR context hint: domain vocabulary injected into Qwen3-ASR's system
+    // prompt to bias recognition toward these terms (Qwen3DecodingOptions.context).
+    let context: String?
     // LLM (proofreading) params — used by loadLLM/generate.
     let systemPrompt: String?
     let userPrompt: String?
@@ -192,10 +195,13 @@ func ensureModel(_ modelId: String?) throws {
     }
 }
 
-func decodeOptions(_ language: String?) -> Qwen3DecodingOptions {
+func decodeOptions(_ language: String?, context: String? = nil) -> Qwen3DecodingOptions {
     var o = Qwen3DecodingOptions()
     // language: nil => auto-detect + transcribe in source language (no translation)
     o.language = (language == "auto" || (language?.isEmpty ?? true)) ? nil : language
+    // context: nil => no bias; non-empty => prepended to the decoder prompt as a
+    // glossary that softly biases recognition (see Qwen3DecodingOptions.context).
+    o.context = (context?.isEmpty ?? true) ? nil : context
     // Mandatory for the 0.6B 4-bit model: prevents repetition loops on short chunks.
     o.repetitionPenalty = 1.3
     o.noRepeatNgramSize = 4
@@ -216,7 +222,7 @@ func handleTranscribe(_ p: RPCParams?) throws -> RPCResult {
         throw HelperError(message: "transcribe requires 'path' or 'pcmBase64'")
     }
 
-    let text = m.transcribe(audio: samples, sampleRate: sampleRate, options: decodeOptions(p?.language))
+    let text = m.transcribe(audio: samples, sampleRate: sampleRate, options: decodeOptions(p?.language, context: p?.context))
     return RPCResult(text: text.trimmingCharacters(in: .whitespacesAndNewlines))
 }
 

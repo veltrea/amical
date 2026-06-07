@@ -305,12 +305,17 @@ export class Qwen3HelperClient {
     }
   }
 
-  /** Transcribe 16kHz mono Float32 PCM. language: undefined/"auto" => auto-detect. */
+  /**
+   * Transcribe 16kHz mono Float32 PCM. language: undefined/"auto" => auto-detect.
+   * context: optional domain vocabulary injected into Qwen3-ASR's system prompt
+   * to bias recognition (see qwen3-context.ts / Qwen3DecodingOptions.context).
+   */
   async transcribe(
     pcm: Float32Array,
     sampleRate: number,
     language?: string,
     modelId?: string,
+    context?: string,
   ): Promise<string> {
     const pcmBase64 = Buffer.from(
       pcm.buffer,
@@ -320,7 +325,7 @@ export class Qwen3HelperClient {
     const startedAt = performance.now();
     const result = await this.call(
       "transcribe",
-      { pcmBase64, sampleRate, language, modelId },
+      { pcmBase64, sampleRate, language, modelId, context },
       TRANSCRIBE_TIMEOUT_MS,
     );
     this.recordTranscribeMetrics(

@@ -8,6 +8,7 @@ import { logger } from "../../../main/logger";
 import { AppError, ErrorCodes } from "../../../types/error";
 import { extractSpeechFromVad } from "../../utils/vad-audio-filter";
 import { Qwen3HelperClient } from "./qwen3-helper-client";
+import { buildQwen3Context } from "./qwen3-context";
 
 /**
  * Qwen3-ASR provider (macOS / Apple Silicon, via the stt-helper MLX process).
@@ -115,11 +116,18 @@ export class Qwen3Provider implements TranscriptionProvider {
       const language =
         context.languages?.length === 1 ? context.languages[0] : undefined;
 
+      // Bias recognition toward the activated dictionaries' non-replacement
+      // hints by injecting them as Qwen3-ASR's system context (see
+      // qwen3-context.ts). Mirrors WhisperProvider's initial_prompt path; the
+      // replacement-mode entries still run through the post-format pass.
+      const asrContext = buildQwen3Context({ vocabulary: context.vocabulary });
+
       const text = await this.client.transcribe(
         aggregatedAudio,
         this.SAMPLE_RATE,
         language,
         this.modelId,
+        asrContext,
       );
 
       logger.transcription.debug(
