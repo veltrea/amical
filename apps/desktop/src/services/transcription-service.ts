@@ -37,6 +37,7 @@ import { AVAILABLE_MODELS, getSpeechEngine } from "../constants/models";
 import { AppError, ErrorCodes } from "../types/error";
 import { applyTextReplacements } from "../utils/text-replacement";
 import { selectVocabularyHintsFromMixed } from "../utils/vocabulary-hints";
+import { DEV_BIASING_TERMS } from "./biasing/dev-biasing-terms";
 import * as fs from "node:fs";
 import { PROVIDER_TYPES } from "../constants/provider-types";
 import {
@@ -850,8 +851,15 @@ export class TranscriptionService {
     }
     // Non-replacement words are sent to the LLM formatter as hints; manual
     // words come first so they survive the cap, then dictionary words.
+    //
+    // Contextual biasing 叩き台 (v0): 開発分野のバイアシング辞書を、聞き取り前の
+    // 文脈ヒントとして語彙の先頭に常時注入する。buildQwen3Context が先頭から
+    // トークン予算ぶん詰めるので、開発語が予算内で生き残る。Whisper の
+    // initial_prompt にも入る（害なし）。重複は Set で除く。
+    // TODO(Phase 2): 常に開発ではなく、推定した分野の辞書を選んで渡す。
+    const hints = selectVocabularyHintsFromMixed(manualEntries, dictEntries);
     context.sharedData.vocabulary.push(
-      ...selectVocabularyHintsFromMixed(manualEntries, dictEntries),
+      ...new Set<string>([...DEV_BIASING_TERMS, ...hints]),
     );
 
     // Load snippets — trigger phrases that expand into longer content.
