@@ -1,4 +1,3 @@
-import { app } from "electron";
 import { promises as fs } from "node:fs";
 import { logger } from "../../main/logger";
 import { dictionariesIndexPath, dictionaryFilePath } from "./paths";
@@ -25,25 +24,17 @@ import {
 import { deactivateDictionary } from "./operations";
 
 /**
- * Dev-only authoring of the bundled dictionary catalog. These functions WRITE
- * to apps/desktop/assets/dictionaries (the source tree in `pnpm start`), so the
- * edited dictionaries become part of the next release. In packaged apps the
- * assets live under a read-only Resources directory, so every entry point first
- * calls assertEditable() and throws.
+ * Authoring of the dictionary catalog. These functions WRITE to the live store
+ * resolved by dictionariesDir(): in dev that is apps/desktop/assets/dictionaries
+ * (the source tree, so a maintainer's edits ship in the next release); in
+ * packaged builds it is the per-user copy under userData (seeded from the
+ * read-only bundle by seed.ts), so end users can edit without touching the
+ * signed app bundle.
  *
  * All writes go through serialize.ts to preserve the hand-authored formatting,
  * keep index.json's entryCount in sync, and invalidate the catalog cache so the
  * edit is visible immediately.
  */
-
-/** Throw in packaged builds, where the bundled assets are read-only. */
-export function assertEditable(): void {
-  if (app.isPackaged) {
-    throw new Error(
-      "Dictionary editing is only available in development builds; bundled assets are read-only in packaged apps.",
-    );
-  }
-}
 
 /** A dictionary id must be a safe, file-name-friendly slug (no path traversal). */
 function assertValidId(id: string): void {
@@ -79,7 +70,6 @@ export async function writeDictionaryEntries(
   entries: DictionaryEntry[],
   rename?: { from: string; to: string },
 ): Promise<void> {
-  assertEditable();
   const { meta, file, raw } = await readBundledDictionaryFile(id);
   // Preserve the hand-authored blank-line group separators: carry a renamed
   // word's separator over to its new word, and drop separators whose entry no
@@ -106,7 +96,6 @@ export async function addDictionaryEntry(
   id: string,
   entry: DictionaryEntry,
 ): Promise<void> {
-  assertEditable();
   const { file } = await readBundledDictionaryFile(id);
   await writeDictionaryEntries(id, addEntry(file.entries, entry));
 }
@@ -117,7 +106,6 @@ export async function updateDictionaryEntry(
   originalWord: string,
   entry: DictionaryEntry,
 ): Promise<void> {
-  assertEditable();
   const { file } = await readBundledDictionaryFile(id);
   await writeDictionaryEntries(
     id,
@@ -133,7 +121,6 @@ export async function removeDictionaryEntry(
   id: string,
   word: string,
 ): Promise<void> {
-  assertEditable();
   const { file } = await readBundledDictionaryFile(id);
   await writeDictionaryEntries(id, removeEntry(file.entries, word));
 }
@@ -143,7 +130,6 @@ export async function createDictionary(
   meta: Omit<BundledDictionary, "entryCount" | "file">,
   entries: DictionaryEntry[] = [],
 ): Promise<BundledDictionary> {
-  assertEditable();
   assertValidId(meta.id);
   const index = await readBundledIndex();
   if (index.dictionaries.some((d) => d.id === meta.id)) {
@@ -173,7 +159,6 @@ export async function updateDictionaryMeta(
   id: string,
   patch: Partial<Omit<BundledDictionary, "id" | "entryCount" | "file">>,
 ): Promise<BundledDictionary> {
-  assertEditable();
   const index = await readBundledIndex();
   const current = index.dictionaries.find((d) => d.id === id);
   if (!current) throw new Error(`unknown dictionary id: ${id}`);
@@ -184,7 +169,6 @@ export async function updateDictionaryMeta(
 
 /** Delete a dictionary file and remove it from index.json + the active set. */
 export async function removeDictionary(id: string): Promise<void> {
-  assertEditable();
   const index = await readBundledIndex();
   const meta = index.dictionaries.find((d) => d.id === id);
   if (!meta) throw new Error(`unknown dictionary id: ${id}`);

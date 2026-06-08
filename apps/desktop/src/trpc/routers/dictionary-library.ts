@@ -1,4 +1,3 @@
-import { app } from "electron";
 import { z } from "zod";
 import { createRouter, procedure } from "../trpc";
 import {
@@ -73,7 +72,7 @@ export const dictionaryLibraryRouter = createRouter({
       return { ok: true };
     }),
 
-  // ---- Viewer + dev-only authoring (services/dictionary-library/authoring.ts) ----
+  // ---- Viewer + authoring (services/dictionary-library/authoring.ts) ----
 
   // Read one dictionary's metadata + entries. Read-only, works in every build;
   // powers the detail/editor page.
@@ -82,12 +81,13 @@ export const dictionaryLibraryRouter = createRouter({
     return { meta, entries: file.entries };
   }),
 
-  // Whether the bundled assets can be written. Only dev builds read assets from
-  // the source tree; packaged builds ship them read-only. The UI hides every
-  // editing affordance when this is false.
-  editable: procedure.query(() => !app.isPackaged),
+  // Whether the catalog can be edited. Always true: dev builds write to the
+  // source tree, and packaged builds write to a per-user copy under userData
+  // (seeded from the read-only bundle), so editing never touches the signed app
+  // bundle. Kept as a query so the UI can gate its editing affordances on it.
+  editable: procedure.query(() => true),
 
-  // Append one entry. assertEditable() in the service throws in packaged builds.
+  // Append one entry.
   addEntry: procedure
     .input(z.object({ id: z.string().min(1), entry: EntrySchema }))
     .mutation(async ({ input }) => {

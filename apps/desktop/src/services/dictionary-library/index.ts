@@ -16,7 +16,6 @@ export {
 } from "./operations";
 export type { DictionaryState, DictionaryWithState } from "./operations";
 export {
-  assertEditable,
   writeDictionaryEntries,
   addDictionaryEntry,
   updateDictionaryEntry,

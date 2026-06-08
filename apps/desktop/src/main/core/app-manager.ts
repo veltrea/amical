@@ -14,6 +14,7 @@ import type { ShortcutManager } from "../managers/shortcut-manager";
 import type { RecordingState } from "../../types/recording";
 import type { SettingsService } from "../../services/settings-service";
 import { runDataMigrations } from "../migrations/data-migrations";
+import { seedDictionaryLibrary } from "../../services/dictionary-library/seed";
 import { getMainFeatureFlagState } from "@/main/utils/feature-flags";
 import { NOTE_WINDOW_FEATURE_FLAG } from "@/utils/feature-flags";
 
@@ -136,6 +137,7 @@ export class AppManager {
   private async initializeDatabase(): Promise<void> {
     await initializeDatabase();
     await runDataMigrations();
+    await seedDictionaryLibrary();
     logger.db.info(
       "Database initialized and migrations completed successfully",
     );
